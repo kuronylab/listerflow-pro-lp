@@ -1,0 +1,313 @@
+/* ListerFlow Pro UI (compact) */
+.lfp-status-box{
+  margin:12px 0;
+  padding:12px 16px;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* 旧.lfp-root（互換性のため残す） */
+.lfp-root{
+  margin:6px 0 10px;
+  padding:8px 10px;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.lfp-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.lfp-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:9px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#111;
+  color:#fff;
+  cursor:pointer;
+  user-select:none;
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  min-width:74px;
+}
+
+.lfp-btn[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.lfp-btn.highlight{
+  animation: lfp-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes lfp-pulse{
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(0, 0, 0, 0);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(0, 0, 0, 0.05);
+    transform: scale(1.02);
+  }
+}
+
+.lfp-spin{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.45);
+  border-top-color:#fff;
+  animation: lfp-rot .9s linear infinite;
+}
+
+@keyframes lfp-rot{
+  from{ transform: rotate(0deg); }
+  to{ transform: rotate(360deg); }
+}
+
+.lfp-status{
+  font-size:12px;
+  font-weight:700;
+  color:#111;
+  white-space:nowrap;
+}
+
+.lfp-badge{
+  margin-top:6px;
+  font-size:12px;
+  font-weight:900;
+  color:#b00020;
+  white-space:nowrap;
+}
+
+.lfp-asinbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:6px 0 8px;
+}
+
+.lfp-asinbar select{
+  width: 260px;
+  max-width: 100%;
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  font-size:13px;
+}
+
+/* LFP MIP BG FIX START */
+/* 目的: グレー背景(ピル)が紙飛行機アイコンまで確実にカバーする
+   方針:
+   ・背景色や角丸(radius)は上書きしない（既存を尊重）
+   ・幅計算から外れる原因になりやすい absolute/transform を無効化
+   ・背景がspanに乗っている想定で、spanをinline-flex化して子要素を幅に含める
+*/
+
+#mip-list-item-btn > span,
+#lfp-quick-mip > span{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  white-space: nowrap !important;
+
+  /* 背景がspanに乗っている場合、ここが“背景の実体”なので
+     アイコンまで内包した形で見えるよう余白を確保 */
+  padding-right: 14px !important;
+}
+
+/* アイコンがabsolute等で幅計算から外れて背景からはみ出すのを防ぐ */
+#mip-list-item-btn i.glyph-icon.icon-linecons-paper-plane,
+#lfp-quick-mip i.glyph-icon.icon-linecons-paper-plane{
+  position: static !important;
+  transform: none !important;
+  right: auto !important;
+  left: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+}
+
+/* もし背景がbutton側に乗っているCSS設計でも、
+   コンテンツ全体を同一行に収めることで“途中で切れて見える”現象を抑える */
+#mip-list-item-btn,
+#lfp-quick-mip{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+/* LFP MIP BG FIX END */
+
+/* LFP MIP COMPACT START */
+/* 目的: MIPボタン表示を「MIP + 紙飛行機」に縮め、グレー背景内で中央寄せにする
+   注意: 背景色・角丸は既存を尊重し上書きしない
+*/
+
+#mip-list-item-btn > span,
+#lfp-quick-mip > span{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+}
+
+#mip-list-item-btn,
+#lfp-quick-mip{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* アイコンがabsolute等でズレる/はみ出すのを防ぐ */
+#mip-list-item-btn i.glyph-icon.icon-linecons-paper-plane,
+#lfp-quick-mip i.glyph-icon.icon-linecons-paper-plane{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+/* LFP MIP COMPACT END */
+
+/* Quick MIPボタンの無効化時のスタイル */
+#lfp-quick-mip:disabled{
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%) !important;
+}
+
+#lfp-quick-mip:disabled > span{
+  opacity: 0.7 !important;
+}
+
+/* カスタムドロップダウン用のCSS変数 */
+:root {
+  --lfp-bad: #E07167;
+}
+
+/* カスタムドロップダウン */
+.lfp-custom-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.lfp-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #111;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lfp-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.lfp-dropdown-placeholder {
+  color: #999;
+  cursor: default;
+  font-weight: 700;
+}
+
+.lfp-dropdown-placeholder:hover {
+  background: transparent;
+}
+
+/* 赤字対象の行 */
+.lfp-dropdown-item-bad {
+  color: var(--lfp-bad) !important;
+}
+
+.lfp-dropdown-item-bad:hover {
+  background: rgba(224, 113, 103, 0.08);
+}
+
+/* リセットボタン */
+.lfp-reset-btn {
+  padding: 4px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f5f5f5;
+  color: #666;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.lfp-reset-btn:hover {
+  background: #e0e0e0;
+}
+
+.lfp-reset-btn:active {
+  background: #d0d0d0;
+}
+
+/* 履歴削除ボタン用のスタイル */
+.lfp-dropdown-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lfp-dropdown-item-wrapper .lfp-dropdown-item {
+  flex: 1;
+  padding: 8px 12px;
+}
+
+.lfp-dropdown-delete-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  margin-right: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.lfp-dropdown-delete-btn:hover {
+  background: rgba(224, 113, 103, 0.15);
+  color: var(--lfp-bad);
+}
+
+.lfp-dropdown-delete-btn:active {
+  background: rgba(224, 113, 103, 0.25);
+}

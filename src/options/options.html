@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ListerFlow Pro for Yaballe 設定</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div class="title">ListerFlow Pro for Yaballe</div>
+      <div class="sub">Yaballe Listerの最適化とMIP出品フローを高速化</div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div class="label">OpenAI API Key</div>
+        <div class="ctl">
+          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+          <button id="toggleKey" class="btn secondary" type="button">表示切替</button>
+        </div>
+        <div class="hint">キーはchrome.storage.syncに保存される。共有PCでは注意。</div>
+      </div>
+
+      <div class="row">
+        <div class="label">モデル</div>
+        <div class="ctl">
+          <select id="model">
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row split">
+        <div class="label">ASINペースト時にGet Item自動実行</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swPasteGet" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row split">
+        <div class="label">ASIN履歴選択時にGet Item自動実行</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swHistGet" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="row split">
+        <div class="label">最適化後にMIP自動クリック</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swAutoMip" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="hint">「出品：OK」条件（文字数70~80、Vero=0、Vero Warnings: title:なし）を満たすときのみ実行される。</div>
+
+      <div class="row split">
+        <div class="label">MIP後にOKボタン自動クリック</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swAutoOk" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="hint">MIP実行後の「Listing Success」モーダルのOKボタンを自動クリック。誤クリック防止と完全自動化を実現。</div>
+
+      <div class="row split">
+        <div class="label">Get Item右にMIPボタンを表示</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swQuickMip" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="hint">Get Itemで読み込まれた時点で「出品：OK」条件（文字数70~80、Vero=0、Vero Warnings: title:なし）を満たす場合のみクリック可能。</div>
+
+      <div class="row split">
+        <div class="label">最適化ボタン強調</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swHL" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="hint">出品：OK（最適化後）のときに最適化ボタンを目立たせる。</div>
+
+      <div class="row split">
+        <div class="label">ASIN履歴機能</div>
+        <div class="ctl right">
+          <label class="switch">
+            <input id="swHistory" type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="hint">直近100件をASIN入力欄の上に表示する。100件を超えると古いものから自動削除される。</div>
+    </div>
+
+    <div class="actions">
+      <button id="save" class="btn" type="button">保存</button>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 12px;">
+      © 2026 KURONYLAB
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

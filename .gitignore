@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+__MACOSX/
+
+# Backup folders
+extension_code/
+extension_modified/
+
+# Release ZIPs (managed by GitHub Releases)
+*.zip
+
+# Old changelogs (keep only latest)
+CHANGES_v1.0.*.md
+CHANGES_v1.2.*.md
+CHANGES_v1.3.*.md
+
+# Development files
+PR_BODY.md
