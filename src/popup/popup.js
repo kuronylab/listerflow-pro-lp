@@ -92,6 +92,7 @@ function setupEventListeners() {
   document.getElementById('saveAutomationBtn')?.addEventListener('click', saveAutomationSettings);
 
   // History page buttons
+  document.getElementById('exportSpreadsheetBtn')?.addEventListener('click', exportToSpreadsheet);
   document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
 
   // Version page buttons
@@ -418,6 +419,36 @@ async function clearHistory() {
   } catch (err) {
     console.error('[Popup] clearHistory error:', err);
     alert('履歴の削除に失敗しました。');
+  }
+}
+
+async function exportToSpreadsheet() {
+  try {
+    const history = await loadHistory();
+    if (history.length === 0) {
+      alert('出力する履歴がありません。');
+      return;
+    }
+
+    // スプレッドシートに貼り付けやすい形式（ASINのみを改行区切り）
+    // または要望があればステータスも含めるが、一般的にはASINリストが重宝される
+    const text = history.map(item => item.asin).join('\n');
+    
+    await navigator.clipboard.writeText(text);
+    
+    const btn = document.getElementById('exportSpreadsheetBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'コピー完了！';
+    btn.style.background = '#4caf50';
+    
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+    }, 2000);
+
+  } catch (err) {
+    console.error('[Popup] exportToSpreadsheet error:', err);
+    alert('コピーに失敗しました。');
   }
 }
 
