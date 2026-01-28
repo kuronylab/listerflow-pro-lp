@@ -1,6 +1,6 @@
 # ListerFlow Pro for Yaballe
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/kuronylab/listerflow-pro-for-yaballe/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/kuronylab/listerflow-pro-for-yaballe/releases/tag/v1.1.0)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/kuronylab/listerflow-pro-for-yaballe)
 
 **ListerFlow Pro for Yaballe**は、Yaballe（eBay出品ツール）での出品作業を効率化するChrome拡張機能です。VeRO警告の自動検出、AIによるタイトル最適化、ワンクリックMIP出品機能により、出品作業を大幅にスピードアップします。
@@ -361,7 +361,7 @@ OpenAI GPTを使用して、タイトルを自動的に最適化します。
 
 ## 更新方法
 
-本バージョン（v1.0.0）より**拡張機能IDが固定化**されました。これにより、今後のアップデート作業がより簡単かつ安全になります。
+本バージョン（v1.1.0）より**拡張機能IDが固定化**されました。これにより、今後のアップデート作業がより簡単かつ安全になります。
 
 ### 🔄 今後のアップデート手順（推奨）
 
