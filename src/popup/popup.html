@@ -24,13 +24,13 @@
         <span class="menu-icon">📊</span>
         <span class="menu-text">統計情報</span>
       </a>
-      <a href="#" class="menu-item" data-page="automation">
-        <span class="menu-icon">🤖</span>
-        <span class="menu-text">自動化設定</span>
-      </a>
       <a href="#" class="menu-item" data-page="history">
         <span class="menu-icon">📋</span>
         <span class="menu-text">ASIN履歴管理</span>
+      </a>
+      <a href="#" class="menu-item" data-page="automation">
+        <span class="menu-icon">🤖</span>
+        <span class="menu-text">自動化設定</span>
       </a>
       <a href="#" class="menu-item" data-page="basic">
         <span class="menu-icon">⚙️</span>
@@ -124,6 +124,20 @@
           </select>
         </div>
         <button class="btn-primary" id="saveBasicBtn">設定を保存</button>
+      </div>
+    </div>
+
+    <!-- ASIN履歴管理ページ -->
+    <div class="page" id="historyPage">
+      <div class="setting-section">
+        <h2>ASIN履歴</h2>
+        <div class="history-stats">
+          <div>履歴件数: <span id="historyCountDetail">-</span></div>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="loading">読み込み中...</div>
+        </div>
+        <button class="btn-danger" id="clearHistoryBtn">履歴をすべて削除</button>
       </div>
     </div>
 
@@ -222,20 +236,6 @@
       </div>
 
       <button class="btn-primary" id="saveAutomationBtn">設定を保存</button>
-    </div>
-
-    <!-- ASIN履歴管理ページ -->
-    <div class="page" id="historyPage">
-      <div class="setting-section">
-        <h2>ASIN履歴</h2>
-        <div class="history-stats">
-          <div>履歴件数: <span id="historyCountDetail">-</span></div>
-        </div>
-        <div class="history-list" id="historyList">
-          <div class="loading">読み込み中...</div>
-        </div>
-        <button class="btn-danger" id="clearHistoryBtn">履歴をすべて削除</button>
-      </div>
     </div>
 
     <!-- バージョン情報ページ -->
