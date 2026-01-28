@@ -15,7 +15,9 @@ export const UI = {
   spin: null,
   quickMipBtn: null,
   asinBar: null,
-  histSel: null
+  histSel: null,
+  btnCopy: null,
+  btnCsv: null
 };
 
 /**
@@ -275,7 +277,24 @@ export function createAsinHistoryBar(asinInput, btnGet) {
   resetBtn.title = "ASIN履歴をすべて削除";
   bar.appendChild(resetBtn);
 
+  // コピーボタンを追加
+  const copyBtn = document.createElement("button");
+  copyBtn.className = "lfp-copy-btn";
+  copyBtn.textContent = "📋コピー";
+  copyBtn.title = "現在の履歴をスプレッドシート用にコピー";
+  bar.appendChild(copyBtn);
+
+  // CSV出力ボタンを追加
+  const csvBtn = document.createElement("button");
+  csvBtn.className = "lfp-csv-btn";
+  csvBtn.textContent = "📥CSV";
+  csvBtn.title = "現在の履歴をCSVとして保存";
+  bar.appendChild(csvBtn);
+
   asinInput.parentElement?.insertBefore(bar, asinInput);
+
+  UI.btnCopy = copyBtn;
+  UI.btnCsv = csvBtn;
 
   UI.asinBar = bar;
   UI.histSel = sel;

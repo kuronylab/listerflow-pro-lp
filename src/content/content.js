@@ -1684,6 +1684,37 @@ async function init() {
 
       await refreshHistorySelect();
 
+      // コピーボタンのイベント
+      copyBtn.addEventListener("click", async () => {
+        const hist = await loadHistory();
+        if (hist.length === 0) {
+          alert("コピーする履歴がありません");
+          return;
+        }
+        const text = hist.map(e => e.asin).join("\n");
+        navigator.clipboard.writeText(text).then(() => {
+          alert("ASIN履歴をクリップボードにコピーしました（スプレッドシート等に貼り付け可能です）");
+        });
+      });
+
+      // CSV出力ボタンのイベント
+      csvBtn.addEventListener("click", async () => {
+        const hist = await loadHistory();
+        if (hist.length === 0) {
+          alert("出力する履歴がありません");
+          return;
+        }
+        const csvContent = "data:text/csv;charset=utf-8,ASIN,Last Seen\n" 
+          + hist.map(e => `${e.asin},${new Date(e.lastSeen).toLocaleString()}`).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `lfp_history_${new Date().toISOString().slice(0,10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+
       sel.addEventListener("change", async () => {
         const v = sel.value;
         if (!v) return;
