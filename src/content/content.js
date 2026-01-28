@@ -1770,8 +1770,22 @@ async function init() {
       }, true);
     }
 
-    if (asinInput && !asinInput.dataset.lfpPaste) {
-      asinInput.dataset.lfpPaste = "1";
+    if (asinInput && !asinInput.dataset.lfpWired) {
+      asinInput.dataset.lfpWired = "1";
+      
+      // クリック/フォーカス時にUIを復旧させる
+      const handleAsinFocus = async () => {
+        // UIが存在しない、または接続されていない場合に初期化をスケジュール
+        if (!UI.asinBar || !UI.asinBar.isConnected) {
+          console.log('🎯 [LFP] ASIN入力欄の操作を検知。UIの復旧を試みます。');
+          scheduleInit();
+        }
+      };
+      
+      asinInput.addEventListener("click", handleAsinFocus);
+      asinInput.addEventListener("focus", handleAsinFocus);
+
+      // ペースト時の自動実行
       asinInput.addEventListener("paste", async () => {
         if (!STORE.opt.autoGetOnPaste) return;
         const t = now();
