@@ -1706,8 +1706,8 @@ async function init() {
           return;
         }
         
-        // 履歴を新しい順に処理し、スプレッドシート用の2カラム（出品日、エラー日）を作成
-        const copyText = hist.map(item => {
+        // 履歴を反転（古い順）させてから、スプレッドシート用の2カラム（出品日、エラー日）を作成
+        const copyText = [...hist].reverse().map(item => {
           const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
@@ -1737,7 +1737,8 @@ async function init() {
         let csvContent = "\uFEFF"; // BOM for Excel
         csvContent += "ASIN,出品日,エラー日\r\n";
         
-        hist.forEach(item => {
+        // 履歴を反転（古い順）させてから出力
+        [...hist].reverse().forEach(item => {
           const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
