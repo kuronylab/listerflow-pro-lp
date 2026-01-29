@@ -1698,35 +1698,76 @@ async function init() {
 
       await refreshHistorySelect();
 
-      // コピーボタンのイベント
+      // コピーボタンのイベント（スプレッドシート用2カラム形式）
       copyBtn.addEventListener("click", async () => {
         const hist = await loadHistory();
         if (hist.length === 0) {
           alert("コピーする履歴がありません");
           return;
         }
-        const text = hist.map(e => e.asin).join("\n");
-        navigator.clipboard.writeText(text).then(() => {
-          alert("ASIN履歴をクリップボードにコピーしました（スプレッドシート等に貼り付け可能です）");
+        
+        // 履歴を新しい順に処理し、スプレッドシート用の2カラム（出品日、エラー日）を作成
+        const copyText = hist.map(item => {
+          const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
+          const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+          
+          let dateCol1 = dateStr; // 出品日
+          let dateCol2 = '';      // エラーにより出品不可
+          
+          if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
+            dateCol1 = '';
+            dateCol2 = dateStr;
+          }
+          return `${dateCol1}\t${dateCol2}`;
+        }).join("\n");
+
+        navigator.clipboard.writeText(copyText).then(() => {
+          alert("スプレッドシート用形式（出品日・エラー日）でコピーしました");
         });
       });
 
-      // CSV出力ボタンのイベント
+      // CSV出力ボタンのイベント（詳細データ形式）
       csvBtn.addEventListener("click", async () => {
         const hist = await loadHistory();
         if (hist.length === 0) {
           alert("出力する履歴がありません");
           return;
         }
-        const csvContent = "data:text/csv;charset=utf-8,ASIN,Last Seen\n" 
-          + hist.map(e => `${e.asin},${new Date(e.lastSeen).toLocaleString()}`).join("\n");
-        const encodedUri = encodeURI(csvContent);
+        
+        let csvContent = "\uFEFF"; // BOM for Excel
+        csvContent += "ASIN,ステータス,出品日,エラー日\r\n";
+        
+        hist.forEach(item => {
+          const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
+          const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+          
+          let statusText = '出品完了';
+          let dateCol1 = dateStr;
+          let dateCol2 = '';
+          
+          if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
+            const flags = [];
+            if (item.flags.protected) flags.push('Protected');
+            if (item.flags.brand) flags.push('Brand');
+            if (item.flags.already_listed) flags.push('Already listed');
+            if (item.flags.no_listings) flags.push('No listings');
+            statusText = flags.join(', ');
+            dateCol1 = '';
+            dateCol2 = dateStr;
+          }
+          
+          csvContent += `"${item.asin}","${statusText}","${dateCol1}","${dateCol2}"\r\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `lfp_history_${new Date().toISOString().slice(0,10)}.csv`);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `LFP_ASIN履歴_${new Date().toLocaleDateString()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       });
 
       sel.addEventListener("change", async () => {
