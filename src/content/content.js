@@ -1726,7 +1726,7 @@ async function init() {
         });
       });
 
-      // CSV出力ボタンのイベント（詳細データ形式）
+      // CSV出力ボタンのイベント（スプレッドシート用2カラム形式）
       csvBtn.addEventListener("click", async () => {
         const hist = await loadHistory();
         if (hist.length === 0) {
@@ -1735,28 +1735,21 @@ async function init() {
         }
         
         let csvContent = "\uFEFF"; // BOM for Excel
-        csvContent += "ASIN,ステータス,出品日,エラー日\r\n";
+        csvContent += "ASIN,出品日,エラー日\r\n";
         
         hist.forEach(item => {
           const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
-          let statusText = '出品完了';
-          let dateCol1 = dateStr;
-          let dateCol2 = '';
+          let dateCol1 = dateStr; // 出品日
+          let dateCol2 = '';      // エラー日
           
           if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
-            const flags = [];
-            if (item.flags.protected) flags.push('Protected');
-            if (item.flags.brand) flags.push('Brand');
-            if (item.flags.already_listed) flags.push('Already listed');
-            if (item.flags.no_listings) flags.push('No listings');
-            statusText = flags.join(', ');
             dateCol1 = '';
             dateCol2 = dateStr;
           }
           
-          csvContent += `"${item.asin}","${statusText}","${dateCol1}","${dateCol2}"\r\n`;
+          csvContent += `"${item.asin}","${dateCol1}","${dateCol2}"\r\n`;
         });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
