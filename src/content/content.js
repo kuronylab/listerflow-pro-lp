@@ -1677,6 +1677,20 @@ async function init() {
       });
       bar.appendChild(resetBtn);
 
+      // コピーボタンを追加
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "lfp-copy-btn";
+      copyBtn.textContent = "📋コピー";
+      copyBtn.title = "ASIN履歴をクリップボードにコピー";
+      bar.appendChild(copyBtn);
+
+      // CSVボタンを追加
+      const csvBtn = document.createElement("button");
+      csvBtn.className = "lfp-csv-btn";
+      csvBtn.textContent = "📊CSV";
+      csvBtn.title = "ASIN履歴をCSVでダウンロード";
+      bar.appendChild(csvBtn);
+
       asinInput.parentElement?.insertBefore(bar, asinInput);
 
       UI.asinBar = bar;
