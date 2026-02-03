@@ -1719,7 +1719,7 @@ async function init() {
             dateCol2 = dateStr;
           }
           return `${dateCol1}\t${dateCol2}`;
-        }).join("\n");
+        }).join("\r\n").trim(); // 改行コードをCRLFに統一し、末尾の余分な改行を排除
 
         navigator.clipboard.writeText(copyText).then(() => {
           const originalText = copyBtn.textContent;
