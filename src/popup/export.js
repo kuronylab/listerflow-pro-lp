@@ -73,8 +73,13 @@ async function copyTwoColumns() {
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length >= 4) {
-      const col3 = cells[2].textContent.trim(); // 出品日
-      const col4 = cells[3].textContent.trim(); // エラーにより出品不可
+      let col3 = cells[2].textContent.trim(); // 出品日
+      let col4 = cells[3].textContent.trim(); // エラーにより出品不可
+      
+      // 空白セルにスペースを追加（スプレッドシートの選択範囲認識のため）
+      if (col3 === '') col3 = ' ';
+      if (col4 === '') col4 = ' ';
+      
       copyText += `${col3}\t${col4}\n`;
     }
   });
