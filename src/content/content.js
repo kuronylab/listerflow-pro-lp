@@ -1722,7 +1722,11 @@ async function init() {
         }).join("\n");
 
         navigator.clipboard.writeText(copyText).then(() => {
-          alert("スプレッドシート用形式（出品日・エラー日）でコピーしました");
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = "✅ コピー完了！";
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+          }, 2000);
         });
       });
 
