@@ -1735,22 +1735,29 @@ async function init() {
         }
         
         let csvContent = "\uFEFF"; // BOM for Excel
-        csvContent += "ASIN,出品日,エラー日\r\n";
+        csvContent += "ASINコード,結果,出品日,エラーにより出品不可\r\n";
         
         // 履歴を反転（古い順）させてから出力
         [...hist].reverse().forEach(item => {
           const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
+          // 結果カラムを追加
+          let result = '出品完了';
+          if (item.flags?.no_listings) result = 'No listings';
+          else if (item.flags?.protected) result = 'Protected';
+          else if (item.flags?.brand) result = 'Brand';
+          else if (item.flags?.already_listed) result = 'Already listed';
+          
           let dateCol1 = dateStr; // 出品日
-          let dateCol2 = '';      // エラー日
+          let dateCol2 = ' ';     // エラー日（空白の場合はスペース）
           
           if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
-            dateCol1 = '';
+            dateCol1 = ' ';       // 空白の場合はスペース
             dateCol2 = dateStr;
           }
           
-          csvContent += `"${item.asin}","${dateCol1}","${dateCol2}"\r\n`;
+          csvContent += `"${item.asin}","${result}","${dateCol1}","${dateCol2}"\r\n`;
         });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
