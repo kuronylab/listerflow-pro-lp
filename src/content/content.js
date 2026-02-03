@@ -1712,10 +1712,10 @@ async function init() {
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
           let dateCol1 = dateStr; // 出品日
-          let dateCol2 = ' ';     // エラーにより出品不可（空白の場合はスペース）
+          let dateCol2 = '　';     // エラーにより出品不可（空白の場合は全角スペース）
           
           if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
-            dateCol1 = ' ';       // 空白の場合はスペース
+            dateCol1 = '　';       // 空白の場合は全角スペース
             dateCol2 = dateStr;
           }
           return `${dateCol1}\t${dateCol2}`;
