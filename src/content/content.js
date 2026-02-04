@@ -2028,9 +2028,6 @@ function setupListingSuccessObserver() {
     // オプションがOFFなら何もしない
     if (!STORE.opt.autoClickOkAfterMip) return;
     
-    // 連打防止
-    if (okButtonClicked) return;
-    
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
@@ -2047,6 +2044,9 @@ function setupListingSuccessObserver() {
         const isListingSuccess = modalText.includes('Listing Success');
         
         if (isListingSuccess) {
+          // すでにクリック済み（または処理中）ならスキップ
+          if (okButtonClicked) return;
+          
           console.log('✅ [Auto OK] Listing Successモーダルを検出しました');
           
           // OKボタンを検出
@@ -2055,8 +2055,8 @@ function setupListingSuccessObserver() {
           );
           
           if (okButton) {
-            // 連打防止フラグをセット
-            okButtonClicked = true;
+            // ここで「監視開始」をマーク
+            if (okButtonClicked) return;
             
             // 既存のインターバルをクリア（クリーンアップ）
             if (okButtonCheckInterval) {
@@ -2086,16 +2086,23 @@ function setupListingSuccessObserver() {
                 btn.textContent.trim().toLowerCase() === 'ok'
               );
               
-              if (currentOkButton && currentOkButton.offsetParent !== null && okButtonClicked) {
-                // OKボタンが表示されている（offsetParent !== nullは表示中を意味する）
-                // 既にokButtonClickedがtrueの場合にのみ1度だけ実行
+              if (currentOkButton && currentOkButton.offsetParent !== null) {
+                // OKボタンが「実際に表示」されていることを確認
+                // 連打防止のため即座にインターバルを停止
                 clearInterval(okButtonCheckInterval);
                 okButtonCheckInterval = null;
-                okButtonClicked = false; // 次回のためにリセット（またはGet Itemでリセット）
                 
-                // クリック
-                currentOkButton.click();
-                console.log(`✅ [Auto OK] OKボタンを自動クリックしました（${checkCount * 100}ms後）`);
+                // 既にクリック済みなら何もしない（二重実行防止）
+                if (okButtonClicked) return;
+                okButtonClicked = true; // 実行済みにする
+                
+                // 少しだけ待ってからクリック（DOMの安定化を待つ）
+                setTimeout(() => {
+                  if (currentOkButton && currentOkButton.isConnected) {
+                    currentOkButton.click();
+                    console.log(`✅ [Auto OK] OKボタンを自動クリックしました（${checkCount * 100}ms後）`);
+                  }
+                }, 150);
                 
                 // 統計情報を更新
                 await incrementListingCount();
