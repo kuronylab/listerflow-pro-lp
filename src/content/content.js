@@ -826,7 +826,13 @@ const UI = {
   spin: null,
   asinBar: null,
   histSel: null,
-  quickMipBtn: null
+  quickMipBtn: null,
+  statsBar: null,
+  statsToday: null,
+  statsWeek: null,
+  statsTotal: null,
+  statsLast: null,
+  statsAiAssist: null
 };
 
 function destroyMainUI() {
@@ -889,6 +895,70 @@ function ensureUIBelowTitle(titleEl) {
   UI.btnOpt = btn;
   UI.btnLabel = label;
   UI.spin = spin;
+
+  // 統計情報バーの作成
+  const statsBar = document.createElement("div");
+  statsBar.className = "lfp-stats-bar";
+  statsBar.style.marginTop = "8px";
+  statsBar.style.padding = "8px";
+  statsBar.style.background = "#f8f9fa";
+  statsBar.style.borderRadius = "4px";
+  statsBar.style.fontSize = "12px";
+  statsBar.style.color = "#444";
+  statsBar.style.display = "flex";
+  statsBar.style.flexWrap = "wrap";
+  statsBar.style.gap = "15px";
+  statsBar.style.border = "1px solid #e9ecef";
+
+  statsBar.innerHTML = `
+    <div style="display:flex; gap:10px; align-items:center;">
+      <strong>出品統計:</strong>
+      <span id="lfp-stats-today">今日: -</span>
+      <span id="lfp-stats-week">今週: -</span>
+      <span id="lfp-stats-total">累計: -</span>
+      <span id="lfp-stats-last" style="color:#666; font-style:italic;">最後の出品: -</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; margin-left:auto;">
+      <strong>AIアシスト:</strong>
+      <span id="lfp-stats-ai-assist">最適化使用回数: -</span>
+    </div>
+  `;
+
+  statusBox.appendChild(statsBar);
+  UI.statsBar = statsBar;
+  UI.statsToday = statsBar.querySelector("#lfp-stats-today");
+  UI.statsWeek = statsBar.querySelector("#lfp-stats-week");
+  UI.statsTotal = statsBar.querySelector("#lfp-stats-total");
+  UI.statsLast = statsBar.querySelector("#lfp-stats-last");
+  UI.statsAiAssist = statsBar.querySelector("#lfp-stats-ai-assist");
+
+  // 初回表示
+  updateStatisticsUI();
+}
+
+async function updateStatisticsUI() {
+  const stats = await loadStatistics();
+  if (!stats) return;
+
+  if (UI.statsToday) UI.statsToday.textContent = `今日: ${stats.todayListings}件`;
+  if (UI.statsWeek) UI.statsWeek.textContent = `今週: ${stats.weekListings}件`;
+  if (UI.statsTotal) UI.statsTotal.textContent = `累計: ${stats.totalListings}件`;
+  
+  if (UI.statsLast) {
+    if (stats.lastListingDate) {
+      const diffMin = Math.floor((Date.now() - stats.lastListingDate) / 60000);
+      let timeStr = "";
+      if (diffMin < 1) timeStr = "たった今";
+      else if (diffMin < 60) timeStr = `${diffMin}分前`;
+      else if (diffMin < 1440) timeStr = `${Math.floor(diffMin / 60)}時間前`;
+      else timeStr = `${Math.floor(diffMin / 1440)}日前`;
+      UI.statsLast.textContent = `最後の出品: ${timeStr}`;
+    } else {
+      UI.statsLast.textContent = `最後の出品: -`;
+    }
+  }
+
+  if (UI.statsAiAssist) UI.statsAiAssist.textContent = `最適化使用回数: ${stats.optimizeCount}回`;
 }
 
 function setBusy(isBusy) {
@@ -1413,6 +1483,7 @@ async function onOptimizeClick({ titleEl }) {
     STORE.optimizeState.needsRetry = false;
     // 統計情報を更新
     await incrementOptimizeCount();
+    await updateStatisticsUI();
   }
 
   if (STORE.opt.autoMipAfterOptimize) {
@@ -1518,16 +1589,15 @@ function refreshCustomDropdown(hist) {
       displayText = `! ${entry.asin} No listings`;
       isBad = true;
     } else {
-      // 複数のフラグを配列で収集
-      const flagLabels = [];
-      if (entry.flags.protected) flagLabels.push("protected");
-      if (entry.flags.already_listed) flagLabels.push("already_listed");
-      if (entry.flags.brand) flagLabels.push("brand");
-      
-      if (flagLabels.length > 0) {
-        displayText = `× ${entry.asin} ${flagLabels.join(" / ")}`;
-        isBad = true;
-      }
+    // 複数のフラグを配列で収集
+    const flagLabels = [];
+    if (entry.flags.protected) flagLabels.push("protected");
+    if (entry.flags.brand) flagLabels.push("brand");
+    
+    if (flagLabels.length > 0) {
+      displayText = `× ${entry.asin} ${flagLabels.join(" / ")}`;
+      isBad = true;
+    }
     }
     
     item.textContent = displayText;
@@ -2117,8 +2187,9 @@ function setupListingSuccessObserver() {
                   }
                 }, 150);
                 
-                // 統計情報を更新
-                await incrementListingCount();
+    // 統計情報を更新
+    await incrementListingCount();
+    await updateStatisticsUI();
                 
                 // バッジ通知（オプション）
                 setBadge('✅ 出品完了');
