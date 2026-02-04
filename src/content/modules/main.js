@@ -63,7 +63,7 @@ export async function init() {
   try {
     // MIPボタンの背景が紙飛行機までカバーするようDOMを整形
     fixMipButtonBgCover();
-    await loadOptions();
+    STORE.opt = await loadOptions();
     
     if (!isListerRoute()) {
       lockUI();
@@ -81,9 +81,9 @@ export async function init() {
     }
 
     // Quick MIPボタンの作成
-    if (STORE.opt.quickMipEnabled && btnGet && (!UI.quickMipBtn || !UI.quickMipBtn.isConnected)) {
-      ensureQuickMipButton(btnGet);
-    } else if (!STORE.opt.quickMipEnabled) {
+    if (STORE.opt.quickMipButton && btnGet && (!UI.quickMipBtn || !UI.quickMipBtn.isConnected)) {
+      ensureQuickMipButton(btnGet, STORE);
+    } else if (!STORE.opt.quickMipButton) {
       removeQuickMipButton();
     }
 
@@ -98,10 +98,15 @@ export async function init() {
       }
     }
 
-    // 評価と表示
-    await evaluateAndRender({ titleEl, btnGet });
+  // 評価と表示
+  await evaluateAndRender({ titleEl, btnGet });
 
-    // MutationObserverの設定
+  // 最速出品モードの自動実行判定
+  if (STORE.opt.turboListingMode) {
+    handleTurboListing(titleEl, btnGet);
+  }
+
+  // MutationObserverの設定
     setupMainObserver();
     setupNoListingsObserver();
     setupListingSuccessObserver();
@@ -208,6 +213,16 @@ async function handleOptimizeClick(titleEl, btnGet) {
     // 再評価
     await sleep(100);
     await evaluateAndRender({ titleEl, btnGet });
+
+    // 最速出品モードの場合、最適化後にMIPをクリック
+    if (STORE.opt.turboListingMode) {
+      const statusText = UI.status?.textContent || "";
+      if (statusText.includes("出品：OK")) {
+        if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
+          UI.quickMipBtn.click();
+        }
+      }
+    }
     
   } catch (err) {
     console.error('[LFP] optimize error:', err);
@@ -267,8 +282,27 @@ function setupListingSuccessObserver() {
   if (listingSuccessObserver) return;
   
   listingSuccessObserver = new MutationObserver((mutations) => {
-    // Listing Successモーダルを検出してOKボタンを自動クリック
-    // 簡略化のため省略
+    if (!STORE.opt.autoClickOkAfterMip) return;
+
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        
+        // モーダル全体のテキストを確認
+        const text = node.innerText || node.textContent || "";
+        if (/Listing\s+Success/i.test(text)) {
+          // OKボタンを探す
+          const btnOk = node.querySelector('button.btn-success') || findButtonByText(/^OK$/i);
+          if (btnOk) {
+            console.log("[LFP] Listing Successを検出。OKボタンをクリックします。");
+            setTimeout(() => btnOk.click(), 500);
+            
+            // 出品数をカウント
+            incrementListingCount();
+          }
+        }
+      }
+    }
   });
   
   listingSuccessObserver.observe(document.body, {
@@ -290,12 +324,41 @@ function scheduleEvaluate(fn, delay = 300) {
     evalRunning = true;
     try {
       await fn();
+      
+      // Get Item完了後（評価後）に最速出品モードの判定
+      const titleEl = findTitleFieldSmart();
+      const btnGet = findButtonByText(/^Get Item$/i);
+      if (STORE.opt.turboListingMode && titleEl && btnGet) {
+        handleTurboListing(titleEl, btnGet);
+      }
     } catch (err) {
       console.error('[LFP] scheduleEvaluate error:', err);
     } finally {
       evalRunning = false;
     }
   }, delay);
+}
+
+/**
+ * 最速出品モードの実行判定
+ */
+async function handleTurboListing(titleEl, btnGet) {
+  // すでに実行中（busy）ならスキップ
+  if (UI.btnOpt?.disabled && UI.spin?.style.display !== "none") return;
+
+  const statusText = UI.status?.textContent || "";
+  
+  if (statusText.includes("出品：OK（最適化後）")) {
+    // 最適化ボタンを自動クリック
+    if (UI.btnOpt && !UI.btnOpt.disabled) {
+      UI.btnOpt.click();
+    }
+  } else if (statusText.includes("出品：OK")) {
+    // Quick MIPボタンを自動クリック
+    if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
+      UI.quickMipBtn.click();
+    }
+  }
 }
 
 /**

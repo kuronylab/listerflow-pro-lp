@@ -21,7 +21,8 @@ export const DEFAULT_OPTIONS = {
   quickMipButton: true,
   highlightOptimize: true,
   historyEnabled: true,
-  autoClickOkAfterMip: true
+  autoClickOkAfterMip: true,
+  turboListingMode: false
 };
 
 // タイトル文字数の制約

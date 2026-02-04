@@ -163,7 +163,7 @@ export function resetUIState(STORE) {
 /**
  * Quick MIPボタンを作成
  */
-export function ensureQuickMipButton(btnGet) {
+export function ensureQuickMipButton(btnGet, STORE) {
   if (UI.quickMipBtn && UI.quickMipBtn.isConnected) return;
 
   const btn = document.createElement("button");
@@ -174,7 +174,7 @@ export function ensureQuickMipButton(btnGet) {
   btn.style.width = `${btnGet.getBoundingClientRect().width}px`;
   btn.style.marginLeft = "8px";
   btn.style.whiteSpace = "nowrap";
-  btn.style.display = "inline-flex"; // 常に表示（有効/無効で制御）
+  btn.style.display = STORE.opt.quickMipButton ? "inline-flex" : "none";
   btn.style.alignItems = "center";
   btn.style.justifyContent = "center";
   btn.disabled = true; // 初期状態は無効（条件判定後に有効化）

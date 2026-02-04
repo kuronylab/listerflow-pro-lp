@@ -18,7 +18,8 @@ const STORE = {
     highlightOptimize: true,
     historyEnabled: true,
     // MIP後にOKボタン自動クリック
-    autoClickOkAfterMip: true
+    autoClickOkAfterMip: true,
+    turboListingMode: false
   },
   // 最適化状態の追跡
   optimizeState: {
@@ -1391,7 +1392,18 @@ async function onOptimizeClick({ titleEl }) {
   if (finalTitle) {
     setInputValue(titleEl, finalTitle);
     await sleep(120);
-    await evaluateAndRender({ titleEl, btnGet: findButtonByText(/^Get Item$/i) });
+    const btnGet = findButtonByText(/^Get Item$/i);
+    await evaluateAndRender({ titleEl, btnGet });
+
+    // 最速出品モードの場合、最適化後にMIPをクリック
+    if (STORE.opt.turboListingMode) {
+      const statusText = UI.status?.textContent || "";
+      if (statusText.includes("出品：OK")) {
+        if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
+          UI.quickMipBtn.click();
+        }
+      }
+    }
   }
 
   // 最終的に70〜80文字に収束したかどうかで状態を切り替え
@@ -1605,7 +1617,6 @@ async function selectHistoryAsin(asin) {
     }
   }
 }
-
 /* ---------- MutationObserver (debounced) ---------- */
 
 let evalTimer = null;
@@ -1618,17 +1629,48 @@ function scheduleEvaluate(fn, delay = 300) {
     evalRunning = true;
     try {
       await fn();
+
+      // Get Item完了後（評価後）に最速出品モードの判定
+      const titleEl = findTitleFieldSmart();
+      const btnGet = findButtonByText(/^Get Item$/i);
+      if (STORE.opt.turboListingMode && titleEl && btnGet) {
+        handleTurboListing(titleEl, btnGet);
+      }
     } catch (err) {
-      console.error('[LFP] scheduleEvaluate error:', err);
-      // Extension context invalidatedの場合はリカバリーを試行
       if (err.message && err.message.includes('Extension context invalidated')) {
         attemptRecovery();
+      } else {
+        console.error('[LFP] scheduleEvaluate error:', err);
       }
     } finally {
       evalRunning = false;
     }
   }, delay);
 }
+
+/**
+ * 最速出品モードの実行判定
+ */
+async function handleTurboListing(titleEl, btnGet) {
+  // すでに実行中（busy）ならスキップ
+  if (UI.btnOpt?.disabled && UI.spin?.style.display !== "none") return;
+
+  const statusText = UI.status?.textContent || "";
+  
+  if (statusText.includes("出品：OK（最適化後）")) {
+    // 最適化ボタンを自動クリック
+    if (UI.btnOpt && !UI.btnOpt.disabled) {
+      UI.btnOpt.click();
+    }
+  } else if (statusText.includes("出品：OK")) {
+    // Quick MIPボタンを自動クリック
+    if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
+      UI.quickMipBtn.click();
+    }
+  }
+}
+
+
 
 let initRunning = false;
 
@@ -1853,10 +1895,15 @@ async function init() {
         const tv = normSpace(readText(t));
         if (!tv) { lockUI(); return; }
 
-        unlockUI(t);
-        await evaluateAndRender({ titleEl: t, btnGet });
+      unlockUI(t);
+      await evaluateAndRender({ titleEl: t, btnGet });
 
-        if (STORE.opt.quickMipButton && btnGet) ensureQuickMipButton(btnGet);
+      // 最速出品モードの自動実行判定
+      if (STORE.opt.turboListingMode) {
+        handleTurboListing(t, btnGet);
+      }
+
+      if (STORE.opt.quickMipButton && btnGet) ensureQuickMipButton(btnGet);
         else removeQuickMipButton();
       }, true);
     }

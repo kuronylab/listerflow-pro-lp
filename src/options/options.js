@@ -10,7 +10,8 @@ const DEFAULTS = {
   quickMipButton: true,
   highlightOptimize: true,
   historyEnabled: true,
-  autoClickOkAfterMip: true
+  autoClickOkAfterMip: true,
+  turboListingMode: false
 };
 
 function qs(id){ return document.getElementById(id); }
@@ -37,6 +38,7 @@ async function load(){
   qs("swQuickMip").checked = !!opt.quickMipButton;
   qs("swHL").checked = !!opt.highlightOptimize;
   qs("swHistory").checked = !!opt.historyEnabled;
+  qs("swTurbo").checked = !!opt.turboListingMode;
 }
 
 async function save(){
@@ -50,7 +52,8 @@ async function save(){
     autoClickOkAfterMip: qs("swAutoOk").checked,
     quickMipButton: qs("swQuickMip").checked,
     highlightOptimize: qs("swHL").checked,
-    historyEnabled: qs("swHistory").checked
+    historyEnabled: qs("swHistory").checked,
+    turboListingMode: qs("swTurbo").checked
   };
 
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
@@ -68,4 +71,15 @@ document.addEventListener("DOMContentLoaded", () => {
   qs("toggleKey")?.addEventListener("click", toggleKey);
 
   load().catch(e => setStatus(e?.message || "読み込みに失敗", true));
+
+  // 最速出品モードの連動処理
+  qs("swTurbo")?.addEventListener("change", (e) => {
+    if (e.target.checked) {
+      const targets = ["swPasteGet", "swHistGet", "swAutoMip", "swAutoOk", "swQuickMip"];
+      targets.forEach(id => {
+        const el = qs(id);
+        if (el) el.checked = true;
+      });
+    }
+  });
 });
