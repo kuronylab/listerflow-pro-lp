@@ -173,8 +173,9 @@ async function loadAndDisplayStats() {
       statsElements.lastListing.textContent = '-';
     }
 
-    // History stats
-    statsElements.completedListingsCount.textContent = `${stats.totalListings}件`;
+    // History stats (Count only completed listings in the current history list)
+    const completedCount = history.filter(h => h.flags?.already_listed).length;
+    statsElements.completedListingsCount.textContent = `${completedCount}件`;
 
     const protectedCount = history.filter(h => h.flags?.protected).length;
     const noListingsCount = history.filter(h => h.flags?.no_listings).length;
