@@ -1219,18 +1219,18 @@ async function evaluateAndRender({ titleEl, btnGet }) {
 
   if (reasons.length) {
     shipText = `NG（${reasons.join(" / ")}）`;
-    if (UI.btnOpt) UI.btnOpt.disabled = true;  // 出品NGの時は最適化ボタンを無効化
   } else {
     if (len >= 70 && len <= 80 && veroCountForCheck === 0 && !hasTitleVeroWarning) {
       shipText = "OK";
-      if (UI.btnOpt) UI.btnOpt.disabled = true;  // 出品OKの時も最適化ボタンを無効化
       highlight = false;
     } else {
       shipText = "OK（最適化後）";
-      if (UI.btnOpt) UI.btnOpt.disabled = false;  // 出品OK（最適化後）の時のみクリック可能
       highlight = true;
     }
   }
+  
+  // 修正: ボタンのdisabled制御を撤廃し、常にクリック可能にする
+  if (UI.btnOpt) UI.btnOpt.disabled = false;
 
   setStatusLine(len, veroCountForDisplay, shipText, highlight);
 
@@ -1289,18 +1289,8 @@ async function evaluateAndRender({ titleEl, btnGet }) {
 let optimizeRunning = false;
 
 async function onOptimizeClick({ titleEl }) {
-  // 連打防止
-  if (optimizeRunning) {
-    console.log('[LFP] 最適化実行中のため、クリックを無視します');
-    return;
-  }
-  
-  // ターボモード連打防止: 既にターボ処理中なら無視
-  if (STORE.opt.turboListingMode && turboProcessing) {
-    console.log('[LFP] ターボモード処理中のため、最適化クリックを無視します');
-    return;
-  }
-
+  // 連打防止（APIリクエスト中のみ）
+  if (optimizeRunning) return;
   optimizeRunning = true;
   
   try {
@@ -1328,8 +1318,7 @@ async function onOptimizeClick({ titleEl }) {
   const reasons = computeShipReasons({ blockText: block, protectedText, descText, duplicationError });
   if (reasons.length) {
     setBadge(`×出品不可：${reasons.join(" / ")}`);
-    if (UI.btnOpt) UI.btnOpt.disabled = true;
-    return;
+    // return; // ロックを排除するため継続
   }
 
   let srcTitle = readText(titleEl);
@@ -1650,46 +1639,23 @@ function scheduleEvaluate(fn, delay = 300) {
 
 /**
  * 最速出品モード（ターボモード）の実行判定
- * 既存のステータス表示（UI.status.textContent）を監視し、
- * 条件が揃った瞬間に一度だけアクション（最適化 or MIP）を実行する。
+ * ステータスが「OK」または「OK（最適化後）」になった瞬間にボタンを代理クリックする。
+ * ロック処理は行わず、既存のボタンの状態に従う。
  */
-let turboProcessing = false; // ターボ処理中フラグ
-
 async function handleTurboListing(titleEl, btnGet) {
   if (!STORE.opt.turboListingMode) return;
-  if (turboProcessing) return; // 二重実行防止
   
-  // 最適化実行中（APIリクエスト中）もスキップ
-  if (optimizeRunning) return;
-
   const statusText = UI.status?.textContent || "";
   
-  // 1. 最適化が必要な場合
   if (statusText.includes("出品：OK（最適化後）")) {
-    if (UI.btnOpt && !UI.btnOpt.disabled) {
-      console.log("[LFP] Turbo: 自動最適化を開始します");
-      turboProcessing = true;
-      
-      // 連打防止のため即座に無効化
-      UI.btnOpt.disabled = true;
+    if (UI.btnOpt && !UI.btnOpt.disabled && !optimizeRunning) {
+      console.log("[LFP] Turbo: 自動最適化ボタンをクリック");
       UI.btnOpt.click();
-      
-      // 最適化完了後にフラグを戻す（onOptimizeClickのfinallyでoptimizeRunningは戻るが、turboProcessingはここで制御）
-      setTimeout(() => { turboProcessing = false; }, 2000); 
     }
-  } 
-  // 2. 出品可能な場合
-  else if (statusText.includes("出品：OK")) {
+  } else if (statusText.includes("出品：OK")) {
     if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
-      console.log("[LFP] Turbo: 自動MIP出品を実行します");
-      turboProcessing = true;
-      
-      // UI上でも無効化して連打を防ぐ
-      UI.quickMipBtn.disabled = true;
+      console.log("[LFP] Turbo: 自動MIPボタンをクリック");
       UI.quickMipBtn.click();
-      
-      // MIPクリック後は画面が大きく変わる（モーダルが出る等）ため、長めにロック
-      setTimeout(() => { turboProcessing = false; }, 5000);
     }
   }
 }
