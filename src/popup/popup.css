@@ -251,8 +251,8 @@ body {
   border: 1px solid #c8e6c9;
   border-radius: 8px;
   padding: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #c8e6c9; /* 上書き防止 */
+  margin-top: 10px;
+  border-bottom: none;
 }
 
 .turbo-item-box .toggle-title {
