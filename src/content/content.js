@@ -1880,9 +1880,10 @@ async function init() {
         const asin = normSpace(asinInput?.value || "");
         if (asin) {
           STORE.lastRequestedAsin = asin;
-          // ターボ実行済みフラグをリセット（新しい商品の取得開始）
+          // 各種フラグをリセット（新しい商品の取得開始）
           STORE.turboExecuted.optimize = false;
           STORE.turboExecuted.mip = false;
+          okButtonClicked = false; // OKボタンクリック済みフラグもリセット
           // Get Itemクリック時に履歴に保存（１件目から確実に反映）
           await saveHistoryPush(asin);
           // 前回のフラグをクリア（Get Item成功時に前回の情報が残らないように）
@@ -2085,10 +2086,14 @@ function setupListingSuccessObserver() {
                 btn.textContent.trim().toLowerCase() === 'ok'
               );
               
-              if (currentOkButton && currentOkButton.offsetParent !== null) {
+              if (currentOkButton && currentOkButton.offsetParent !== null && okButtonClicked) {
                 // OKボタンが表示されている（offsetParent !== nullは表示中を意味する）
+                // 既にokButtonClickedがtrueの場合にのみ1度だけ実行
                 clearInterval(okButtonCheckInterval);
                 okButtonCheckInterval = null;
+                okButtonClicked = false; // 次回のためにリセット（またはGet Itemでリセット）
+                
+                // クリック
                 currentOkButton.click();
                 console.log(`✅ [Auto OK] OKボタンを自動クリックしました（${checkCount * 100}ms後）`);
                 
