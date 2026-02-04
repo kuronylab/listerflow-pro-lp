@@ -1801,10 +1801,8 @@ async function init() {
           return `${dateCol1}\t${dateCol2}`;
         });
 
-        // スプレッドシートの「スマート貼り付け」による枠線ずれを防止するため、
-        // 常にヘッダー行（ダミー）を先頭に含めて形式を固定する
-        const header = "出品日\tエラー日";
-        const finalCopyText = [header, ...rows].join("\r\n");
+        // スプレッドシートへの貼り付け時に余分な行が発生しないよう、末尾の改行を厳密に排除する
+        const finalCopyText = rows.join("\r\n").trim();
 
         navigator.clipboard.writeText(finalCopyText).then(() => {
           const originalText = copyBtn.textContent;

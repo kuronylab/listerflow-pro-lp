@@ -174,14 +174,15 @@ async function loadAndDisplayStats() {
     }
 
     // History stats (Count only completed listings in the current history list)
-    const completedCount = history.filter(h => h.flags?.already_listed).length;
+    // 履歴データから各フラグがtrueのものを集計
+    const completedCount = history.filter(h => h.flags?.already_listed === true).length;
+    const protectedCount = history.filter(h => h.flags?.protected === true).length;
+    const brandCount = history.filter(h => h.flags?.brand === true).length;
+    const noListingsCount = history.filter(h => h.flags?.no_listings === true).length;
+
     statsElements.completedListingsCount.textContent = `${completedCount}件`;
-
-    const protectedCount = history.filter(h => h.flags?.protected).length;
-    const noListingsCount = history.filter(h => h.flags?.no_listings).length;
-
     statsElements.protectedCount.textContent = `${protectedCount}件`;
-    statsElements.brandCount.textContent = `${stats.brandCount || 0}件`;
+    statsElements.brandCount.textContent = `${brandCount}件`;
     statsElements.noListingsCount.textContent = `${noListingsCount}件`;
 
   } catch (err) {
