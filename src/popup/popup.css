@@ -198,6 +198,26 @@ body {
   color: #333;
 }
 
+.turbo-section {
+  background-color: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.turbo-section h2 {
+  color: #2e7d32;
+}
+
+.turbo-item .toggle-title {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.turbo-item .toggle-desc {
+  color: #2e7d32;
+}
+
 /* フォーム */
 .form-group {
   margin-bottom: 16px;

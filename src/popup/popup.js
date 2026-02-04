@@ -48,7 +48,8 @@ function initializeElements() {
     quickMipButton: document.getElementById('quickMipButton'),
     highlightOptimize: document.getElementById('highlightOptimize'),
     historyEnabled: document.getElementById('historyEnabled'),
-    veroEnabled: document.getElementById('veroEnabled')
+    veroEnabled: document.getElementById('veroEnabled'),
+    turboListingMode: document.getElementById('turboListingMode')
   };
 
   // Version elements
@@ -90,6 +91,23 @@ function setupEventListeners() {
 
   // Automation settings page buttons
   document.getElementById('saveAutomationBtn')?.addEventListener('click', saveAutomationSettings);
+
+  // 最速出品モードの連動処理
+  settingElements.turboListingMode?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      const targets = [
+        'autoGetOnPaste',
+        'autoGetOnHistory',
+        'autoMipAfterOptimize',
+        'autoClickOkAfterMip',
+        'quickMipButton'
+      ];
+      targets.forEach(id => {
+        const el = settingElements[id];
+        if (el) el.checked = true;
+      });
+    }
+  });
 
   // History page buttons
   document.getElementById('exportSpreadsheetBtn')?.addEventListener('click', exportToSpreadsheet);
@@ -252,7 +270,8 @@ async function loadSettings() {
       quickMipButton: true,
       highlightOptimize: true,
       historyEnabled: true,
-      autoClickOkAfterMip: true
+      autoClickOkAfterMip: true,
+      turboListingMode: false
     };
 
     const data = await chrome.storage.sync.get([KEY_OPT]);
@@ -274,6 +293,7 @@ async function loadSettings() {
     if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = options.highlightOptimize;
     if (settingElements.historyEnabled) settingElements.historyEnabled.checked = options.historyEnabled;
     if (settingElements.veroEnabled) settingElements.veroEnabled.checked = options.veroEnabled;
+    if (settingElements.turboListingMode) settingElements.turboListingMode.checked = options.turboListingMode;
   } catch (err) {
     console.error('[Popup] loadSettings error:', err);
   }
@@ -321,6 +341,7 @@ async function saveAutomationSettings() {
     saved.highlightOptimize = settingElements.highlightOptimize.checked;
     saved.historyEnabled = settingElements.historyEnabled.checked;
     saved.veroEnabled = settingElements.veroEnabled.checked;
+    saved.turboListingMode = settingElements.turboListingMode.checked;
 
     await chrome.storage.sync.set({ [KEY_OPT]: saved });
     alert('自動化設定を保存しました。');
