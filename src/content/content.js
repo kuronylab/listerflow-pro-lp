@@ -1662,10 +1662,13 @@ async function handleTurboListing(titleEl, btnGet) {
   } 
   // 2. 出品可能な場合（かつ、まだ自動MIPしていない場合）
   else if (statusText.includes("出品：OK")) {
-    if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
-      console.log("[LFP] Turbo: 自動MIPボタンをクリック");
-      STORE.turboExecuted.mip = true; // 実行済みフラグを立てる
-      UI.quickMipBtn.click();
+    // "出品：OK（最適化後）" にマッチしないように厳密に判定
+    if (statusText.trim().endsWith("出品：OK") || statusText.includes("出品：OK /")) {
+      if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
+        console.log("[LFP] Turbo: 自動MIPボタンをクリック");
+        STORE.turboExecuted.mip = true; // 実行済みフラグを先に立てる
+        UI.quickMipBtn.click();
+      }
     }
   }
 }
