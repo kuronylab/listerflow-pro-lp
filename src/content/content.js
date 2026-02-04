@@ -172,8 +172,13 @@ async function loadStatistics() {
         weekListings: 0,
         lastListingDate: null,
         optimizeCount: 0,
+        brandCount: 0,
         lastResetDate: Date.now()
       };
+    }
+    // 既存データへのbrandCount追加（マイグレーション）
+    if (stats.brandCount === undefined) {
+      stats.brandCount = 0;
     }
     
     // 日付が変わったらtodayListingsをリセット
@@ -232,9 +237,24 @@ async function incrementOptimizeCount() {
     stats.optimizeCount++;
     await saveStatistics(stats);
     console.log(`📊 [Stats] 最適化回数を更新: ${stats.optimizeCount}回`);
+    await updateStatisticsUI();
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementOptimizeCount error:', err);
+  }
+}
+
+async function incrementBrandCount() {
+  try {
+    const stats = await loadStatistics();
+    if (!stats) return; // コンテキスト無効時はスキップ
+    stats.brandCount++;
+    await saveStatistics(stats);
+    console.log(`📊 [Stats] ブランド警告回数を更新: ${stats.brandCount}回`);
+    await updateStatisticsUI();
+  } catch (err) {
+    if (err.message && err.message.includes('Extension context invalidated')) return;
+    console.error('[LFP] incrementBrandCount error:', err);
   }
 }
 
@@ -832,7 +852,8 @@ const UI = {
   statsWeek: null,
   statsTotal: null,
   statsLast: null,
-  statsAiAssist: null
+  statsAiAssist: null,
+  statsBrand: null
 };
 
 function destroyMainUI() {
@@ -920,7 +941,8 @@ function ensureUIBelowTitle(titleEl) {
     </div>
     <div style="display:flex; gap:10px; align-items:center; margin-left:auto;">
       <strong>AIアシスト:</strong>
-      <span id="lfp-stats-ai-assist">最適化使用回数: -</span>
+      <span id="lfp-stats-ai-assist">最適化: -</span>
+      <span id="lfp-stats-brand" style="margin-left:5px;">Brand: -</span>
     </div>
   `;
 
@@ -931,6 +953,7 @@ function ensureUIBelowTitle(titleEl) {
   UI.statsTotal = statsBar.querySelector("#lfp-stats-total");
   UI.statsLast = statsBar.querySelector("#lfp-stats-last");
   UI.statsAiAssist = statsBar.querySelector("#lfp-stats-ai-assist");
+  UI.statsBrand = statsBar.querySelector("#lfp-stats-brand");
 
   // 初回表示
   updateStatisticsUI();
@@ -954,7 +977,8 @@ async function updateStatisticsUI() {
     }
   }
 
-  if (UI.statsAiAssist) UI.statsAiAssist.textContent = `最適化使用回数: ${stats.optimizeCount}回`;
+  if (UI.statsAiAssist) UI.statsAiAssist.textContent = `最適化: ${stats.optimizeCount}回`;
+  if (UI.statsBrand) UI.statsBrand.textContent = `Brand: ${stats.brandCount || 0}回`;
 }
 
 function setBusy(isBusy) {
@@ -1345,6 +1369,10 @@ async function evaluateAndRender({ titleEl, btnGet }) {
       const brandTerms = terms.filter(t => t.kind === "brand");
       if (brandTerms.length > 0) {
         flags.brand = true;
+        // ブランド警告を初めて検知した場合のみカウントアップ
+        if (!currentEntry || !currentEntry.flags || !currentEntry.flags.brand) {
+          await incrementBrandCount();
+        }
       }
       
       // already_listed検出
