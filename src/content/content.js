@@ -1416,8 +1416,11 @@ async function onOptimizeClick({ titleEl }) {
 
   if (STORE.opt.autoMipAfterOptimize) {
     if (finalLen >= 70 && finalLen <= 80 && finalVero === 0) {
-      await sleep(250);
-      clickRealMipButton();
+      // ターボモードと重複しないように、ターボモードがOFFの時だけ実行
+      if (!STORE.opt.turboListingMode) {
+        await sleep(250);
+        clickRealMipButton();
+      }
     }
   }
 
@@ -1661,14 +1664,18 @@ async function handleTurboListing(titleEl, btnGet) {
     }
   } 
   // 2. 出品可能な場合（かつ、まだ自動MIPしていない場合）
-  else if (statusText.includes("出品：OK")) {
-    // "出品：OK（最適化後）" にマッチしないように厳密に判定
-    if (statusText.trim().endsWith("出品：OK") || statusText.includes("出品：OK /")) {
-      if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
-        console.log("[LFP] Turbo: 自動MIPボタンをクリック");
-        STORE.turboExecuted.mip = true; // 実行済みフラグを先に立てる
-        UI.quickMipBtn.click();
-      }
+  else if (statusText.includes("出品：OK") && !statusText.includes("（最適化後）")) {
+    if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
+      // 最適化実行中（API待ち）ならスキップ
+      if (optimizeRunning) return;
+
+      console.log("[LFP] Turbo: 自動MIPボタンをクリック");
+      STORE.turboExecuted.mip = true; // 実行済みフラグを先に立てる
+      
+      // 既存のautoMipAfterOptimizeと同様に、少し待機してから実行
+      setTimeout(() => {
+        clickRealMipButton();
+      }, 250);
     }
   }
 }
