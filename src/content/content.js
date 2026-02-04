@@ -285,8 +285,8 @@ async function saveHistoryPush(asin, flags = {}) {
         lastSeen: now()
       });
       
-        // 100件を超えた場合は古いものから削除
-        await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 100) });
+        // 300件を超えた場合は古いものから削除
+        await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 300) });
     } catch (err) {
       if (err.message && err.message.includes('Extension context invalidated')) {
         // Extension context invalidated - 無視
@@ -1470,10 +1470,10 @@ async function refreshHistorySelect() {
   
   // 件数カウントを表示
   const count = hist.length;
-  const maxCount = 100;
+  const maxCount = 300;
   
   // 既存のselectを更新（件数カウント付き）
-  UI.histSel.innerHTML = `<option value="">ASIN履歴（直近100件） ${count}/${maxCount}</option>`;
+  UI.histSel.innerHTML = `<option value="">ASIN履歴（直近300件） ${count}/${maxCount}</option>`;
   for (const entry of hist) {
     const opt = document.createElement("option");
     opt.value = entry.asin;
@@ -1760,7 +1760,7 @@ async function init() {
         }
         
         // 履歴を反転（古い順）させてから、スプレッドシート用の2カラム（出品日、エラー日）を作成
-        const copyText = [...hist].reverse().map(item => {
+        const rows = [...hist].reverse().map(item => {
           const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
@@ -1772,12 +1772,12 @@ async function init() {
             dateCol2 = dateStr;
           }
           return `${dateCol1}\t${dateCol2}`;
-        }).join("\r\n");
+        });
 
-        // 末尾に余分な改行が入らないようにトリミングし、
-        // かつスプレッドシートが最終行を正しく認識できるように末尾改行なしでコピー
-        // trim()だと行頭の空白なども消える可能性があるため、末尾の改行のみを除去
-        const finalCopyText = copyText.replace(/[\r\n]+$/, "");
+        // スプレッドシートの「スマート貼り付け」による枠線ずれを防止するため、
+        // 常にヘッダー行（ダミー）を先頭に含めて形式を固定する
+        const header = "出品日\tエラー日";
+        const finalCopyText = [header, ...rows].join("\r\n");
 
         navigator.clipboard.writeText(finalCopyText).then(() => {
           const originalText = copyBtn.textContent;
