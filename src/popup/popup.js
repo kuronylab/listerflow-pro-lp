@@ -33,7 +33,7 @@ function initializeElements() {
     lastListing: document.getElementById('lastListing'),
     historyCount: document.getElementById('historyCount'),
     protectedCount: document.getElementById('protectedCount'),
-    alreadyListedCount: document.getElementById('alreadyListedCount'),
+    brandCount: document.getElementById('brandCount'),
     noListingsCount: document.getElementById('noListingsCount')
   };
 
@@ -190,11 +190,10 @@ async function loadAndDisplayStats() {
     statsElements.historyCount.textContent = `${history.length}件`;
 
     const protectedCount = history.filter(h => h.flags?.protected).length;
-    const alreadyListedCount = history.filter(h => h.flags?.already_listed).length;
     const noListingsCount = history.filter(h => h.flags?.no_listings).length;
 
     statsElements.protectedCount.textContent = `${protectedCount}件`;
-    statsElements.alreadyListedCount.textContent = `${alreadyListedCount}件`;
+    statsElements.brandCount.textContent = `${stats.brandCount || 0}件`;
     statsElements.noListingsCount.textContent = `${noListingsCount}件`;
 
   } catch (err) {
@@ -214,6 +213,7 @@ async function loadStatistics() {
         weekListings: 0,
         lastListingDate: null,
         optimizeCount: 0,
+        brandCount: 0,
         lastResetDate: Date.now()
       };
     }
@@ -227,6 +227,7 @@ async function loadStatistics() {
       weekListings: 0,
       lastListingDate: null,
       optimizeCount: 0,
+      brandCount: 0,
       lastResetDate: Date.now()
     };
   }
@@ -244,6 +245,7 @@ async function resetStats() {
       weekListings: 0,
       lastListingDate: null,
       optimizeCount: 0,
+      brandCount: 0,
       lastResetDate: Date.now()
     };
 
