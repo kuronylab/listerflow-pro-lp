@@ -26,7 +26,12 @@ const STORE = {
     needsRetry: false  // trueの時「再実行」表示
   },
   // 最後にリクエストしたASIN（No listingsモーダル検出用）
-  lastRequestedAsin: ""
+  lastRequestedAsin: "",
+  // ターボモードの実行済みフラグ
+  turboExecuted: {
+    optimize: false,
+    mip: false
+  }
 };
 
 // Observer管理用のグローバル変数
@@ -1647,14 +1652,19 @@ async function handleTurboListing(titleEl, btnGet) {
   
   const statusText = UI.status?.textContent || "";
   
+  // 1. 最適化が必要な場合（かつ、まだ自動最適化していない場合）
   if (statusText.includes("出品：OK（最適化後）")) {
-    if (UI.btnOpt && !UI.btnOpt.disabled && !optimizeRunning) {
+    if (UI.btnOpt && !UI.btnOpt.disabled && !optimizeRunning && !STORE.turboExecuted.optimize) {
       console.log("[LFP] Turbo: 自動最適化ボタンをクリック");
+      STORE.turboExecuted.optimize = true; // 実行済みフラグを立てる
       UI.btnOpt.click();
     }
-  } else if (statusText.includes("出品：OK")) {
-    if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
+  } 
+  // 2. 出品可能な場合（かつ、まだ自動MIPしていない場合）
+  else if (statusText.includes("出品：OK")) {
+    if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
       console.log("[LFP] Turbo: 自動MIPボタンをクリック");
+      STORE.turboExecuted.mip = true; // 実行済みフラグを立てる
       UI.quickMipBtn.click();
     }
   }
@@ -1867,6 +1877,9 @@ async function init() {
         const asin = normSpace(asinInput?.value || "");
         if (asin) {
           STORE.lastRequestedAsin = asin;
+          // ターボ実行済みフラグをリセット（新しい商品の取得開始）
+          STORE.turboExecuted.optimize = false;
+          STORE.turboExecuted.mip = false;
           // Get Itemクリック時に履歴に保存（１件目から確実に反映）
           await saveHistoryPush(asin);
           // 前回のフラグをクリア（Get Item成功時に前回の情報が残らないように）
