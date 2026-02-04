@@ -1764,14 +1764,14 @@ async function init() {
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
           let dateCol1 = dateStr; // 出品日
-          let dateCol2 = '　';     // エラーにより出品不可（空白の場合は全角スペース）
+          let dateCol2 = '';      // 空白（スプレッドシート上で空セルとして認識させる）
           
           if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
-            dateCol1 = '　';       // 空白の場合は全角スペース
+            dateCol1 = '';        // 空白
             dateCol2 = dateStr;
           }
           return `${dateCol1}\t${dateCol2}`;
-        }).join("\n");
+        }).join("\r\n");
 
         navigator.clipboard.writeText(copyText).then(() => {
           const originalText = copyBtn.textContent;
