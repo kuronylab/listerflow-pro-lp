@@ -1219,15 +1219,15 @@ async function evaluateAndRender({ titleEl, btnGet }) {
 
   if (reasons.length) {
     shipText = `NG（${reasons.join(" / ")}）`;
-    if (UI.btnOpt) UI.btnOpt.disabled = true;  // 出品NGの時は最適化ボタンを無効化
+    if (UI.btnOpt) UI.btnOpt.disabled = false; // 常に押せるようにする
   } else {
     if (len >= 70 && len <= 80 && veroCountForCheck === 0 && !hasTitleVeroWarning) {
       shipText = "OK";
-      if (UI.btnOpt) UI.btnOpt.disabled = true;  // 出品OKの時も最適化ボタンを無効化
+      if (UI.btnOpt) UI.btnOpt.disabled = false; // 常に押せるようにする
       highlight = false;
     } else {
       shipText = "OK（最適化後）";
-      if (UI.btnOpt) UI.btnOpt.disabled = false;  // 出品OK（最適化後）の時のみクリック可能
+      if (UI.btnOpt) UI.btnOpt.disabled = false; // 常に押せるようにする
       highlight = true;
     }
   }
@@ -1305,7 +1305,7 @@ async function onOptimizeClick({ titleEl }) {
 
     if (!STORE.opt.apiKey) {
       setBadge("API key未設定");
-      return;
+      throw new Error("API key未設定");
     }
 
   const block = extractWarningBlockText();
@@ -1325,8 +1325,9 @@ async function onOptimizeClick({ titleEl }) {
   const reasons = computeShipReasons({ blockText: block, protectedText, descText, duplicationError });
   if (reasons.length) {
     setBadge(`×出品不可：${reasons.join(" / ")}`);
-    if (UI.btnOpt) UI.btnOpt.disabled = true;
-    return;
+    // 修正: ボタンを無効化せず、警告を出すだけにする
+    // if (UI.btnOpt) UI.btnOpt.disabled = true;
+    // return; 
   }
 
   let srcTitle = readText(titleEl);
@@ -1388,8 +1389,7 @@ async function onOptimizeClick({ titleEl }) {
     } catch (e) {
       setBadge((e?.message || "最適化に失敗").slice(0, 160));
       STORE.optimizeState.needsRetry = false;  // エラー時はリセット
-      setBusy(false);
-      return;
+      break; // ループを抜けてfinallyへ
     }
   }
 
@@ -1411,10 +1411,6 @@ async function onOptimizeClick({ titleEl }) {
     // 収束失敗：「再実行」表示に切り替え
     STORE.optimizeState.needsRetry = true;
     setBadge("70〜80文字に収束しない。「再実行」を押すか手動調整してください。");
-    setBusy(false);
-    // 失敗時はボタンを再度有効化（再試行可能にする）
-    if (UI.btnOpt) UI.btnOpt.disabled = false;
-    return;
   } else {
     // 収束成功：「最適化」表示に戻す
     STORE.optimizeState.needsRetry = false;
