@@ -946,12 +946,8 @@ async function updateStatisticsUI() {
   
   if (UI.statsLast) {
     if (stats.lastListingDate) {
-      const diffMin = Math.floor((Date.now() - stats.lastListingDate) / 60000);
-      let timeStr = "";
-      if (diffMin < 1) timeStr = "たった今";
-      else if (diffMin < 60) timeStr = `${diffMin}分前`;
-      else if (diffMin < 1440) timeStr = `${Math.floor(diffMin / 60)}時間前`;
-      else timeStr = `${Math.floor(diffMin / 1440)}日前`;
+      const d = new Date(stats.lastListingDate);
+      const timeStr = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       UI.statsLast.textContent = `最後の出品: ${timeStr}`;
     } else {
       UI.statsLast.textContent = `最後の出品: -`;
@@ -1593,6 +1589,7 @@ function refreshCustomDropdown(hist) {
     const flagLabels = [];
     if (entry.flags.protected) flagLabels.push("protected");
     if (entry.flags.brand) flagLabels.push("brand");
+    if (entry.flags.already_listed) flagLabels.push("already_listed");
     
     if (flagLabels.length > 0) {
       displayText = `× ${entry.asin} ${flagLabels.join(" / ")}`;
