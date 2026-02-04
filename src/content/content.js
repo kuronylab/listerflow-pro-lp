@@ -159,6 +159,7 @@ async function loadOptions() {
 } */
 
 async function loadStatistics() {
+  if (!isExtensionContextValid()) return null;
   try {
     const data = await chrome.storage.local.get([KEY_STATS]);
     let stats = data?.[KEY_STATS];
@@ -190,22 +191,20 @@ async function loadStatistics() {
     
     return stats;
   } catch (err) {
+    if (err.message && err.message.includes('Extension context invalidated')) {
+      return null;
+    }
     console.error('[LFP] loadStatistics error:', err);
-    return {
-      totalListings: 0,
-      todayListings: 0,
-      weekListings: 0,
-      lastListingDate: null,
-      optimizeCount: 0,
-      lastResetDate: Date.now()
-    };
+    return null;
   }
 }
 
 async function saveStatistics(stats) {
+  if (!stats || !isExtensionContextValid()) return;
   try {
     await chrome.storage.local.set({ [KEY_STATS]: stats });
   } catch (err) {
+    if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] saveStatistics error:', err);
   }
 }
@@ -213,6 +212,7 @@ async function saveStatistics(stats) {
 async function incrementListingCount() {
   try {
     const stats = await loadStatistics();
+    if (!stats) return; // コンテキスト無効時はスキップ
     stats.totalListings++;
     stats.todayListings++;
     stats.weekListings++;
@@ -220,20 +220,21 @@ async function incrementListingCount() {
     await saveStatistics(stats);
     console.log(`📊 [Stats] 出品数を更新: 総計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
   } catch (err) {
+    if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementListingCount error:', err);
-    // エラーが発生しても処理を継続
   }
 }
 
 async function incrementOptimizeCount() {
   try {
     const stats = await loadStatistics();
+    if (!stats) return; // コンテキスト無効時はスキップ
     stats.optimizeCount++;
     await saveStatistics(stats);
     console.log(`📊 [Stats] 最適化回数を更新: ${stats.optimizeCount}回`);
   } catch (err) {
+    if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementOptimizeCount error:', err);
-    // エラーが発生しても処理を継続
   }
 }
 
