@@ -284,8 +284,8 @@ async function saveHistoryPush(asin, flags = {}) {
         lastSeen: now()
       });
       
-      // 100件を超えた場合は古いものから削除
-      await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 100) });
+        // 100件を超えた場合は古いものから削除
+        await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 100) });
     } catch (err) {
       if (err.message && err.message.includes('Extension context invalidated')) {
         // Extension context invalidated - 無視
@@ -1773,7 +1773,12 @@ async function init() {
           return `${dateCol1}\t${dateCol2}`;
         }).join("\r\n");
 
-        navigator.clipboard.writeText(copyText).then(() => {
+        // 末尾に余分な改行が入らないようにトリミングし、
+        // かつスプレッドシートが最終行を正しく認識できるように末尾改行なしでコピー
+        // trim()だと行頭の空白なども消える可能性があるため、末尾の改行のみを除去
+        const finalCopyText = copyText.replace(/[\r\n]+$/, "");
+
+        navigator.clipboard.writeText(finalCopyText).then(() => {
           const originalText = copyBtn.textContent;
           copyBtn.textContent = "✅ コピー完了！";
           setTimeout(() => {
