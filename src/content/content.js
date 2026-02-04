@@ -1708,7 +1708,7 @@ async function init() {
         
         // 履歴を反転（古い順）させてから、スプレッドシート用の2カラム（出品日、エラー日）を作成
         const copyText = [...hist].reverse().map(item => {
-          const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
+          const date = item.timestamp ? new Date(item.timestamp) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
           let dateCol1 = dateStr; // 出品日
@@ -1743,7 +1743,7 @@ async function init() {
         
         // 履歴を反転（古い順）させてから出力
         [...hist].reverse().forEach(item => {
-          const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
+          const date = item.timestamp ? new Date(item.timestamp) : new Date();
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
           // 結果カラムを追加
