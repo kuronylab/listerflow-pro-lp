@@ -174,8 +174,12 @@ async function loadAndDisplayStats() {
     }
 
     // History stats (Count only completed listings in the current history list)
-    // 履歴データから各フラグがtrueのものを集計
-    const completedCount = history.filter(h => h.flags?.already_listed === true).length;
+    // 出品完了件数：エラーフラグが一切ついていないものをカウント
+    const completedCount = history.filter(h => {
+      const f = h.flags || {};
+      return !f.protected && !f.brand && !f.already_listed && !f.no_listings;
+    }).length;
+
     const protectedCount = history.filter(h => h.flags?.protected === true).length;
     const brandCount = history.filter(h => h.flags?.brand === true).length;
     const noListingsCount = history.filter(h => h.flags?.no_listings === true).length;
