@@ -1219,15 +1219,15 @@ async function evaluateAndRender({ titleEl, btnGet }) {
 
   if (reasons.length) {
     shipText = `NG（${reasons.join(" / ")}）`;
-    if (UI.btnOpt) UI.btnOpt.disabled = false; // 常に押せるようにする
+    if (UI.btnOpt) UI.btnOpt.disabled = true;  // 出品NGの時は最適化ボタンを無効化
   } else {
     if (len >= 70 && len <= 80 && veroCountForCheck === 0 && !hasTitleVeroWarning) {
       shipText = "OK";
-      if (UI.btnOpt) UI.btnOpt.disabled = false; // 常に押せるようにする
+      if (UI.btnOpt) UI.btnOpt.disabled = true;  // 出品OKの時も最適化ボタンを無効化
       highlight = false;
     } else {
       shipText = "OK（最適化後）";
-      if (UI.btnOpt) UI.btnOpt.disabled = false; // 常に押せるようにする
+      if (UI.btnOpt) UI.btnOpt.disabled = false;  // 出品OK（最適化後）の時のみクリック可能
       highlight = true;
     }
   }
@@ -1295,9 +1295,12 @@ async function onOptimizeClick({ titleEl }) {
     return;
   }
   
-  // 最適化ボタン自体の無効化（UI的フィードバック）
-  if (UI.btnOpt) UI.btnOpt.disabled = true;
-  
+  // ターボモード連打防止: 既にターボ処理中なら無視
+  if (STORE.opt.turboListingMode && turboProcessing) {
+    console.log('[LFP] ターボモード処理中のため、最適化クリックを無視します');
+    return;
+  }
+
   optimizeRunning = true;
   
   try {
@@ -1305,7 +1308,7 @@ async function onOptimizeClick({ titleEl }) {
 
     if (!STORE.opt.apiKey) {
       setBadge("API key未設定");
-      throw new Error("API key未設定");
+      return;
     }
 
   const block = extractWarningBlockText();
@@ -1325,9 +1328,8 @@ async function onOptimizeClick({ titleEl }) {
   const reasons = computeShipReasons({ blockText: block, protectedText, descText, duplicationError });
   if (reasons.length) {
     setBadge(`×出品不可：${reasons.join(" / ")}`);
-    // 修正: ボタンを無効化せず、警告を出すだけにする
-    // if (UI.btnOpt) UI.btnOpt.disabled = true;
-    // return; 
+    if (UI.btnOpt) UI.btnOpt.disabled = true;
+    return;
   }
 
   let srcTitle = readText(titleEl);
@@ -1389,7 +1391,8 @@ async function onOptimizeClick({ titleEl }) {
     } catch (e) {
       setBadge((e?.message || "最適化に失敗").slice(0, 160));
       STORE.optimizeState.needsRetry = false;  // エラー時はリセット
-      break; // ループを抜けてfinallyへ
+      setBusy(false);
+      return;
     }
   }
 
@@ -1399,11 +1402,8 @@ async function onOptimizeClick({ titleEl }) {
     const btnGet = findButtonByText(/^Get Item$/i);
     await evaluateAndRender({ titleEl, btnGet });
 
-    // 最速出品モードの場合、最適化後にMIPをクリック
-    // 注意：ここでは click() を直接呼ばず、evaluateAndRender 後の自然な流れに任せるか、
-    // あるいは確実に一度だけ実行されるようにフラグ管理を行う。
-    // 既存の evaluateAndRender 内でステータスが更新され、それが MutationObserver 経由で
-    // handleTurboListing を叩くため、ここでの click() は二重実行の原因になる可能性がある。
+    // ターボモード時は、evaluateAndRenderの結果（MutationObserver経由）で
+    // 自然にMIPクリックが誘発されるため、ここでの明示的なclick()は二重実行を避けるため廃止。
   }
 
   // 最終的に70〜80文字に収束したかどうかで状態を切り替え
@@ -1411,6 +1411,8 @@ async function onOptimizeClick({ titleEl }) {
     // 収束失敗：「再実行」表示に切り替え
     STORE.optimizeState.needsRetry = true;
     setBadge("70〜80文字に収束しない。「再実行」を押すか手動調整してください。");
+    setBusy(false);
+    return;
   } else {
     // 収束成功：「最適化」表示に戻す
     STORE.optimizeState.needsRetry = false;
@@ -1418,8 +1420,7 @@ async function onOptimizeClick({ titleEl }) {
     await incrementOptimizeCount();
   }
 
-  // 既存の autoMipAfterOptimize (最適化後MIP自動クリック)
-  if (STORE.opt.autoMipAfterOptimize && !STORE.opt.turboListingMode) {
+  if (STORE.opt.autoMipAfterOptimize) {
     if (finalLen >= 70 && finalLen <= 80 && finalVero === 0) {
       await sleep(250);
       clickRealMipButton();
@@ -1647,52 +1648,41 @@ function scheduleEvaluate(fn, delay = 300) {
   }, delay);
 }
 
-let turboProcessing = false;
-let lastTurboStatus = "";
-
 /**
- * 最速出品モードの実行判定
+ * 最速出品モード（ターボモード）の実行判定
+ * 既存のステータス表示（UI.status.textContent）を監視し、
+ * 条件が揃った瞬間に一度だけアクション（最適化 or MIP）を実行する。
  */
+let turboProcessing = false; // ターボ処理中フラグ
+
 async function handleTurboListing(titleEl, btnGet) {
-  // 1. 基本的なガード：すでに処理中、または busy 状態ならスキップ
-  if (turboProcessing) {
-    console.log("[LFP] Turbo: Processing... skipping");
-    return;
-  }
-  if (UI.spin?.style.display !== "none") {
-    console.log("[LFP] Turbo: UI is busy (spin)... skipping");
-    return;
-  }
+  if (!STORE.opt.turboListingMode) return;
+  if (turboProcessing) return; // 二重実行防止
+  
+  // 最適化実行中（APIリクエスト中）もスキップ
+  if (optimizeRunning) return;
 
   const statusText = UI.status?.textContent || "";
   
-  // 2. 状態が変化していない場合はスキップ（連打防止の要）
-  if (statusText === lastTurboStatus) {
-    console.log("[LFP] Turbo: Status unchanged... skipping");
-    return;
-  }
-
-  // 3. 処理開始
+  // 1. 最適化が必要な場合
   if (statusText.includes("出品：OK（最適化後）")) {
-    // 最適化ボタンを自動クリック
     if (UI.btnOpt && !UI.btnOpt.disabled) {
-      console.log("[LFP] Turbo: Clicking Optimize Button");
+      console.log("[LFP] Turbo: 自動最適化を開始します");
       turboProcessing = true;
-      lastTurboStatus = statusText;
       
-      // UI上でも無効化して連打を防ぐ
+      // 連打防止のため即座に無効化
       UI.btnOpt.disabled = true;
       UI.btnOpt.click();
       
-      // 最適化は時間がかかるため、フラグ解除は長めに設定（あるいは最適化完了イベントを待つ）
-      setTimeout(() => { turboProcessing = false; }, 2000);
+      // 最適化完了後にフラグを戻す（onOptimizeClickのfinallyでoptimizeRunningは戻るが、turboProcessingはここで制御）
+      setTimeout(() => { turboProcessing = false; }, 2000); 
     }
-  } else if (statusText.includes("出品：OK")) {
-    // Quick MIPボタンを自動クリック
+  } 
+  // 2. 出品可能な場合
+  else if (statusText.includes("出品：OK")) {
     if (UI.quickMipBtn && !UI.quickMipBtn.disabled) {
-      console.log("[LFP] Turbo: Clicking Quick MIP Button");
+      console.log("[LFP] Turbo: 自動MIP出品を実行します");
       turboProcessing = true;
-      lastTurboStatus = statusText;
       
       // UI上でも無効化して連打を防ぐ
       UI.quickMipBtn.disabled = true;
@@ -2117,10 +2107,6 @@ function setupListingSuccessObserver() {
                 // OKボタンが表示されている（offsetParent !== nullは表示中を意味する）
                 clearInterval(okButtonCheckInterval);
                 okButtonCheckInterval = null;
-                // クリック前にボタンを無効化して連打を防ぐ（可能であれば）
-                if (currentOkButton.disabled === false) {
-                  currentOkButton.disabled = true;
-                }
                 currentOkButton.click();
                 console.log(`✅ [Auto OK] OKボタンを自動クリックしました（${checkCount * 100}ms後）`);
                 
@@ -2138,11 +2124,10 @@ function setupListingSuccessObserver() {
                 //   scheduleInit();
                 // }, 2000);  // 2秒後に再初期化
                 
-                // 10秒後にフラグをリセット（次の出品のため、より安全に長めに設定）
+                // 5秒後にフラグをリセット（次の出品のため）
                 setTimeout(() => {
                   okButtonClicked = false;
-                  console.log('🔄 [Auto OK] Flag reset, ready for next listing');
-                }, 10000);
+                }, 5000);
               } else if (checkCount >= maxChecks) {
                 // 3秒経過しても見つからない
                 clearInterval(okButtonCheckInterval);
