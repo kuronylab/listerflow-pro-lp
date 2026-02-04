@@ -31,7 +31,7 @@ function initializeElements() {
     totalListings: document.getElementById('totalListings'),
     optimizeCount: document.getElementById('optimizeCount'),
     lastListing: document.getElementById('lastListing'),
-    historyCount: document.getElementById('historyCount'),
+    completedListingsCount: document.getElementById('completedListingsCount'),
     protectedCount: document.getElementById('protectedCount'),
     brandCount: document.getElementById('brandCount'),
     noListingsCount: document.getElementById('noListingsCount')
@@ -164,30 +164,17 @@ async function loadAndDisplayStats() {
     statsElements.totalListings.textContent = `${stats.totalListings}件`;
     statsElements.optimizeCount.textContent = `${stats.optimizeCount}回`;
 
-    // Last listing time
+    // Last listing time (Absolute format: M/D HH:mm)
     if (stats.lastListingDate) {
-      const date = new Date(stats.lastListingDate);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      let timeStr = '';
-      if (diffMins < 60) {
-        timeStr = `${diffMins}分前`;
-      } else if (diffHours < 24) {
-        timeStr = `${diffHours}時間前`;
-      } else {
-        timeStr = `${diffDays}日前`;
-      }
+      const d = new Date(stats.lastListingDate);
+      const timeStr = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       statsElements.lastListing.textContent = timeStr;
     } else {
-      statsElements.lastListing.textContent = 'なし';
+      statsElements.lastListing.textContent = '-';
     }
 
     // History stats
-    statsElements.historyCount.textContent = `${history.length}件`;
+    statsElements.completedListingsCount.textContent = `${stats.totalListings}件`;
 
     const protectedCount = history.filter(h => h.flags?.protected).length;
     const noListingsCount = history.filter(h => h.flags?.no_listings).length;
