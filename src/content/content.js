@@ -285,8 +285,8 @@ async function saveHistoryPush(asin, flags = {}) {
         lastSeen: now()
       });
       
-        // 300件を超えた場合は古いものから削除
-        await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 300) });
+        // 1000件を超えた場合は古いものから削除
+        await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 1000) });
     } catch (err) {
       if (err.message && err.message.includes('Extension context invalidated')) {
         // Extension context invalidated - 無視
@@ -1470,10 +1470,10 @@ async function refreshHistorySelect() {
   
   // 件数カウントを表示
   const count = hist.length;
-  const maxCount = 300;
+  const maxCount = 1000;
   
   // 既存のselectを更新（件数カウント付き）
-  UI.histSel.innerHTML = `<option value="">ASIN履歴（直近300件） ${count}/${maxCount}</option>`;
+  UI.histSel.innerHTML = `<option value="">ASIN履歴（直近1000件） ${count}/${maxCount}</option>`;
   for (const entry of hist) {
     const opt = document.createElement("option");
     opt.value = entry.asin;
