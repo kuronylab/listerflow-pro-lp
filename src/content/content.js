@@ -2122,16 +2122,18 @@ function setupNoListingsObserver() {
         
         // モーダル内のテキストを確認
         const modalText = modal.textContent || '';
-        // 2パターンのエラーメッセージに対応
+        // エラーメッセージのパターンに対応
         const isNoListings = modalText.includes('There are currently no listings for this product in amazon.') ||
                              modalText.includes('There are currently no listings for this product in amazon or could not fetch details about the product.');
+        const isNoItem = modalText.includes('no item found in Amazon');
         
-        if (isNoListings) {
-          // No listingsモーダルを検出
+        if (isNoListings || isNoItem) {
+          // エラーモーダルを検出
           if (STORE.lastRequestedAsin) {
-            // No listingsが検出された場合、他のフラグを全てクリアしてno_listingsのみを設定
+            // エラーが検出された場合、他のフラグを全てクリアして該当のフラグのみを設定
             updateHistoryFlags(STORE.lastRequestedAsin, { 
-              no_listings: true,
+              no_listings: isNoListings,
+              no_item: isNoItem,
               protected: false,
               brand: false,
               already_listed: false
