@@ -1831,11 +1831,12 @@ async function init() {
             dateCol1 = '';
             dateCol2 = dateStr;
           }
+          // 1行目から確実にタブを含める
           return `${dateCol1}\t${dateCol2}`;
         });
 
-        // スプレッドシートへの貼り付け時に余分な行が発生しないよう、末尾の改行を厳密に排除する
-        const finalCopyText = rows.join("\r\n").trim();
+        // スプレッドシートへの貼り付け時にズレが生じないよう、末尾の改行のみを削除する
+        const finalCopyText = rows.join("\r\n");
 
         navigator.clipboard.writeText(finalCopyText).then(() => {
           const originalText = copyBtn.textContent;
