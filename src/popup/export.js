@@ -34,12 +34,13 @@ async function loadAndRenderHistory() {
       let dateCol1 = dateStr; // 出品日
       let dateCol2 = '';      // エラーにより出品不可
 
-      if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
+      if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings || item.flags?.no_item) {
         const flags = [];
         if (item.flags.protected) flags.push('Protected');
         if (item.flags.brand) flags.push('Brand');
         if (item.flags.already_listed) flags.push('Already listed');
         if (item.flags.no_listings) flags.push('No listings');
+        if (item.flags.no_item) flags.push('No item');
         
         resultText = flags.join(', ');
         resultClass = 'status-error';
