@@ -1880,7 +1880,7 @@ async function init() {
           // 2. 保存されているフラグを次点
           const f = item.flags || {};
           const isError = (errorMap[item.asin] === true) || 
-                          !!(f.protected || f.brand || f.already_listed || f.no_listings);
+                          !!(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
 
           if (isError) {
             dateCol1 = '';
@@ -1921,6 +1921,7 @@ async function init() {
           // 結果カラムを追加
           let result = '出品完了';
           if (item.flags?.no_listings) result = 'No listings';
+          else if (item.flags?.no_item) result = 'No item';
           else if (item.flags?.protected) result = 'Protected';
           else if (item.flags?.brand) result = 'Brand';
           else if (item.flags?.already_listed) result = 'Already listed';
@@ -1928,7 +1929,7 @@ async function init() {
           let dateCol1 = dateStr; // 出品日
           let dateCol2 = ' ';     // エラー日（空白の場合はスペース）
           
-          if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
+          if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings || item.flags?.no_item) {
             dateCol1 = ' ';       // 空白の場合はスペース
             dateCol2 = dateStr;
           }

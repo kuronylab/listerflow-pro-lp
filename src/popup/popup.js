@@ -35,7 +35,8 @@ function initializeElements() {
     protectedCount: document.getElementById('protectedCount'),
     brandCount: document.getElementById('brandCount'),
     noListingsCount: document.getElementById('noListingsCount'),
-    alreadyListedCount: document.getElementById('alreadyListedCount')
+    alreadyListedCount: document.getElementById('alreadyListedCount'),
+    noItemCount: document.getElementById('noItemCount')
   };
 
   // Setting elements
@@ -185,12 +186,14 @@ async function loadAndDisplayStats() {
     const brandCount = history.filter(h => h.flags?.brand === true).length;
     const noListingsCount = history.filter(h => h.flags?.no_listings === true).length;
     const alreadyListedCount = history.filter(h => h.flags?.already_listed === true).length;
+    const noItemCount = history.filter(h => h.flags?.no_item === true).length;
 
     statsElements.completedListingsCount.textContent = `${completedCount}件`;
     statsElements.protectedCount.textContent = `${protectedCount}件`;
     statsElements.brandCount.textContent = `${brandCount}件`;
     statsElements.noListingsCount.textContent = `${noListingsCount}件`;
     statsElements.alreadyListedCount.textContent = `${alreadyListedCount}件`;
+    statsElements.noItemCount.textContent = `${noItemCount}件`;
 
   } catch (err) {
     console.error('[Popup] Error loading stats:', err);
@@ -211,6 +214,7 @@ async function loadStatistics() {
         optimizeCount: 0,
         brandCount: 0,
         alreadyListedCount: 0,
+        noItemCount: 0,
         lastResetDate: Date.now()
       };
     }
@@ -244,6 +248,7 @@ async function resetStats() {
       optimizeCount: 0,
       brandCount: 0,
       alreadyListedCount: 0,
+      noItemCount: 0,
       lastResetDate: Date.now()
     };
 
