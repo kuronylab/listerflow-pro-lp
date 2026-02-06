@@ -1200,6 +1200,7 @@ async function evaluateAndRender({ titleEl, btnGet }) {
   
   // 判定用のveroCount（従来通り）
   const veroCountForCheck = STORE.opt.veroEnabled ? countVeroInText(title, matchers) : 0;
+  let veroCountForDisplay = veroCountForCheck;
 
   const descEl =
     findLabelInput(/^(Description|説明|商品説明)$/i) ||
