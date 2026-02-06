@@ -1798,15 +1798,17 @@ async function init() {
           return;
         }
         
-        // ドロップダウンの表示テキストからエラーを判定するためのマップを作成
+        // ドロップダウンの表示テキストからエラー状態を直接判定するマップを作成
+        // 履歴リスト(hist)は[最新, ..., 最古]の順
+        // 貼り付け時は[最古, ..., 最新]の順（.reverse()）
         const dropdownItems = document.querySelectorAll('.lfp-dropdown-item');
-        const errorAsins = new Set();
+        const errorMap = {};
         dropdownItems.forEach(el => {
           const text = el.textContent || "";
           const asin = el.dataset.asin;
-          // 表示テキストが ! または × で始まる場合はエラーとみなす
-          if (asin && (text.startsWith('!') || text.startsWith('×'))) {
-            errorAsins.add(asin);
+          if (asin) {
+            // 表示テキストが ! または × で始まる場合はエラーとみなす
+            errorMap[asin] = text.startsWith('!') || text.startsWith('×');
           }
         });
 
@@ -1816,16 +1818,17 @@ async function init() {
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
           
           let dateCol1 = dateStr; // 出品日
-          let dateCol2 = '';      // 空白（スプレッドシート上で空セルとして認識させる）
+          let dateCol2 = '';      // エラー日
           
-          // エラー判定の強化：
-          // 1. 保存されたフラグ
-          // 2. ドロップダウンの表示テキスト（! または × で始まるか）
+          // エラー判定：
+          // 1. 画面上の表示テキスト（! または ×）を最優先
+          // 2. 保存されているフラグを次点
           const f = item.flags || {};
-          const isError = !!(f.protected || f.brand || f.already_listed || f.no_listings) || errorAsins.has(item.asin);
+          const isError = (errorMap[item.asin] === true) || 
+                          !!(f.protected || f.brand || f.already_listed || f.no_listings);
 
           if (isError) {
-            dateCol1 = '';        // 空白
+            dateCol1 = '';
             dateCol2 = dateStr;
           }
           return `${dateCol1}\t${dateCol2}`;
