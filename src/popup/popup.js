@@ -397,6 +397,7 @@ async function loadHistoryList() {
       if (item.flags?.brand) flags.push('Brand');
       if (item.flags?.already_listed) flags.push('Already listed');
       if (item.flags?.no_listings) flags.push('No listings');
+      if (item.flags?.no_item) flags.push('No item');
       flagsDiv.textContent = flags.length > 0 ? flags.join(', ') : '-';
 
       const deleteBtn = document.createElement('button');
