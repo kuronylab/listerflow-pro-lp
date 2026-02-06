@@ -1220,7 +1220,9 @@ async function evaluateAndRender({ titleEl, btnGet }) {
   }
   if (reasons.includes("already listed")) {
     await incrementAlreadyListedCount();
-  }: title: のチェック（案7）
+  }
+  
+  // title: のチェック（案7）
   let hasTitleVeroWarning = false;
   const fullText = block || "";
   const veroTitleMatch = fullText.match(/Vero Warnings:[\s\S]*?title:\s*(.+?)(?:\n|$)/i);
