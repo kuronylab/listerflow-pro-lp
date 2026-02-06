@@ -1581,21 +1581,24 @@ function refreshCustomDropdown(hist) {
     let displayText = entry.asin;
     let isBad = false;
     
-    // no_listingsフラグが立っている場合は最優先で表示
+    // no_listings または no_item フラグが立っている場合は最優先で表示
     if (entry.flags.no_listings) {
       displayText = `! ${entry.asin} No listings`;
       isBad = true;
-    } else {
-    // 複数のフラグを配列で収集
-    const flagLabels = [];
-    if (entry.flags.protected) flagLabels.push("protected");
-    if (entry.flags.brand) flagLabels.push("brand");
-    if (entry.flags.already_listed) flagLabels.push("already_listed");
-    
-    if (flagLabels.length > 0) {
-      displayText = `× ${entry.asin} ${flagLabels.join(" / ")}`;
+    } else if (entry.flags.no_item) {
+      displayText = `! ${entry.asin} No item`;
       isBad = true;
-    }
+    } else {
+      // 複数のフラグを配列で収集
+      const flagLabels = [];
+      if (entry.flags.protected) flagLabels.push("protected");
+      if (entry.flags.brand) flagLabels.push("brand");
+      if (entry.flags.already_listed) flagLabels.push("already_listed");
+      
+      if (flagLabels.length > 0) {
+        displayText = `× ${entry.asin} ${flagLabels.join(" / ")}`;
+        isBad = true;
+      }
     }
     
     item.textContent = displayText;
