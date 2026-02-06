@@ -1523,7 +1523,7 @@ async function refreshListingCountUI() {
   if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   const stats = await loadStatistics();
   if (stats) {
-    UI.listingCountLabel.textContent = `今日: ${stats.todayListings}件`;
+    UI.listingCountLabel.textContent = `出品完了: ${stats.todayListings}件`;
   }
 }
 
@@ -1808,7 +1808,7 @@ async function init() {
       countLabel.style.display = "inline-flex";
       countLabel.style.alignItems = "center";
       countLabel.style.height = "32px";
-      countLabel.textContent = "今日: -件";
+      countLabel.textContent = "出品完了: -件";
       bar.appendChild(countLabel);
       UI.listingCountLabel = countLabel;
 
