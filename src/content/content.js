@@ -1798,6 +1798,18 @@ async function init() {
           return;
         }
         
+        // ドロップダウンの表示テキストからエラーを判定するためのマップを作成
+        const dropdownItems = document.querySelectorAll('.lfp-dropdown-item');
+        const errorAsins = new Set();
+        dropdownItems.forEach(el => {
+          const text = el.textContent || "";
+          const asin = el.dataset.asin;
+          // 表示テキストが ! または × で始まる場合はエラーとみなす
+          if (asin && (text.startsWith('!') || text.startsWith('×'))) {
+            errorAsins.add(asin);
+          }
+        });
+
         // 履歴を反転（古い順）させてから、スプレッドシート用の2カラム（出品日、エラー日）を作成
         const rows = [...hist].reverse().map(item => {
           const date = item.lastSeen ? new Date(item.lastSeen) : new Date();
@@ -1806,8 +1818,13 @@ async function init() {
           let dateCol1 = dateStr; // 出品日
           let dateCol2 = '';      // 空白（スプレッドシート上で空セルとして認識させる）
           
+          // エラー判定の強化：
+          // 1. 保存されたフラグ
+          // 2. ドロップダウンの表示テキスト（! または × で始まるか）
           const f = item.flags || {};
-          if (f.protected || f.brand || f.already_listed || f.no_listings) {
+          const isError = !!(f.protected || f.brand || f.already_listed || f.no_listings) || errorAsins.has(item.asin);
+
+          if (isError) {
             dateCol1 = '';        // 空白
             dateCol2 = dateStr;
           }
