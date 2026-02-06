@@ -224,6 +224,9 @@ async function incrementListingCount() {
     stats.lastListingDate = Date.now();
     await saveStatistics(stats);
     console.log(`📊 [Stats] 出品数を更新: 総計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
+    
+    // UI上の件数表示を更新
+    await refreshListingCountUI();
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementListingCount error:', err);
@@ -847,7 +850,8 @@ const UI = {
   asinBar: null,
   histSel: null,
   quickMipBtn: null,
-  statsBar: null
+  statsBar: null,
+  listingCountLabel: null
 };
 
 function destroyMainUI() {
@@ -1510,6 +1514,17 @@ async function refreshHistorySelect() {
   
   // カスタムドロップダウンを更新
   refreshCustomDropdown(hist);
+
+  // 出品件数表示も更新
+  await refreshListingCountUI();
+}
+
+async function refreshListingCountUI() {
+  if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
+  const stats = await loadStatistics();
+  if (stats) {
+    UI.listingCountLabel.textContent = `今日: ${stats.todayListings}件`;
+  }
 }
 
 function refreshCustomDropdown(hist) {
@@ -1782,6 +1797,20 @@ async function init() {
       csvBtn.textContent = "📊CSV";
       csvBtn.title = "ASIN履歴をCSVでダウンロード";
       bar.appendChild(csvBtn);
+
+      // 出品件数ラベルを追加
+      const countLabel = document.createElement("span");
+      countLabel.className = "lfp-listing-count-label";
+      countLabel.style.marginLeft = "12px";
+      countLabel.style.fontSize = "14px";
+      countLabel.style.fontWeight = "bold";
+      countLabel.style.color = "#666";
+      countLabel.style.display = "inline-flex";
+      countLabel.style.alignItems = "center";
+      countLabel.style.height = "32px";
+      countLabel.textContent = "今日: -件";
+      bar.appendChild(countLabel);
+      UI.listingCountLabel = countLabel;
 
       asinInput.parentElement?.insertBefore(bar, asinInput);
 
