@@ -1575,6 +1575,18 @@ function refreshCustomDropdown(hist) {
       e.stopPropagation();
       await deleteHistoryItemFromContent(entry.asin);
       await refreshHistorySelect();
+      // 削除後、ドロップダウンを再度表示状態にする
+      const currentDropdown = document.getElementById('lfp-custom-dropdown');
+      if (currentDropdown) {
+        currentDropdown.style.display = 'block';
+        // ポジションを再調整
+        if (UI.histSel) {
+          const rect = UI.histSel.getBoundingClientRect();
+          currentDropdown.style.top = `${rect.height}px`;
+          currentDropdown.style.left = '0';
+          currentDropdown.style.width = `${rect.width}px`;
+        }
+      }
     });
     
     itemWrapper.appendChild(item);
@@ -1794,7 +1806,8 @@ async function init() {
           let dateCol1 = dateStr; // 出品日
           let dateCol2 = '';      // 空白（スプレッドシート上で空セルとして認識させる）
           
-          if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings) {
+          const f = item.flags || {};
+          if (f.protected || f.brand || f.already_listed || f.no_listings) {
             dateCol1 = '';        // 空白
             dateCol2 = dateStr;
           }
