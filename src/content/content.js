@@ -173,13 +173,13 @@ async function loadStatistics() {
         lastListingDate: null,
         optimizeCount: 0,
         brandCount: 0,
+        alreadyListedCount: 0,
         lastResetDate: Date.now()
       };
     }
-    // 既存データへのbrandCount追加（マイグレーション）
-    if (stats.brandCount === undefined) {
-      stats.brandCount = 0;
-    }
+    // 既存データへのマイグレーション
+    if (stats.brandCount === undefined) stats.brandCount = 0;
+    if (stats.alreadyListedCount === undefined) stats.alreadyListedCount = 0;
     
     // 日付が変わったらtodayListingsをリセット
     const today = new Date().toDateString();
@@ -258,6 +258,19 @@ async function incrementBrandCount() {
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementBrandCount error:', err);
+  }
+}
+
+async function incrementAlreadyListedCount() {
+  try {
+    const stats = await loadStatistics();
+    if (!stats) return;
+    stats.alreadyListedCount++;
+    await saveStatistics(stats);
+    console.log(`📊 [Stats] 出品済み回数を更新: ${stats.alreadyListedCount}回`);
+  } catch (err) {
+    if (err.message && err.message.includes('Extension context invalidated')) return;
+    console.error('[LFP] incrementAlreadyListedCount error:', err);
   }
 }
 
@@ -1201,10 +1214,13 @@ async function evaluateAndRender({ titleEl, btnGet }) {
   if (reasons.length) setBadge(`×出品不可：${reasons.join(" / ")}`);
   else setBadge("");
 
-  // 表示用のveroCount（案A''）
-  let veroCountForDisplay = veroCountForCheck;
-  
-  // Vero Warnings: title: のチェック（案7）
+  // 統計情報を更新
+  if (reasons.includes("brand")) {
+    await incrementBrandCount();
+  }
+  if (reasons.includes("already listed")) {
+    await incrementAlreadyListedCount();
+  }: title: のチェック（案7）
   let hasTitleVeroWarning = false;
   const fullText = block || "";
   const veroTitleMatch = fullText.match(/Vero Warnings:[\s\S]*?title:\s*(.+?)(?:\n|$)/i);
