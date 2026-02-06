@@ -398,6 +398,8 @@ async function deleteHistoryItemFromContent(asin) {
       const hist = await loadHistory();
       const filtered = hist.filter(entry => entry.asin !== asin);
       await chrome.storage.local.set({ [KEY_HIST]: filtered });
+      // UIを更新
+      await refreshHistorySelect();
     } catch (err) {
       // Extension context invalidated エラーを無視
       if (err.message && err.message.includes('Extension context invalidated')) {
@@ -1521,10 +1523,15 @@ async function refreshHistorySelect() {
 
 async function refreshListingCountUI() {
   if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
-  const stats = await loadStatistics();
-  if (stats) {
-    UI.listingCountLabel.textContent = `出品完了: ${stats.todayListings}件`;
-  }
+  
+  const hist = await loadHistory();
+  // 履歴の中からエラーでない（flagsがすべてfalse）ものをカウント
+  const successCount = hist.filter(item => {
+    const f = item.flags || {};
+    return !(f.protected || f.brand || f.already_listed || f.no_listings);
+  }).length;
+  
+  UI.listingCountLabel.textContent = `出品完了: ${successCount}件`;
 }
 
 function refreshCustomDropdown(hist) {
