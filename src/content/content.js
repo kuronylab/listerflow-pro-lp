@@ -48,9 +48,6 @@ let dropdownMousedownHandler = null;
 // setInterval管理用（クリーンアップ用）
 let okButtonCheckInterval = null;
 
-// カスタム確認モーダル用
-let confirmResolve = null;
-
 // 履歴操作のロック（競合状態防止）
 let historyLock = false;
 
@@ -1802,8 +1799,7 @@ async function init() {
       resetBtn.textContent = "×リセット";
       resetBtn.title = "ASIN履歴をすべて削除";
       resetBtn.addEventListener("click", async () => {
-        const ok = await showConfirmModal("確認", "ASIN履歴をすべて削除しますか？", "削除する");
-        if (ok) {
+        if (confirm("ASIN履歴をすべて削除しますか？")) {
           try {
             await resetHistory();
             // 履歴削除後、即座にドロップダウンを更新
@@ -2278,61 +2274,6 @@ function setupListingSuccessObserver() {
     childList: true,
     subtree: true
   });
-}
-
-/* ---------- Custom Confirm Modal ---------- */
-
-function createConfirmModal() {
-  if (document.getElementById('lfp-confirm-modal')) return;
-
-  const overlay = document.createElement('div');
-  overlay.id = 'lfp-confirm-modal';
-  overlay.className = 'lfp-modal-overlay';
-  overlay.dataset.lfpModal = "1";
-
-  overlay.innerHTML = `
-    <div class="lfp-modal-content">
-      <div class="lfp-modal-header">
-        <h3 id="lfp-confirm-title">確認</h3>
-      </div>
-      <div class="lfp-modal-body">
-        <p id="lfp-confirm-message"></p>
-      </div>
-      <div class="lfp-modal-footer">
-        <button id="lfp-confirm-cancel" class="lfp-btn-modal-secondary">キャンセル</button>
-        <button id="lfp-confirm-ok" class="lfp-btn-modal-danger">OK</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  document.getElementById('lfp-confirm-ok').addEventListener('click', () => {
-    if (confirmResolve) confirmResolve(true);
-    closeConfirmModal();
-  });
-
-  document.getElementById('lfp-confirm-cancel').addEventListener('click', () => {
-    if (confirmResolve) confirmResolve(false);
-    closeConfirmModal();
-  });
-}
-
-function showConfirmModal(title, message, okText = 'OK') {
-  createConfirmModal();
-  return new Promise((resolve) => {
-    confirmResolve = resolve;
-    document.getElementById('lfp-confirm-title').textContent = title;
-    document.getElementById('lfp-confirm-message').textContent = message;
-    document.getElementById('lfp-confirm-ok').textContent = okText;
-    document.getElementById('lfp-confirm-modal').classList.add('active');
-  });
-}
-
-function closeConfirmModal() {
-  const modal = document.getElementById('lfp-confirm-modal');
-  if (modal) modal.classList.remove('active');
-  confirmResolve = null;
 }
 
 /* ---------- Route ---------- */

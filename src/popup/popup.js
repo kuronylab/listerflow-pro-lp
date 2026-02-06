@@ -7,8 +7,6 @@ const KEY_STATS = "lfp_statistics_v1";
 let menuBtn, closeMenuBtn, sideMenu, pageTitle, content;
 let statsElements = {};
 let settingElements = {};
-let confirmModal, confirmTitle, confirmMessage, confirmOkBtn, confirmCancelBtn;
-let confirmResolve = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -64,13 +62,6 @@ function initializeElements() {
   const manifest = chrome.runtime.getManifest();
   if (versionNumber) versionNumber.textContent = `v${manifest.version}`;
   if (releaseDate) releaseDate.textContent = '2026年1月26日';
-
-  // Confirm Modal
-  confirmModal = document.getElementById('confirmModal');
-  confirmTitle = document.getElementById('confirmTitle');
-  confirmMessage = document.getElementById('confirmMessage');
-  confirmOkBtn = document.getElementById('confirmOkBtn');
-  confirmCancelBtn = document.getElementById('confirmCancelBtn');
 }
 
 function setupEventListeners() {
@@ -102,17 +93,6 @@ function setupEventListeners() {
 
   // Automation settings page buttons
   document.getElementById('saveAutomationBtn')?.addEventListener('click', saveAutomationSettings);
-
-  // Confirm Modal buttons
-  confirmOkBtn?.addEventListener('click', () => {
-    if (confirmResolve) confirmResolve(true);
-    closeConfirmModal();
-  });
-
-  confirmCancelBtn?.addEventListener('click', () => {
-    if (confirmResolve) confirmResolve(false);
-    closeConfirmModal();
-  });
 
   // 最速出品モードの連動処理
   settingElements.turboListingMode?.addEventListener('change', (e) => {
@@ -255,8 +235,9 @@ async function loadStatistics() {
 }
 
 async function resetStats() {
-  const ok = await showConfirmModal('確認', '統計情報をリセットしますか？', 'リセットする');
-  if (!ok) return;
+  if (!confirm('統計情報をリセットしますか？この操作は取り消せません。')) {
+    return;
+  }
 
   try {
     const stats = {
@@ -453,8 +434,9 @@ async function deleteHistoryItem(asin) {
 }
 
 async function clearHistory() {
-  const ok = await showConfirmModal('確認', 'ASIN履歴をすべて削除しますか？この操作は取り消せません。', '削除する');
-  if (!ok) return;
+  if (!confirm('ASIN履歴をすべて削除しますか？この操作は取り消せません。')) {
+    return;
+  }
 
   try {
     await chrome.storage.local.remove([KEY_HIST]);
@@ -470,22 +452,6 @@ async function clearHistory() {
 async function exportToSpreadsheet() {
   // 新しいタブでエクスポート用ページを開く
   chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
-}
-
-// --- Custom Confirm Modal ---
-function showConfirmModal(title, message, okText = 'OK') {
-  return new Promise((resolve) => {
-    confirmResolve = resolve;
-    confirmTitle.textContent = title;
-    confirmMessage.textContent = message;
-    confirmOkBtn.textContent = okText;
-    confirmModal.classList.add('active');
-  });
-}
-
-function closeConfirmModal() {
-  confirmModal.classList.remove('active');
-  confirmResolve = null;
 }
 
 // Other functions
