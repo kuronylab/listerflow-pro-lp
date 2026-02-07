@@ -2041,10 +2041,7 @@ async function init() {
         }
         scheduleEvaluate(init, 300);
       });
-      // ASIN入力欄の親要素を監視対象とする
-      const asinInput = findAsinInputSmart();
-      const targetNode = asinInput ? asinInput.parentElement : document.body; // 見つからない場合はフォールバック
-      mainObserver.observe(targetNode, { childList: true, subtree: true, characterData: true });
+      mainObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
     }
     
     // 各種Observerの初期化（初回のみ）
