@@ -988,63 +988,6 @@ function findRealMipButton() {
   return document.querySelector("#mip-list-item-btn") || null;
 }
 
-function fixMipButtonBgCover() {
-  // 本物のMIPボタン（Yaballe側）
-  const real = document.querySelector("#mip-list-item-btn");
-  if (real) {
-    const span = real.querySelector("span");
-    let icon = real.querySelector("i.glyph-icon.icon-linecons-paper-plane");
-    if (!icon) icon = real.querySelector("i");
-
-    // 背景がspanに乗っていて、iconがspan外にあると途中で背景が切れる
-    // なのでiconをspan内に移動して背景の「カバー範囲」を自然に伸ばす
-    if (span && icon && icon.parentElement !== span) {
-      try {
-        // nbsp等のテキストノードが間にあっても崩れないように軽く整形
-        const kids = Array.from(real.childNodes || []);
-        for (const n of kids) {
-          if (n && n.nodeType === 3) {
-            const t = (n.nodeValue || "").replace(/\u00a0/g, " ");
-            n.nodeValue = t;
-          }
-        }
-      } catch (_) { }
-
-      span.appendChild(icon);
-    }
-
-    // 角丸は既存スタイルを維持し、配置だけ整える
-    if (span) {
-      span.style.display = "inline-flex";
-      span.style.alignItems = "center";
-      span.style.gap = "10px";
-    }
-  }
-
-  // Quick MIP（拡張側）
-  const quick = document.querySelector("#lfp-quick-mip");
-  if (quick) {
-    const sp = quick.querySelector("span");
-    if (sp) {
-      sp.style.display = "inline-flex";
-      sp.style.alignItems = "center";
-      sp.style.gap = "10px";
-    }
-  }
-}
-
-// Quick MIP（拡張側）
-const quick = document.querySelector("#lfp-quick-mip");
-if (quick) {
-  const sp = quick.querySelector("span");
-  if (sp) {
-    sp.style.display = "inline-flex";
-    sp.style.alignItems = "center";
-    sp.style.gap = "10px";
-  }
-}
-
-
 
 function clickRealMipButton() {
   const real = findRealMipButton();
@@ -1789,8 +1732,7 @@ async function init() {
 
   try {
 
-    // MIPボタンの背景が紙飛行機までカバーするようDOMを整形
-    fixMipButtonBgCover();
+
     await loadOptions();
     if (!isListerRoute()) { lockUI(); return; }
 
@@ -2099,7 +2041,10 @@ async function init() {
         }
         scheduleEvaluate(init, 300);
       });
-      mainObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+      // ASIN入力欄の親要素を監視対象とする
+      const asinInput = findAsinInputSmart();
+      const targetNode = asinInput ? asinInput.parentElement : document.body; // 見つからない場合はフォールバック
+      mainObserver.observe(targetNode, { childList: true, subtree: true, characterData: true });
     }
     
     // 各種Observerの初期化（初回のみ）

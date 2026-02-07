@@ -110,48 +110,7 @@
   font-size:13px;
 }
 
-/* LFP MIP BG FIX START */
-/* 目的: グレー背景(ピル)が紙飛行機アイコンまで確実にカバーする
-   方針:
-   ・背景色や角丸(radius)は上書きしない（既存を尊重）
-   ・幅計算から外れる原因になりやすい absolute/transform を無効化
-   ・背景がspanに乗っている想定で、spanをinline-flex化して子要素を幅に含める
-*/
 
-#mip-list-item-btn > span,
-#lfp-quick-mip > span{
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  white-space: nowrap !important;
-
-  /* 背景がspanに乗っている場合、ここが“背景の実体”なので
-     アイコンまで内包した形で見えるよう余白を確保 */
-  padding-right: 14px !important;
-}
-
-/* アイコンがabsolute等で幅計算から外れて背景からはみ出すのを防ぐ */
-#mip-list-item-btn i.glyph-icon.icon-linecons-paper-plane,
-#lfp-quick-mip i.glyph-icon.icon-linecons-paper-plane{
-  position: static !important;
-  transform: none !important;
-  right: auto !important;
-  left: auto !important;
-  top: auto !important;
-  bottom: auto !important;
-  margin: 0 !important;
-}
-
-/* もし背景がbutton側に乗っているCSS設計でも、
-   コンテンツ全体を同一行に収めることで“途中で切れて見える”現象を抑える */
-#mip-list-item-btn,
-#lfp-quick-mip{
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  white-space: nowrap !important;
-}
-/* LFP MIP BG FIX END */
 
 /* LFP MIP COMPACT START */
 /* 目的: MIPボタン表示を「MIP + 紙飛行機」に縮め、グレー背景内で中央寄せにする
