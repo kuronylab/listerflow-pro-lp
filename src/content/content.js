@@ -51,6 +51,61 @@ let okButtonCheckInterval = null;
 // 履歴操作のロック（競合状態防止）
 let historyLock = false;
 
+// カスタム確認モーダル用
+let lfpConfirmResolve = null;
+
+function createLfpConfirmModal() {
+  if (document.getElementById("lfp-confirm-overlay")) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "lfp-confirm-overlay";
+  overlay.className = "lfp-confirm-overlay";
+  overlay.dataset.lfpModal = "1"; // 自前UIであることを示す
+
+  overlay.innerHTML = `
+    <div class="lfp-confirm-dialog">
+      <div class="lfp-confirm-header">
+        <img src="${chrome.runtime.getURL("assets/icons/icon48.png")}" alt="Extension Icon">
+        <h3 id="lfpConfirmTitle">拡張機能 ListerFlow Pro for Yaballe</h3>
+      </div>
+      <div class="lfp-confirm-body">
+        <p id="lfpConfirmMessage"></p>
+      </div>
+      <div class="lfp-confirm-footer">
+        <button class="lfp-confirm-btn cancel" id="lfpConfirmCancelBtn">キャンセル</button>
+        <button class="lfp-confirm-btn ok" id="lfpConfirmOkBtn">OK</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById("lfpConfirmOkBtn").addEventListener("click", () => {
+    if (lfpConfirmResolve) lfpConfirmResolve(true);
+    closeLfpConfirmModal();
+  });
+
+  document.getElementById("lfpConfirmCancelBtn").addEventListener("click", () => {
+    if (lfpConfirmResolve) lfpConfirmResolve(false);
+    closeLfpConfirmModal();
+  });
+}
+
+function showLfpConfirmModal(message) {
+  createLfpConfirmModal();
+  return new Promise((resolve) => {
+    lfpConfirmResolve = resolve;
+    document.getElementById("lfpConfirmMessage").textContent = message;
+    document.getElementById("lfp-confirm-overlay").classList.add("active");
+  });
+}
+
+function closeLfpConfirmModal() {
+  const modal = document.getElementById("lfp-confirm-overlay");
+  if (modal) modal.classList.remove("active");
+  lfpConfirmResolve = null;
+}
+
 // エクステンションコンテキストの有効性チェック
 function isExtensionContextValid() {
   try {
@@ -1799,14 +1854,15 @@ async function init() {
       resetBtn.textContent = "×リセット";
       resetBtn.title = "ASIN履歴をすべて削除";
       resetBtn.addEventListener("click", async () => {
-        if (confirm("ASIN履歴をすべて削除しますか？")) {
+        const ok = await showLfpConfirmModal("ASIN履歴をすべて削除しますか？この操作は取り消せません。");
+        if (ok) {
           try {
             await resetHistory();
             // 履歴削除後、即座にドロップダウンを更新
             await refreshHistorySelect();
             alert("ASIN履歴を削除しました");
           } catch (err) {
-            console.error('履歴削除エラー:', err);
+            console.error("履歴削除エラー:", err);
             alert("履歴削除中にエラーが発生しました。ページをリロードしてください。");
           }
         }

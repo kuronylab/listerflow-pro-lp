@@ -502,3 +502,104 @@ input:checked + .toggle-slider:before {
   border-radius: 6px;
   color: #666;
 }
+
+
+/* カスタム確認モーダル (ブラウザ標準のconfirm()を再現) */
+.lfp-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 50px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.lfp-confirm-overlay.active {
+  display: flex;
+}
+
+.lfp-confirm-dialog {
+  background: #f0f0f0;
+  width: 320px;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: lfpConfirmFadeIn 0.2s ease-out;
+  text-align: center;
+}
+
+@keyframes lfpConfirmFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lfp-confirm-header {
+  padding: 16px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lfp-confirm-header img {
+  width: 40px;
+  height: 40px;
+}
+
+.lfp-confirm-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.lfp-confirm-body {
+  padding: 0px 20px 20px;
+}
+
+.lfp-confirm-body p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+}
+
+.lfp-confirm-footer {
+  display: flex;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.lfp-confirm-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lfp-confirm-btn.cancel {
+  color: #007bff;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.lfp-confirm-btn.cancel:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.lfp-confirm-btn.ok {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.lfp-confirm-btn.ok:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
