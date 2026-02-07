@@ -179,7 +179,7 @@ async function loadAndDisplayStats() {
     // 出品完了件数：エラーフラグが一切ついていないものをカウント
     const completedCount = history.filter(h => {
       const f = h.flags || {};
-      return !f.protected && !f.brand && !f.already_listed && !f.no_listings;
+      return !f.protected && !f.brand && !f.already_listed && !f.no_listings && !f.no_item;
     }).length;
 
     const protectedCount = history.filter(h => h.flags?.protected === true).length;

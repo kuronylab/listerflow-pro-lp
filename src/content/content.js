@@ -1547,7 +1547,7 @@ async function refreshListingCountUI() {
   // 履歴の中からエラーでない（flagsがすべてfalse）ものをカウント
   const successCount = hist.filter(item => {
     const f = item.flags || {};
-    return !(f.protected || f.brand || f.already_listed || f.no_listings);
+    return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
   }).length;
   
   UI.listingCountLabel.textContent = `出品完了: ${successCount}件`;
