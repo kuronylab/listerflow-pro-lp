@@ -7,8 +7,6 @@ const KEY_STATS = "lfp_statistics_v1";
 let menuBtn, closeMenuBtn, sideMenu, pageTitle, content;
 let statsElements = {};
 let settingElements = {};
-let lfpConfirmModal, lfpConfirmMessage, lfpConfirmOkBtn, lfpConfirmCancelBtn;
-let lfpConfirmResolve = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -64,12 +62,6 @@ function initializeElements() {
   const manifest = chrome.runtime.getManifest();
   if (versionNumber) versionNumber.textContent = `v${manifest.version}`;
   if (releaseDate) releaseDate.textContent = '2026年1月26日';
-
-  // Custom Confirm Modal elements
-  lfpConfirmModal = document.getElementById('lfpConfirmModal');
-  lfpConfirmMessage = document.getElementById('lfpConfirmMessage');
-  lfpConfirmOkBtn = document.getElementById('lfpConfirmOkBtn');
-  lfpConfirmCancelBtn = document.getElementById('lfpConfirmCancelBtn');
 }
 
 function setupEventListeners() {
@@ -102,19 +94,8 @@ function setupEventListeners() {
   // Automation settings page buttons
   document.getElementById('saveAutomationBtn')?.addEventListener('click', saveAutomationSettings);
 
-  // Custom Confirm Modal event listeners
-  lfpConfirmOkBtn?.addEventListener("click", () => {
-    if (lfpConfirmResolve) lfpConfirmResolve(true);
-    closeLfpConfirmModal();
-  });
-
-  lfpConfirmCancelBtn?.addEventListener("click", () => {
-    if (lfpConfirmResolve) lfpConfirmResolve(false);
-    closeLfpConfirmModal();
-  });
-
   // 最速出品モードの連動処理
-  settingElements.turboListingMode?.addEventListener("change", (e) => {
+  settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
       const targets = [
         'autoGetOnPaste',
@@ -238,6 +219,20 @@ async function loadStatistics() {
       };
     }
 
+    // 日付が変わった場合にtodayListingsをリセット
+    const now = new Date();
+    const lastReset = new Date(stats.lastResetDate);
+
+    if (now.toDateString() !== lastReset.toDateString()) {
+      stats.todayListings = 0;
+      // 週の変わり目も考慮
+      if (now.getDay() < lastReset.getDay() || (now.getDay() === 0 && lastReset.getDay() !== 0)) {
+        stats.weekListings = 0;
+      }
+      stats.lastResetDate = now.getTime();
+      await chrome.storage.local.set({ [KEY_STATS]: stats }); // 変更を保存
+    }
+
     return stats;
   } catch (err) {
     console.error('[Popup] loadStatistics error:', err);
@@ -254,8 +249,9 @@ async function loadStatistics() {
 }
 
 async function resetStats() {
-  const ok = await showLfpConfirmModal("統計情報のリセット", "統計情報をリセットしますか？");
-  if (!ok) return;
+  if (!confirm('統計情報をリセットしますか？この操作は取り消せません。')) {
+    return;
+  }
 
   try {
     const stats = {
@@ -452,8 +448,9 @@ async function deleteHistoryItem(asin) {
 }
 
 async function clearHistory() {
-  const ok = await showLfpConfirmModal("ASIN履歴の削除", "ASIN履歴をすべて削除しますか？この操作は取り消せません。");
-  if (!ok) return;
+  if (!confirm('ASIN履歴をすべて削除しますか？この操作は取り消せません。')) {
+    return;
+  }
 
   try {
     await chrome.storage.local.remove([KEY_HIST]);
@@ -469,21 +466,6 @@ async function clearHistory() {
 async function exportToSpreadsheet() {
   // 新しいタブでエクスポート用ページを開く
   chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
-}
-
-// --- Custom Confirm Modal Functions ---
-function showLfpConfirmModal(title, message) {
-  return new Promise((resolve) => {
-    lfpConfirmResolve = resolve;
-    // lfpConfirmTitle.textContent = title; // タイトルは固定なので変更しない
-    lfpConfirmMessage.textContent = message;
-    lfpConfirmModal.classList.add("active");
-  });
-}
-
-function closeLfpConfirmModal() {
-  lfpConfirmModal.classList.remove("active");
-  lfpConfirmResolve = null;
 }
 
 // Other functions

@@ -51,61 +51,6 @@ let okButtonCheckInterval = null;
 // 履歴操作のロック（競合状態防止）
 let historyLock = false;
 
-// カスタム確認モーダル用
-let lfpConfirmResolve = null;
-
-function createLfpConfirmModal() {
-  if (document.getElementById("lfp-confirm-overlay")) return;
-
-  const overlay = document.createElement("div");
-  overlay.id = "lfp-confirm-overlay";
-  overlay.className = "lfp-confirm-overlay";
-  overlay.dataset.lfpModal = "1"; // 自前UIであることを示す
-
-  overlay.innerHTML = `
-    <div class="lfp-confirm-dialog">
-      <div class="lfp-confirm-header">
-        <img src="${chrome.runtime.getURL("assets/icons/icon48.png")}" alt="Extension Icon">
-        <h3 id="lfpConfirmTitle">拡張機能 ListerFlow Pro for Yaballe</h3>
-      </div>
-      <div class="lfp-confirm-body">
-        <p id="lfpConfirmMessage"></p>
-      </div>
-      <div class="lfp-confirm-footer">
-        <button class="lfp-confirm-btn cancel" id="lfpConfirmCancelBtn">キャンセル</button>
-        <button class="lfp-confirm-btn ok" id="lfpConfirmOkBtn">OK</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  document.getElementById("lfpConfirmOkBtn").addEventListener("click", () => {
-    if (lfpConfirmResolve) lfpConfirmResolve(true);
-    closeLfpConfirmModal();
-  });
-
-  document.getElementById("lfpConfirmCancelBtn").addEventListener("click", () => {
-    if (lfpConfirmResolve) lfpConfirmResolve(false);
-    closeLfpConfirmModal();
-  });
-}
-
-function showLfpConfirmModal(message) {
-  createLfpConfirmModal();
-  return new Promise((resolve) => {
-    lfpConfirmResolve = resolve;
-    document.getElementById("lfpConfirmMessage").textContent = message;
-    document.getElementById("lfp-confirm-overlay").classList.add("active");
-  });
-}
-
-function closeLfpConfirmModal() {
-  const modal = document.getElementById("lfp-confirm-overlay");
-  if (modal) modal.classList.remove("active");
-  lfpConfirmResolve = null;
-}
-
 // エクステンションコンテキストの有効性チェック
 function isExtensionContextValid() {
   try {
@@ -377,7 +322,22 @@ async function saveHistoryPush(asin, flags = {}) {
       });
       
         // 1000件を超えた場合は古いものから削除
-        await chrome.storage.local.set({ [KEY_HIST]: filtered.slice(0, 1000) });
+        let historyToSave = filtered.slice(0, 1000);
+
+        // ストレージ容量チェックと自動クリーンアップ
+        const MAX_STORAGE_BYTES = 4 * 1024 * 1024; // 4MB (5MB制限の8割程度)
+        const currentBytes = await chrome.storage.local.getBytesInUse(KEY_HIST);
+
+        if (currentBytes > MAX_STORAGE_BYTES) {
+            console.warn(`[LFP] ASIN履歴が ${MAX_STORAGE_BYTES / (1024 * 1024)}MB を超えました。古い履歴を自動削除します。`);
+            // 古い履歴をさらに削除して容量を減らす (例: 10%削除)
+            const reduceCount = Math.ceil(historyToSave.length * 0.1);
+            historyToSave = historyToSave.slice(0, historyToSave.length - reduceCount);
+            // 必要に応じてユーザーに通知するロジックを追加することも可能
+            // chrome.runtime.sendMessage({ type: "LFP_STORAGE_WARNING", message: "ASIN履歴が肥大化しています。" });
+        }
+
+        await chrome.storage.local.set({ [KEY_HIST]: historyToSave });
     } catch (err) {
       if (err.message && err.message.includes('Extension context invalidated')) {
         // Extension context invalidated - 無視
@@ -1854,15 +1814,14 @@ async function init() {
       resetBtn.textContent = "×リセット";
       resetBtn.title = "ASIN履歴をすべて削除";
       resetBtn.addEventListener("click", async () => {
-        const ok = await showLfpConfirmModal("ASIN履歴をすべて削除しますか？この操作は取り消せません。");
-        if (ok) {
+        if (confirm("ASIN履歴をすべて削除しますか？")) {
           try {
             await resetHistory();
             // 履歴削除後、即座にドロップダウンを更新
             await refreshHistorySelect();
             alert("ASIN履歴を削除しました");
           } catch (err) {
-            console.error("履歴削除エラー:", err);
+            console.error('履歴削除エラー:', err);
             alert("履歴削除中にエラーが発生しました。ページをリロードしてください。");
           }
         }
