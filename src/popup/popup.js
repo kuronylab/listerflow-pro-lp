@@ -26,13 +26,13 @@ function initializeElements() {
 
   // Stats elements
   statsElements = {
-    todayListings: document.getElementById(\'todayListings\'),
-    weekListings: document.getElementById(\'weekListings\'),
-    totalListings: document.getElementById(\'totalListings\'),
-    optimizeCount: document.getElementById(\'optimizeCount\'),
-    todayWorkingHours: document.getElementById(\'todayWorkingHours\'),
-    lastListing: document.getElementById(\'lastListing\'),
-    completedListingsCount: document.getElementById(\'completedListingsCount\'),
+    todayListings: document.getElementById('todayListings'),
+    weekListings: document.getElementById('weekListings'),
+    totalListings: document.getElementById('totalListings'),
+    optimizeCount: document.getElementById('optimizeCount'),
+    todayWorkingHours: document.getElementById('todayWorkingHours'),
+    lastListing: document.getElementById('lastListing'),
+    completedListingsCount: document.getElementById('completedListingsCount'),
     protectedCount: document.getElementById('protectedCount'),
     brandCount: document.getElementById('brandCount'),
     noListingsCount: document.getElementById('noListingsCount'),
@@ -197,8 +197,17 @@ async function loadAndDisplayStats() {
     statsElements.noItemCount.textContent = `${noItemCount}件`;
 
     // Calculate and display today's working hours
-    const workingHours = await calculateTodayWorkingHours(history);
-    statsElements.todayWorkingHours.textContent = workingHours;
+    try {
+      const workingHours = await calculateTodayWorkingHours(history);
+      if (statsElements.todayWorkingHours) {
+        statsElements.todayWorkingHours.textContent = workingHours;
+      }
+    } catch (whErr) {
+      console.error("[Popup] Error calculating working hours:", whErr);
+      if (statsElements.todayWorkingHours) {
+        statsElements.todayWorkingHours.textContent = "0時間00分";
+      }
+    }
 
   } catch (err) {
     console.error("[Popup] Error loading stats:", err);
@@ -210,7 +219,9 @@ async function calculateTodayWorkingHours(history) {
   today.setHours(0, 0, 0, 0); // 今日の0時0分0秒に設定
 
   const todayHistory = history.filter(item => {
-    const itemDate = new Date(item.lastSeen);
+    const timestamp = item.lastSeen || item.timestamp;
+    if (!timestamp) return false;
+    const itemDate = new Date(timestamp);
     return itemDate >= today;
   });
 
@@ -219,8 +230,8 @@ async function calculateTodayWorkingHours(history) {
   }
 
   // 履歴は新しい順にソートされているため、最初の要素が最新、最後の要素が最古
-  const firstActionTime = new Date(todayHistory[todayHistory.length - 1].lastSeen); // 最古のlastSeen
-  const lastActionTime = new Date(todayHistory[0].lastSeen); // 最新のlastSeen
+  const firstActionTime = new Date(todayHistory[todayHistory.length - 1].lastSeen || todayHistory[todayHistory.length - 1].timestamp); // 最古のlastSeen
+  const lastActionTime = new Date(todayHistory[0].lastSeen || todayHistory[0].timestamp); // 最新のlastSeen
 
   const diffMs = lastActionTime.getTime() - firstActionTime.getTime();
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
