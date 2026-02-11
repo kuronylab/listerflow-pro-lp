@@ -174,16 +174,16 @@ async function loadStatistics() {
         optimizeCount: 0,
         brandCount: 0,
         alreadyListedCount: 0,
-        todayStartTime: null,
-        todayLastTime: null,
+        todayTotalWorkMs: 0,
+        todayLastActivityTime: null,
         lastResetDate: Date.now()
       };
     }
     // 既存データへのマイグレーション
     if (stats.brandCount === undefined) stats.brandCount = 0;
     if (stats.alreadyListedCount === undefined) stats.alreadyListedCount = 0;
-    if (stats.todayStartTime === undefined) stats.todayStartTime = null;
-    if (stats.todayLastTime === undefined) stats.todayLastTime = null;
+    if (stats.todayTotalWorkMs === undefined) stats.todayTotalWorkMs = 0;
+    if (stats.todayLastActivityTime === undefined) stats.todayLastActivityTime = null;
     
     // 日付が変わったら日次データをリセット
     const today = new Date().toDateString();
@@ -191,10 +191,9 @@ async function loadStatistics() {
     
     if (lastReset !== today) {
       stats.todayListings = 0;
-      stats.todayStartTime = null;
-      stats.todayLastTime = null;
+      stats.todayTotalWorkMs = 0;
+      stats.todayLastActivityTime = null;
       stats.lastResetDate = Date.now();
-      // 保存は呼び出し元で行われるか、必要に応じてここで行う
     }
     
     // 週が変わったらweekListingsをリセット
@@ -223,6 +222,31 @@ async function saveStatistics(stats) {
   }
 }
 
+/**
+ * 作業時間の更新ロジック（中断時間を考慮）
+ * 30分以上の空きがあれば中断とみなす
+ */
+function updateWorkTime(stats, now) {
+  const THRESHOLD_MS = 30 * 60 * 1000; // 30分
+  
+  if (!stats.todayLastActivityTime) {
+    // その日最初の活動
+    stats.todayLastActivityTime = now;
+    // 最初の1回分として便宜上1分加算しておく（0秒開始を防ぐため）
+    stats.todayTotalWorkMs = 1 * 60 * 1000;
+  } else {
+    const diff = now - stats.todayLastActivityTime;
+    if (diff > 0 && diff < THRESHOLD_MS) {
+      // 中断時間内でなければ加算
+      stats.todayTotalWorkMs += diff;
+    } else if (diff >= THRESHOLD_MS) {
+      // 中断明け：新しいセッションの開始として1分加算
+      stats.todayTotalWorkMs += 1 * 60 * 1000;
+    }
+    stats.todayLastActivityTime = now;
+  }
+}
+
 async function incrementListingCount() {
   try {
     const stats = await loadStatistics();
@@ -234,9 +258,8 @@ async function incrementListingCount() {
     stats.weekListings++;
     stats.lastListingDate = now;
     
-    // 作業時間の更新
-    if (!stats.todayStartTime) stats.todayStartTime = now;
-    stats.todayLastTime = now;
+    // 作業時間の更新（中断時間を考慮）
+    updateWorkTime(stats, now);
     
     await saveStatistics(stats);
     console.log(`📊 [Stats] 出品数を更新: 総計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
@@ -257,9 +280,8 @@ async function incrementOptimizeCount() {
     const now = Date.now();
     stats.optimizeCount++;
     
-    // 作業時間の更新（最適化も活動としてカウント）
-    if (!stats.todayStartTime) stats.todayStartTime = now;
-    stats.todayLastTime = now;
+    // 作業時間の更新（中断時間を考慮）
+    updateWorkTime(stats, now);
     
     await saveStatistics(stats);
     console.log(`📊 [Stats] 最適化回数を更新: ${stats.optimizeCount}回`);
@@ -1522,16 +1544,38 @@ async function refreshHistorySelect() {
 }
 
 async function refreshListingCountUI() {
-  if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
+  if ((!UI.listingCountLabel || !UI.listingCountLabel.isConnected) && (!UI.listingStats || !UI.listingStats.isConnected)) return;
   
   const hist = await loadHistory();
-  // 履歴の中からエラーでない（flagsがすべてfalse）ものをカウント
-  const successCount = hist.filter(item => {
+  // 履歴の中からエラーでない（flagsがすべてfalse）ものを抽出
+  const successItems = hist.filter(item => {
     const f = item.flags || {};
     return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
-  }).length;
+  });
+  const successCount = successItems.length;
   
-  UI.listingCountLabel.textContent = `出品完了: ${successCount}件`;
+  if (UI.listingCountLabel && UI.listingCountLabel.isConnected) {
+    UI.listingCountLabel.textContent = `出品完了: ${successCount}件`;
+  }
+
+  // ステータスボックス内の詳細表示更新（今回の作業時間を含む）
+  if (UI.listingStats && UI.listingStats.isConnected) {
+    let sessionWorkTime = "0時間00分";
+    if (successItems.length > 0) {
+      // 最新と最古の差分を計算（今回のセッション = 現在の履歴内）
+      const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t);
+      if (times.length > 0) {
+        const minTime = Math.min(...times);
+        const maxTime = Math.max(...times);
+        const diffMs = maxTime - minTime;
+        const diffMin = Math.floor(diffMs / (1000 * 60));
+        const hours = Math.floor(diffMin / 60);
+        const mins = diffMin % 60;
+        sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分`;
+      }
+    }
+    UI.listingStats.textContent = `出品完了：${successCount}件 / 今回の作業時間：${sessionWorkTime}`;
+  }
 }
 
 function refreshCustomDropdown(hist) {

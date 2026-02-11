@@ -13,6 +13,7 @@ export const UI = {
   btnOpt: null,
   btnLabel: null,
   spin: null,
+  listingStats: null,
   quickMipBtn: null,
   asinBar: null,
   histSel: null,
@@ -99,8 +100,14 @@ export function ensureUIBelowTitle(titleEl, STORE) {
   badge.className = "lfp-badge";
   badge.textContent = "";
 
+  const listingStats = document.createElement("div");
+  listingStats.className = "lfp-listing-stats";
+  listingStats.id = "lfp-listing-stats";
+  listingStats.textContent = "出品完了：0件 / 今回の作業時間：0時間00分";
+
   statusBox.appendChild(row);
   statusBox.appendChild(badge);
+  statusBox.appendChild(listingStats);
 
   // Vero Warningsの直前に挿入
   insertBeforeVeroWarnings(statusBox);
@@ -111,6 +118,7 @@ export function ensureUIBelowTitle(titleEl, STORE) {
   UI.btnOpt = btn;
   UI.btnLabel = label;
   UI.spin = spin;
+  UI.listingStats = listingStats;
 }
 
 /**

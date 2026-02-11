@@ -198,7 +198,7 @@ async function loadAndDisplayStats() {
 
     // Calculate and display today's working hours
     try {
-      const workingHours = formatWorkingHours(stats.todayStartTime, stats.todayLastTime);
+      const workingHours = formatWorkingHoursFromMs(stats.todayTotalWorkMs);
       if (statsElements.todayWorkingHours) {
         statsElements.todayWorkingHours.textContent = workingHours;
       }
@@ -214,14 +214,12 @@ async function loadAndDisplayStats() {
   }
 }
 
-function formatWorkingHours(startTime, lastTime) {
-  if (!startTime || !lastTime) {
+function formatWorkingHoursFromMs(totalMs) {
+  if (!totalMs) {
     return "0時間00分";
   }
 
-  const diffMs = lastTime - startTime;
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-
+  const diffMinutes = Math.floor(totalMs / (1000 * 60));
   const hours = Math.floor(diffMinutes / 60);
   const minutes = diffMinutes % 60;
 
@@ -243,8 +241,8 @@ async function loadStatistics() {
         brandCount: 0,
         alreadyListedCount: 0,
         noItemCount: 0,
-        todayStartTime: null,
-        todayLastTime: null,
+        todayTotalWorkMs: 0,
+        todayLastActivityTime: null,
         lastResetDate: Date.now()
       };
     }
@@ -255,8 +253,8 @@ async function loadStatistics() {
 
     if (now.toDateString() !== lastReset.toDateString()) {
       stats.todayListings = 0;
-      stats.todayStartTime = null;
-      stats.todayLastTime = null;
+      stats.todayTotalWorkMs = 0;
+      stats.todayLastActivityTime = null;
       // 週の変わり目も考慮
       if (now.getDay() < lastReset.getDay() || (now.getDay() === 0 && lastReset.getDay() !== 0)) {
         stats.weekListings = 0;
@@ -295,8 +293,8 @@ async function resetStats() {
       brandCount: 0,
       alreadyListedCount: 0,
       noItemCount: 0,
-      todayStartTime: null,
-      todayLastTime: null,
+      todayTotalWorkMs: 0,
+      todayLastActivityTime: null,
       lastResetDate: Date.now()
     };
 
