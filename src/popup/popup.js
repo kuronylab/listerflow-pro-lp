@@ -213,13 +213,13 @@ async function loadAndDisplayStats() {
           let emoji = "";
           
           if (speed >= 120) {
-            feedback = "爆速です";
+            feedback = "爆速";
             emoji = "🚀";
           } else if (speed >= 60) {
-            feedback = "スピーディ";
-            emoji = "🏃‍♂️‍➡️";
+            feedback = "高速";
+            emoji = "🏎️";
           } else {
-            feedback = "着実です";
+            feedback = "着実";
             emoji = "💪";
           }
           
