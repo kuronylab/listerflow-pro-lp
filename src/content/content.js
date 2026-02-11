@@ -227,7 +227,7 @@ async function saveStatistics(stats) {
  * 30分以上の空きがあれば中断とみなす
  */
 function updateWorkTime(stats, now) {
-  const THRESHOLD_MS = 30 * 60 * 1000; // 30分
+  const THRESHOLD_MS = 5 * 60 * 1000; // 5分
   
   if (!stats.todayLastActivityTime) {
     // その日最初の活動
