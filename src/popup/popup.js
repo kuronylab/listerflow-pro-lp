@@ -227,9 +227,9 @@ async function loadAndDisplayStats() {
           const isMaxSpeed = speed >= (stats.todayMaxSpeed || 0);
           const trophy = isMaxSpeed ? " 🏆" : "";
           
-          statsElements.listingSpeed.textContent = `時速：${speed}品/時 (${feedback} ${emoji}${trophy})`;
+          statsElements.listingSpeed.textContent = `${speed}品/時 (${feedback} ${emoji}${trophy})`;
         } else {
-          statsElements.listingSpeed.textContent = "時速：-品/時";
+          statsElements.listingSpeed.textContent = "-品/時";
         }
       }
     } catch (whErr) {
