@@ -176,6 +176,7 @@ async function loadStatistics() {
         alreadyListedCount: 0,
         todayTotalWorkMs: 0,
         todayLastActivityTime: null,
+        todayMaxSpeed: 0,
         lastResetDate: Date.now()
       };
     }
@@ -184,6 +185,7 @@ async function loadStatistics() {
     if (stats.alreadyListedCount === undefined) stats.alreadyListedCount = 0;
     if (stats.todayTotalWorkMs === undefined) stats.todayTotalWorkMs = 0;
     if (stats.todayLastActivityTime === undefined) stats.todayLastActivityTime = null;
+    if (stats.todayMaxSpeed === undefined) stats.todayMaxSpeed = 0;
     
     // 日付が変わったら日次データをリセット
     const today = new Date().toDateString();
@@ -193,6 +195,7 @@ async function loadStatistics() {
       stats.todayListings = 0;
       stats.todayTotalWorkMs = 0;
       stats.todayLastActivityTime = null;
+      stats.todayMaxSpeed = 0;
       stats.lastResetDate = Date.now();
     }
     
@@ -258,11 +261,20 @@ async function incrementListingCount() {
     stats.weekListings++;
     stats.lastListingDate = now;
     
-    // 作業時間の更新（中断時間を考慮）
+      // 作業時間の更新
     updateWorkTime(stats, now);
-    
+
+    // 最高時速の更新チェック
+    if (stats.todayTotalWorkMs > 0) {
+      const hours = stats.todayTotalWorkMs / (1000 * 60 * 60);
+      const currentSpeed = stats.todayListings / hours;
+      if (currentSpeed > stats.todayMaxSpeed) {
+        stats.todayMaxSpeed = currentSpeed;
+      }
+    }
+
     await saveStatistics(stats);
-    console.log(`📊 [Stats] 出品数を更新: 総計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
+    console.log(`[LFP] Listing incremented: 累計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
     
     // UI上の件数表示を更新
     await refreshListingCountUI();
