@@ -191,9 +191,27 @@ async function loadAndDisplayStats() {
       if (history.length > 0) {
         const errorCount = history.length - completedCount;
         const errorRate = Math.round((errorCount / history.length) * 100);
-        statsElements.errorRateLabel.textContent = `(エラー率: ${errorRate}%)`;
+        
+        let color = "#28a745"; // 良好 (緑)
+        let bgColor = "#e8f5e9";
+        let emoji = "✨";
+        
+        if (errorRate >= 30) {
+          color = "#dc3545"; // 警告 (赤)
+          bgColor = "#ffebee";
+          emoji = "⚠️";
+        } else if (errorRate >= 10) {
+          color = "#fd7e14"; // 注意 (橙)
+          bgColor = "#fff3e0";
+          emoji = "🧐";
+        }
+        
+        statsElements.errorRateLabel.style.color = color;
+        statsElements.errorRateLabel.style.backgroundColor = bgColor;
+        statsElements.errorRateLabel.textContent = `エラー率: ${errorRate}% ${emoji}`;
       } else {
         statsElements.errorRateLabel.textContent = "";
+        statsElements.errorRateLabel.style.backgroundColor = "transparent";
       }
     }
 
