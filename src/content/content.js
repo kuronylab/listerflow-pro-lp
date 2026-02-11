@@ -174,18 +174,27 @@ async function loadStatistics() {
         optimizeCount: 0,
         brandCount: 0,
         alreadyListedCount: 0,
+        todayStartTime: null,
+        todayLastTime: null,
         lastResetDate: Date.now()
       };
     }
     // 既存データへのマイグレーション
     if (stats.brandCount === undefined) stats.brandCount = 0;
     if (stats.alreadyListedCount === undefined) stats.alreadyListedCount = 0;
+    if (stats.todayStartTime === undefined) stats.todayStartTime = null;
+    if (stats.todayLastTime === undefined) stats.todayLastTime = null;
     
-    // 日付が変わったらtodayListingsをリセット
+    // 日付が変わったら日次データをリセット
     const today = new Date().toDateString();
-    const lastDate = stats.lastListingDate ? new Date(stats.lastListingDate).toDateString() : null;
-    if (lastDate !== today) {
+    const lastReset = new Date(stats.lastResetDate).toDateString();
+    
+    if (lastReset !== today) {
       stats.todayListings = 0;
+      stats.todayStartTime = null;
+      stats.todayLastTime = null;
+      stats.lastResetDate = Date.now();
+      // 保存は呼び出し元で行われるか、必要に応じてここで行う
     }
     
     // 週が変わったらweekListingsをリセット
@@ -218,10 +227,17 @@ async function incrementListingCount() {
   try {
     const stats = await loadStatistics();
     if (!stats) return; // コンテキスト無効時はスキップ
+    
+    const now = Date.now();
     stats.totalListings++;
     stats.todayListings++;
     stats.weekListings++;
-    stats.lastListingDate = Date.now();
+    stats.lastListingDate = now;
+    
+    // 作業時間の更新
+    if (!stats.todayStartTime) stats.todayStartTime = now;
+    stats.todayLastTime = now;
+    
     await saveStatistics(stats);
     console.log(`📊 [Stats] 出品数を更新: 総計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
     
@@ -237,7 +253,14 @@ async function incrementOptimizeCount() {
   try {
     const stats = await loadStatistics();
     if (!stats) return; // コンテキスト無効時はスキップ
+    
+    const now = Date.now();
     stats.optimizeCount++;
+    
+    // 作業時間の更新（最適化も活動としてカウント）
+    if (!stats.todayStartTime) stats.todayStartTime = now;
+    stats.todayLastTime = now;
+    
     await saveStatistics(stats);
     console.log(`📊 [Stats] 最適化回数を更新: ${stats.optimizeCount}回`);
     

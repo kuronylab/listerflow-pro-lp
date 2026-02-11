@@ -198,7 +198,7 @@ async function loadAndDisplayStats() {
 
     // Calculate and display today's working hours
     try {
-      const workingHours = await calculateTodayWorkingHours(history);
+      const workingHours = formatWorkingHours(stats.todayStartTime, stats.todayLastTime);
       if (statsElements.todayWorkingHours) {
         statsElements.todayWorkingHours.textContent = workingHours;
       }
@@ -214,26 +214,12 @@ async function loadAndDisplayStats() {
   }
 }
 
-async function calculateTodayWorkingHours(history) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // 今日の0時0分0秒に設定
-
-  const todayHistory = history.filter(item => {
-    const timestamp = item.lastSeen || item.timestamp;
-    if (!timestamp) return false;
-    const itemDate = new Date(timestamp);
-    return itemDate >= today;
-  });
-
-  if (todayHistory.length === 0) {
+function formatWorkingHours(startTime, lastTime) {
+  if (!startTime || !lastTime) {
     return "0時間00分";
   }
 
-  // 履歴は新しい順にソートされているため、最初の要素が最新、最後の要素が最古
-  const firstActionTime = new Date(todayHistory[todayHistory.length - 1].lastSeen || todayHistory[todayHistory.length - 1].timestamp); // 最古のlastSeen
-  const lastActionTime = new Date(todayHistory[0].lastSeen || todayHistory[0].timestamp); // 最新のlastSeen
-
-  const diffMs = lastActionTime.getTime() - firstActionTime.getTime();
+  const diffMs = lastTime - startTime;
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
   const hours = Math.floor(diffMinutes / 60);
@@ -257,16 +243,20 @@ async function loadStatistics() {
         brandCount: 0,
         alreadyListedCount: 0,
         noItemCount: 0,
+        todayStartTime: null,
+        todayLastTime: null,
         lastResetDate: Date.now()
       };
     }
 
-    // 日付が変わった場合にtodayListingsをリセット
+    // 日付が変わった場合に日次データをリセット
     const now = new Date();
     const lastReset = new Date(stats.lastResetDate);
 
     if (now.toDateString() !== lastReset.toDateString()) {
       stats.todayListings = 0;
+      stats.todayStartTime = null;
+      stats.todayLastTime = null;
       // 週の変わり目も考慮
       if (now.getDay() < lastReset.getDay() || (now.getDay() === 0 && lastReset.getDay() !== 0)) {
         stats.weekListings = 0;
@@ -305,6 +295,8 @@ async function resetStats() {
       brandCount: 0,
       alreadyListedCount: 0,
       noItemCount: 0,
+      todayStartTime: null,
+      todayLastTime: null,
       lastResetDate: Date.now()
     };
 
