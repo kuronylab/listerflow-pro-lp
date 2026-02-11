@@ -1547,7 +1547,7 @@ async function refreshHistorySelect() {
 }
 
 async function refreshListingCountUI() {
-  if ((!UI.listingCountLabel || !UI.listingCountLabel.isConnected) && (!UI.listingStats || !UI.listingStats.isConnected)) return;
+  if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   
   const hist = await loadHistory();
   // 履歴の中からエラーでない（flagsがすべてfalse）ものを抽出
@@ -1556,29 +1556,24 @@ async function refreshListingCountUI() {
     return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
   });
   const successCount = successItems.length;
-  
-  if (UI.listingCountLabel && UI.listingCountLabel.isConnected) {
-    UI.listingCountLabel.textContent = `出品完了: ${successCount}件`;
-  }
 
-  // ステータスボックス内の詳細表示更新（今回の作業時間を含む）
-  if (UI.listingStats && UI.listingStats.isConnected) {
-    let sessionWorkTime = "0時間00分";
-    if (successItems.length > 0) {
-      // 最新と最古の差分を計算（今回のセッション = 現在の履歴内）
-      const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t);
-      if (times.length > 0) {
-        const minTime = Math.min(...times);
-        const maxTime = Math.max(...times);
-        const diffMs = maxTime - minTime;
-        const diffMin = Math.floor(diffMs / (1000 * 60));
-        const hours = Math.floor(diffMin / 60);
-        const mins = diffMin % 60;
-        sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分`;
-      }
+  // 今回の作業時間を計算（今回のセッション = 現在の履歴内）
+  let sessionWorkTime = "0時間00分";
+  if (successItems.length > 0) {
+    const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t);
+    if (times.length > 0) {
+      const minTime = Math.min(...times);
+      const maxTime = Math.max(...times);
+      const diffMs = maxTime - minTime;
+      const diffMin = Math.floor(diffMs / (1000 * 60));
+      const hours = Math.floor(diffMin / 60);
+      const mins = diffMin % 60;
+      sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分`;
     }
-    UI.listingStats.textContent = `出品完了：${successCount}件 / 今回の作業時間：${sessionWorkTime}`;
   }
+  
+  // ASIN履歴バーのラベル更新（ユーザー様のご希望箇所）
+  UI.listingCountLabel.textContent = `出品完了: ${successCount}件　今回の作業時間：${sessionWorkTime}`;
 }
 
 function refreshCustomDropdown(hist) {
