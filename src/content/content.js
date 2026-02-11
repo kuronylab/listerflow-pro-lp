@@ -1562,6 +1562,8 @@ async function refreshListingCountUI() {
   if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   
   const hist = await loadHistory();
+  const stats = await loadStatistics();
+  
   // 履歴の中からエラーでない（flagsがすべてfalse）ものを抽出
   const successItems = hist.filter(item => {
     const f = item.flags || {};
@@ -1569,23 +1571,22 @@ async function refreshListingCountUI() {
   });
   const successCount = successItems.length;
 
-  // 今回の作業時間を計算（今回のセッション = 現在の履歴内）
-  // 単純な差分ではなく、2分以上の空きを除外して合算する
+  // 今回の作業時間を計算
+  let totalMs = 0;
   let sessionWorkTime = "0時間00分";
+  
   if (successItems.length > 0) {
-    // タイムスタンプを昇順にソート
     const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t).sort((a, b) => a - b);
     
     if (times.length > 0) {
       const THRESHOLD_MS = 2 * 60 * 1000; // 2分
-      let totalMs = 20 * 1000; // 最初の1件分として20秒
+      totalMs = 20 * 1000; // 最初の1件分として20秒
       
       for (let i = 1; i < times.length; i++) {
         const diff = times[i] - times[i-1];
         if (diff > 0 && diff < THRESHOLD_MS) {
           totalMs += diff;
         } else if (diff >= THRESHOLD_MS) {
-          // 中断明け：新しいセッションの開始として20秒加算
           totalMs += 20 * 1000;
         }
       }
@@ -1597,8 +1598,39 @@ async function refreshListingCountUI() {
     }
   }
   
-  // ASIN履歴バーのラベル更新（ユーザー様のご希望箇所）
-  UI.listingCountLabel.textContent = `出品完了: ${successCount}件　今回の作業時間：${sessionWorkTime}`;
+  // ランク判定
+  let rankHtml = "";
+  if (totalMs > 0 && successCount > 0) {
+    const speed = Math.round((successCount / (totalMs / (1000 * 60 * 60))));
+    let feedback = "着実";
+    let emoji = "💪";
+    let color = "#6c757d";
+    let bgColor = "#f8f9fa";
+
+    if (speed >= 120) {
+      feedback = "爆速";
+      emoji = "🚀";
+      color = "#673ab7";
+      bgColor = "#f3e5f5";
+    } else if (speed >= 60) {
+      feedback = "高速";
+      emoji = "🏎️";
+      color = "#007bff";
+      bgColor = "#e7f3ff";
+    }
+
+    const isMaxSpeed = speed >= (stats?.todayMaxSpeed || 0);
+    const trophy = isMaxSpeed ? " 🏆" : "";
+
+    rankHtml = `<span style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; color: ${color}; background-color: ${bgColor}; border: 1px solid ${color}44; display: inline-block; vertical-align: middle; white-space: nowrap;">${feedback} ${emoji}${trophy}</span>`;
+  }
+
+  // ASIN履歴バーのラベル更新
+  UI.listingCountLabel.innerHTML = `
+    <span style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
+    <span style="margin-left: 15px; color: #666; vertical-align: middle;">今回の作業時間: ${sessionWorkTime}</span>
+    ${rankHtml}
+  `;
 }
 
 function refreshCustomDropdown(hist) {

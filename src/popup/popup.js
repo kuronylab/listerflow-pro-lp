@@ -230,12 +230,19 @@ async function loadAndDisplayStats() {
           let feedback = "";
           let emoji = "";
           
+          let color = "#6c757d"; // 着実 (灰)
+          let bgColor = "#f8f9fa";
+          
           if (speed >= 120) {
             feedback = "爆速";
             emoji = "🚀";
+            color = "#673ab7"; // 爆速 (紫)
+            bgColor = "#f3e5f5";
           } else if (speed >= 60) {
             feedback = "高速";
             emoji = "🏎️";
+            color = "#007bff"; // 高速 (青)
+            bgColor = "#e7f3ff";
           } else {
             feedback = "着実";
             emoji = "💪";
@@ -245,7 +252,12 @@ async function loadAndDisplayStats() {
           const isMaxSpeed = speed >= (stats.todayMaxSpeed || 0);
           const trophy = isMaxSpeed ? " 🏆" : "";
           
-          statsElements.listingSpeed.textContent = `${speed}品/時 (${feedback} ${emoji}${trophy})`;
+          statsElements.listingSpeed.innerHTML = `
+            <span>${speed}品/時</span>
+            <span style="font-size: 0.75em; font-weight: bold; padding: 2px 8px; border-radius: 12px; color: ${color}; background-color: ${bgColor}; white-space: nowrap;">
+              ${feedback} ${emoji}${trophy}
+            </span>
+          `;
         } else {
           statsElements.listingSpeed.textContent = "-品/時";
         }
