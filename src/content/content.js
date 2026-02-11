@@ -1508,6 +1508,9 @@ function unlockUI(titleEl) {
   if (UI.status && len > 0) {
     UI.status.textContent = `文字数：${len} / Vero：計算中... / 出品：計算中...`;
   }
+
+  // 出品統計も即座に更新
+  refreshListingCountUI();
 }
 
 function wireOptimizeButton(titleEl) {
@@ -1871,6 +1874,7 @@ async function init() {
       UI.histSel = sel;
 
       await refreshHistorySelect();
+      await refreshListingCountUI();
 
       // コピーボタンのイベント（スプレッドシート用2カラム形式）
       copyBtn.addEventListener("click", async () => {
