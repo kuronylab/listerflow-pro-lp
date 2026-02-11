@@ -227,21 +227,21 @@ async function saveStatistics(stats) {
  * 30分以上の空きがあれば中断とみなす
  */
 function updateWorkTime(stats, now) {
-  const THRESHOLD_MS = 5 * 60 * 1000; // 5分
+  const THRESHOLD_MS = 2 * 60 * 1000; // 2分
   
   if (!stats.todayLastActivityTime) {
     // その日最初の活動
     stats.todayLastActivityTime = now;
-    // 最初の1回分として便宜上1分加算しておく（0秒開始を防ぐため）
-    stats.todayTotalWorkMs = 1 * 60 * 1000;
+    // 最初の1回分として便宜上20秒加算しておく（1品分の目安）
+    stats.todayTotalWorkMs = 20 * 1000;
   } else {
     const diff = now - stats.todayLastActivityTime;
     if (diff > 0 && diff < THRESHOLD_MS) {
       // 中断時間内でなければ加算
       stats.todayTotalWorkMs += diff;
     } else if (diff >= THRESHOLD_MS) {
-      // 中断明け：新しいセッションの開始として1分加算
-      stats.todayTotalWorkMs += 1 * 60 * 1000;
+      // 中断明け：新しいセッションの開始として20秒加算
+      stats.todayTotalWorkMs += 20 * 1000;
     }
     stats.todayLastActivityTime = now;
   }
@@ -1558,14 +1558,27 @@ async function refreshListingCountUI() {
   const successCount = successItems.length;
 
   // 今回の作業時間を計算（今回のセッション = 現在の履歴内）
+  // 単純な差分ではなく、2分以上の空きを除外して合算する
   let sessionWorkTime = "0時間00分";
   if (successItems.length > 0) {
-    const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t);
+    // タイムスタンプを昇順にソート
+    const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t).sort((a, b) => a - b);
+    
     if (times.length > 0) {
-      const minTime = Math.min(...times);
-      const maxTime = Math.max(...times);
-      const diffMs = maxTime - minTime;
-      const diffMin = Math.floor(diffMs / (1000 * 60));
+      const THRESHOLD_MS = 2 * 60 * 1000; // 2分
+      let totalMs = 20 * 1000; // 最初の1件分として20秒
+      
+      for (let i = 1; i < times.length; i++) {
+        const diff = times[i] - times[i-1];
+        if (diff > 0 && diff < THRESHOLD_MS) {
+          totalMs += diff;
+        } else if (diff >= THRESHOLD_MS) {
+          // 中断明け：新しいセッションの開始として20秒加算
+          totalMs += 20 * 1000;
+        }
+      }
+      
+      const diffMin = Math.floor(totalMs / (1000 * 60));
       const hours = Math.floor(diffMin / 60);
       const mins = diffMin % 60;
       sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分`;
