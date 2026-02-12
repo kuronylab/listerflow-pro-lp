@@ -48,9 +48,6 @@ let dropdownMousedownHandler = null;
 // setInterval管理用（クリーンアップ用）
 let okButtonCheckInterval = null;
 
-// 作業時間動的カウント用タイマーID
-let sessionTimeUpdateInterval = null;
-
 // 履歴操作のロック（競合状況防止）
 let historyLock = false;
 
@@ -265,8 +262,8 @@ async function saveStatistics(stats) {
  * 30分以上の空きがあれば中断とみなす
  */
 function updateWorkTime(stats, now) {
-  // 5分以上の空きがあれば「休憩中」とみなして作業時間に加算しない
-  const THRESHOLD_MS = 5 * 60 * 1000; 
+  // 2分以上の空きがあれば「休憩中」とみなして作業時間に加算しない
+  const THRESHOLD_MS = 2 * 60 * 1000; 
   
   if (!stats.todayLastActivityTime) {
     // その日最初の活動
@@ -276,10 +273,10 @@ function updateWorkTime(stats, now) {
   } else {
     const diff = now - stats.todayLastActivityTime;
     if (diff > 0 && diff < THRESHOLD_MS) {
-      // 5分以内の間隔であれば、純粋な作業時間として加算
+      // 2分以内の間隔であれば、純粋な作業時間として加算
       stats.totalWorkTimeToday += diff;
     } else if (diff >= THRESHOLD_MS) {
-      // 5分以上の空き（休憩）があった場合は、この1件分の作業時間として20秒だけ加算
+      // 2分以上の空き（休憩）があった場合は、この1件分の作業時間として２０秒だけ加算
       stats.totalWorkTimeToday += 20 * 1000;
     }
     stats.todayLastActivityTime = now;
@@ -1625,9 +1622,7 @@ async function refreshListingCountUI() {
         if (diff > 0 && diff < THRESHOLD_MS) {
           totalMs += diff;
         } else if (diff >= THRESHOLD_MS) {
-          // 2分以上の休憩：判定時間（2分）は作業時間に含めない
-          // 純粋な作業時間のみを加算
-          continue;
+          totalMs += 20 * 1000;
         }
       }
       
@@ -1678,9 +1673,6 @@ async function refreshListingCountUI() {
     <span style="margin-left: 15px; color: #666; vertical-align: middle;">今回の作業時間: ${sessionWorkTime}</span>
     ${rankHtml}
   `;
-  
-  // 動的カウントアップを開始
-  startSessionTimeCounter(successItems);
 }
 
 function refreshCustomDropdown(hist) {
@@ -2629,56 +2621,3 @@ startHealthCheck();
 
 console.log('✅ [LFP] ListerFlow Pro v1.1.1 が読み込まれました');
 
-// 今回の作業時間の動的カウント開始
-function startSessionTimeCounter(successItems) {
-  if (sessionTimeUpdateInterval) {
-    clearInterval(sessionTimeUpdateInterval);
-  }
-  
-  if (successItems.length === 0) return;
-  
-  const THRESHOLD_MS = 2 * 60 * 1000; // 2分
-  const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t).sort((a, b) => a - b);
-  
-  if (times.length === 0) return;
-  
-  // 純作業時間を計算（休憩時間を除外）
-  let accumulatedWorkTime = 0;
-  for (let i = 1; i < times.length; i++) {
-    const diff = times[i] - times[i-1];
-    if (diff > 0 && diff < THRESHOLD_MS) {
-      accumulatedWorkTime += diff;
-    }
-    // diff >= THRESHOLD_MS の場合は休憩とみなして加算しない
-  }
-  
-  const firstTime = times[0];
-  
-  sessionTimeUpdateInterval = setInterval(async () => {
-    const now = Date.now();
-    const timeSinceFirst = now - firstTime;
-    
-    // 最初のアイテムからの経過時間が2分未満の場合のみカウント
-    if (timeSinceFirst < THRESHOLD_MS) {
-      // 純作業時間 = 積算された作業時間 + 最初アイテム以降の経過時間
-      const totalMs = accumulatedWorkTime + timeSinceFirst;
-      const totalSec = Math.floor(totalMs / 1000);
-      const hours = Math.floor(totalSec / 3600);
-      const mins = Math.floor((totalSec % 3600) / 60);
-      const secs = totalSec % 60;
-      const sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
-      
-      if (UI.listingCountLabel && UI.listingCountLabel.isConnected) {
-        const currentHTML = UI.listingCountLabel.innerHTML;
-        const updatedHTML = currentHTML.replace(
-          /今回の作業時間: \d+時間\d{2}分\d{2}秒/,
-          `今回の作業時間: ${sessionWorkTime}`
-        );
-        UI.listingCountLabel.innerHTML = updatedHTML;
-      }
-    } else {
-      clearInterval(sessionTimeUpdateInterval);
-      sessionTimeUpdateInterval = null;
-    }
-  }, 1000);
-}

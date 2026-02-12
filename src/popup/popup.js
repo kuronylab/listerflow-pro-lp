@@ -158,33 +158,10 @@ function switchPage(page) {
 
 // Statistics functions
 // 作業時間のリアルタイムカウント開始
+// 作業時間の表示更新（読み取り专用）
 function startWorkTimeCounter() {
-  if (workTimeUpdateInterval) {
-    clearInterval(workTimeUpdateInterval);
-  }
-  
-  workTimeUpdateInterval = setInterval(async () => {
-    const stats = await loadStatistics();
-    if (!stats) return;
-    
-    // 現在の活動状態を確認
-    const now = Date.now();
-    const lastActivity = stats.todayLastActivityTime || 0;
-    const diff = now - lastActivity;
-    const THRESHOLD_MS = 2 * 60 * 1000; // 2分
-    
-    // 2分以上の空きがある場合は、カウントアップを停止
-    if (diff >= THRESHOLD_MS) {
-      return; // 休憩中なので更新しない
-    }
-    
-    // 作業時間を1秒加算
-    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + 1000;
-    await chrome.storage.local.set({ 'lfp_statistics_v1': stats });
-    
-    // UI更新
-    updateWorkTimeDisplay(stats);
-  }, 1000);
+  // content.jsが作業時間を加算し、ポップアップを開いた時に自動的に読み込まれる
+  // タイマーを実装しないことで、データ競合を防ぐ
 }
 
 // 作業時間表示の更新
