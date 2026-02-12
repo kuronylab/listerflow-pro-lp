@@ -1,4 +1,3 @@
-// Storage keys
 const KEY_OPT = "lfp_options_v1";
 const KEY_HIST = "lfp_asin_history_v1";
 const KEY_STATS = "lfp_statistics_v1";
@@ -8,12 +7,24 @@ let menuBtn, closeMenuBtn, sideMenu, pageTitle, content;
 let statsElements = {};
 let settingElements = {};
 
+// 作業時間の動的カウント用タイマーID
+let workTimeUpdateInterval = null;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   initializeElements();
   setupEventListeners();
   await loadAndDisplayStats();
   await loadSettings();
+  startWorkTimeCounter();
+});
+
+// ページを離れるときにタイマーをクリア
+window.addEventListener('beforeunload', () => {
+  if (workTimeUpdateInterval) {
+    clearInterval(workTimeUpdateInterval);
+    workTimeUpdateInterval = null;
+  }
 });
 
 function initializeElements() {
@@ -99,23 +110,22 @@ function setupEventListeners() {
   // 最速出品モードの連動処理
   settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
-      const targets = [
-        'autoGetOnPaste',
-        'autoGetOnHistory',
-        'autoMipAfterOptimize',
-        'autoClickOkAfterMip',
-        'quickMipButton'
-      ];
-      targets.forEach(id => {
-        const el = settingElements[id];
-        if (el) el.checked = true;
-      });
+      settingElements.autoGetOnPaste.checked = true;
+      settingElements.autoMipAfterOptimize.checked = true;
+      settingElements.autoClickOkAfterMip.checked = true;
     }
   });
 
   // History page buttons
   document.getElementById('exportSpreadsheetBtn')?.addEventListener('click', exportToSpreadsheet);
   document.getElementById('clearHistoryBtn')?.addEventListener('click', clearHistory);
+
+  // Load history on page switch
+  document.querySelectorAll('.menu-item[data-page="history"]').forEach(item => {
+    item.addEventListener('click', () => {
+      setTimeout(() => loadHistoryList(), 100);
+    });
+  });
 }
 
 function switchPage(page) {
@@ -126,26 +136,89 @@ function switchPage(page) {
 
   // Update pages
   document.querySelectorAll('.page').forEach(p => {
-    p.classList.toggle('active', p.id === `${page}Page`);
+    p.classList.remove('active');
   });
+  const targetPage = document.getElementById(`${page}Page`);
+  if (targetPage) targetPage.classList.add('active');
 
-  const pageMap = {
+  // Update title
+  const titles = {
     stats: '統計情報',
-    basic: '基本設定',
-    automation: '自動化設定',
     history: 'ASIN履歴管理',
+    automation: '自動化設定',
+    basic: '基本設定',
     version: 'バージョン情報',
     links: '各種リンク'
   };
+  if (pageTitle) pageTitle.textContent = titles[page] || 'ListerFlow Pro';
 
-  if (pageTitle) pageTitle.textContent = pageMap[page] || '設定';
-
-  // Load page-specific data
-  if (page === 'history') loadHistoryList();
+  // Reload stats when switching to stats page
   if (page === 'stats') loadAndDisplayStats();
 }
 
 // Statistics functions
+// 作業時間のリアルタイムカウント開始
+function startWorkTimeCounter() {
+  if (workTimeUpdateInterval) {
+    clearInterval(workTimeUpdateInterval);
+  }
+  
+  workTimeUpdateInterval = setInterval(async () => {
+    const stats = await loadStatistics();
+    if (!stats) return;
+    
+    // 現在の活動状態を確認
+    const now = Date.now();
+    const lastActivity = stats.todayLastActivityTime || 0;
+    const diff = now - lastActivity;
+    const THRESHOLD_MS = 5 * 60 * 1000; // 5分
+    
+    // 5分以上の空きがある場合は、カウントアップを停止
+    if (diff >= THRESHOLD_MS) {
+      return; // 休憩中なので更新しない
+    }
+    
+    // 作業時間を1秒加算
+    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + 1000;
+    await chrome.storage.local.set({ 'lfp_statistics_v1': stats });
+    
+    // UI更新
+    updateWorkTimeDisplay(stats);
+  }, 1000);
+}
+
+// 作業時間表示の更新
+function updateWorkTimeDisplay(stats) {
+  if (statsElements.todayWorkingHours) {
+    const totalMs = stats.totalWorkTimeToday || 0;
+    const totalSec = Math.floor(totalMs / 1000);
+    const hours = Math.floor(totalSec / 3600);
+    const minutes = Math.floor((totalSec % 3600) / 60);
+    const seconds = totalSec % 60;
+    statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
+  }
+  
+  if (statsElements.listingSpeed) {
+    const totalMs = stats.totalWorkTimeToday || 0;
+    const count = stats.todayListings || 0;
+    const hours = totalMs / 3600000;
+    const speedVal = hours > 0 ? (count / hours) : 0;
+    const speedDisplay = speedVal.toFixed(1);
+    
+    let rank = "rank-very-slow";
+    let rankText = "ゆったり🐢";
+    if (speedVal >= 120) { rank = "rank-fastest"; rankText = "爆速🚀"; }
+    else if (speedVal >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
+    else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
+    else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
+
+    statsElements.listingSpeed.innerHTML = `
+      <span>${speedDisplay}品/時</span>
+      <span class="rank-badge ${rank}">${rankText}</span>
+    `;
+  }
+}
+
 async function loadAndDisplayStats() {
   try {
     const stats = await loadStatistics();
@@ -168,34 +241,7 @@ async function loadAndDisplayStats() {
     }
 
     // Working Hours & Speed
-    if (statsElements.todayWorkingHours) {
-      const totalMs = stats.totalWorkTimeToday || 0;
-      const totalSec = Math.floor(totalMs / 1000);
-      const hours = Math.floor(totalSec / 3600);
-      const minutes = Math.floor((totalSec % 3600) / 60);
-      const seconds = totalSec % 60;
-      statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
-    }
-
-    if (statsElements.listingSpeed) {
-      const totalMs = stats.totalWorkTimeToday || 0;
-      const count = stats.todayListings || 0;
-      const hours = totalMs / 3600000;
-      const speedVal = hours > 0 ? (count / hours) : 0;
-      const speedDisplay = speedVal.toFixed(1);
-      
-      let rank = "rank-very-slow";
-      let rankText = "ゆったり🐢";
-      if (speedVal >= 120) { rank = "rank-fastest"; rankText = "爆速🚀"; }
-      else if (speedVal >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
-      else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
-      else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
-
-      statsElements.listingSpeed.innerHTML = `
-        <span>${speedDisplay}品/時</span>
-        <span class="rank-badge ${rank}">${rankText}</span>
-      `;
-    }
+    updateWorkTimeDisplay(stats);
 
     // History stats
     const completedCount = history.filter(h => {
@@ -385,6 +431,9 @@ async function loadHistoryList() {
     statusSpan.textContent = status;
     if (isError) {
       statusSpan.style.color = '#E07167';
+      statusSpan.style.fontWeight = '600';
+    } else {
+      statusSpan.style.color = '#2e7d32';
       statusSpan.style.fontWeight = '600';
     }
 

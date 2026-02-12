@@ -268,8 +268,8 @@ function updateWorkTime(stats, now) {
   if (!stats.todayLastActivityTime) {
     // その日最初の活動
     stats.todayLastActivityTime = now;
-    // 最初の1回分として便宜上20秒加算しておく（1品分の平均作業時間の目安）
-    stats.totalWorkTimeToday = 20 * 1000;
+    // 初期値は0で、ポップアップの動的カウントアップで時間を加算していく
+    stats.totalWorkTimeToday = stats.totalWorkTimeToday || 0;
   } else {
     const diff = now - stats.todayLastActivityTime;
     if (diff > 0 && diff < THRESHOLD_MS) {

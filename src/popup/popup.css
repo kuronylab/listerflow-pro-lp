@@ -416,6 +416,16 @@ input:checked + .toggle-slider:before {
   white-space: nowrap;
 }
 
+.history-status.completed {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.history-status.error {
+  color: #E07167;
+  font-weight: 600;
+}
+
 .history-status-inline {
   display: inline;
 }
