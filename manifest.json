@@ -41,5 +41,16 @@
       "48": "assets/icons/icon48.png",
       "128": "assets/icons/icon128.png"
     }
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/popup/export.html",
+        "src/popup/export.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }

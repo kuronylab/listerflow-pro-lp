@@ -455,29 +455,10 @@ async function exportToSpreadsheet() {
       return;
     }
 
-    // Convert to CSV
-    let csv = "日付,ASIN,ステータス\n";
-    history.forEach(h => {
-      const date = new Date(h.lastSeen || h.timestamp).toLocaleString();
-      let status = "完了";
-      if (h.flags?.protected) status = "Protected";
-      if (h.flags?.brand) status = "Brand Warning";
-      if (h.flags?.already_listed) status = "Already Listed";
-      if (h.flags?.no_listings) status = "No Listings";
-      if (h.flags?.no_item) status = "No Item";
-      
-      csv += `${date},${h.asin},${status}\n`;
+    // 別タブで詳細画面を開く
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('src/popup/export.html')
     });
-
-    // Download file
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `listerflow_history_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   } catch (err) {
     console.error('[Popup] exportToSpreadsheet error:', err);
     alert('出力に失敗しました。');

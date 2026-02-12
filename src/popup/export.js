@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadAndRenderHistory() {
   const tableBody = document.getElementById('historyTableBody');
+  if (!tableBody) return;
   
   try {
     const data = await chrome.storage.local.get([KEY_HIST]);
@@ -30,19 +31,19 @@ async function loadAndRenderHistory() {
 
       // ステータス判定
       let resultText = '出品完了';
-      let resultClass = 'status-success';
+      let resultClass = 'status-completed';
       let dateCol1 = dateStr; // 出品日
       let dateCol2 = '';      // エラーにより出品不可
 
       if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings || item.flags?.no_item) {
         const flags = [];
         if (item.flags.protected) flags.push('Protected');
-        if (item.flags.brand) flags.push('Brand');
-        if (item.flags.already_listed) flags.push('Already listed');
+        if (item.flags.brand) flags.push('Brand Warning');
+        if (item.flags.already_listed) flags.push('Already Listed');
         if (item.flags.no_listings) flags.push('No listings');
-        if (item.flags.no_item) flags.push('No item');
+        if (item.flags.no_item) flags.push('No Item');
         
-        resultText = flags.join(', ');
+        resultText = flags[0] || 'エラー'; // 最初のフラグを表示
         resultClass = 'status-error';
         dateCol1 = '';
         dateCol2 = dateStr;
@@ -63,8 +64,11 @@ async function loadAndRenderHistory() {
 }
 
 function setupEventListeners() {
-  document.getElementById('copyTwoColumnsBtn').addEventListener('click', copyTwoColumns);
-  document.getElementById('downloadCsvBtn').addEventListener('click', downloadCsv);
+  const copyBtn = document.getElementById('copyTwoColumnsBtn');
+  const csvBtn = document.getElementById('downloadCsvBtn');
+  
+  if (copyBtn) copyBtn.addEventListener('click', copyTwoColumns);
+  if (csvBtn) csvBtn.addEventListener('click', downloadCsv);
 }
 
 async function copyTwoColumns() {
@@ -88,10 +92,17 @@ async function copyTwoColumns() {
   try {
     await navigator.clipboard.writeText(copyText);
     const btn = document.getElementById('copyTwoColumnsBtn');
-    const originalText = btn.innerHTML;
+    const originalContent = btn.innerHTML;
+    
     btn.innerHTML = '<span class="icon">✅</span> コピー完了！';
-    setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => { 
+      btn.innerHTML = originalContent;
+      btn.classList.remove('btn-success');
+    }, 2000);
   } catch (err) {
+    console.error('Clipboard copy failed:', err);
     alert('コピーに失敗しました');
   }
 }
@@ -102,7 +113,10 @@ function downloadCsv() {
 
   rows.forEach(row => {
     const cols = row.querySelectorAll('th, td');
-    const rowData = Array.from(cols).map(col => `"${col.textContent.trim()}"`).join(",");
+    const rowData = Array.from(cols).map(col => {
+      let text = col.textContent.trim();
+      return `"${text.replace(/"/g, '""')}"`;
+    }).join(",");
     csvContent += rowData + "\r\n";
   });
 
@@ -110,7 +124,7 @@ function downloadCsv() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `LFP_ASIN履歴_${new Date().toLocaleDateString()}.csv`);
+  link.setAttribute("download", `LFP_ASIN履歴_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
