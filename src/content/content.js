@@ -67,7 +67,7 @@ const MAX_RECOVERY_ATTEMPTS = 3;
 
 async function attemptRecovery() {
   if (recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
-    console.log('[LFP] リカバリー試行回数上限に達しました。ページをリロードしてください。');
+    console.log("[LFP] リカバリー試行回数上限に達しました。ページをリロードしてください。");
     return false;
   }
   
@@ -84,7 +84,7 @@ async function attemptRecovery() {
   await sleep(500);
   
   if (isExtensionContextValid()) {
-    console.log('[LFP] エクステンションコンテキストが復活しました');
+    console.log("[LFP] エクステンションコンテキストが復活しました");
     recoveryAttempts = 0;
     scheduleInit();
     return true;
@@ -107,7 +107,7 @@ function resetAllFlags() {
     okButtonCheckInterval = null;
   }
   
-  console.log('[LFP] 全てのフラグをリセットしました');
+  console.log("[LFP] 全てのフラグをリセットしました");
 }
 
 const KEY_OPT = "lfp_options_v1";
@@ -128,7 +128,7 @@ function isListerRoute() {
 async function loadOptions() {
   // エクステンションコンテキストの有効性をチェック
   if (!isExtensionContextValid()) {
-    console.log('[LFP] エクステンションコンテキストが無効です。デフォルト設定を使用します。');
+    console.log("[LFP] エクステンションコンテキストが無効です。デフォルト設定を使用します。");
     return;
   }
   
@@ -137,14 +137,46 @@ async function loadOptions() {
     const saved = data?.[KEY_OPT];
     if (saved && typeof saved === "object") STORE.opt = { ...STORE.opt, ...saved };
   } catch (err) {
-    if (err.message && err.message.includes('Extension context invalidated')) {
+    if (err.message && err.message.includes("Extension context invalidated")) {
       // Extension context invalidated - リカバリーを試行
-      console.log('[LFP] Extension context invalidated 検出。リカバリーを試行します。');
+      console.log("[LFP] Extension context invalidated 検出。リカバリーを試行します。");
       attemptRecovery();
     } else {
-      console.error('[LFP] loadOptions error:', err);
+      console.error("[LFP] loadOptions error:", err);
     }
   }
+}
+
+// 設定変更をリッスンしてUIを更新
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes[KEY_OPT]) {
+    const newOptions = changes[KEY_OPT].newValue;
+    if (newOptions) {
+      STORE.opt = { ...STORE.opt, ...newOptions };
+      console.log('[LFP] 設定が更新されました:', STORE.opt);
+      // ここでUIの更新処理を呼び出す
+      updateUIBasedOnSettings();
+    }
+  }
+});
+
+async function updateUIBasedOnSettings() {
+  // Quick MIPボタンの表示/非表示
+  const quickMipBtn = document.getElementById("quick-mip-button");
+  if (quickMipBtn) {
+    quickMipBtn.style.display = STORE.opt.quickMipButton ? "inline-block" : "none"; // inline-blockに変更
+  }
+
+  // 最適化ボタンのハイライト表示
+  const optimizeBtn = document.getElementById("optimize-button");
+  if (optimizeBtn) {
+    if (STORE.opt.highlightOptimize) {
+      optimizeBtn.classList.add("highlight");
+    } else {
+      optimizeBtn.classList.remove("highlight");
+    }
+  }
+  // 他のUI要素も必要に応じて更新
 }
 
 /* ---------- Statistics ---------- */
@@ -279,6 +311,8 @@ async function incrementListingCount() {
     
     // UI上の件数表示を更新
     await refreshListingCountUI();
+    // 設定変更をトリガーしてUIを更新
+    updateUIBasedOnSettings();
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementListingCount error:', err);

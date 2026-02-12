@@ -288,7 +288,7 @@ async function resetStats() {
 
 // Settings functions
 async function loadSettings() {
-  const data = await chrome.storage.local.get([KEY_OPT]);
+  const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
 
   if (settingElements.apiKey) settingElements.apiKey.value = opt.apiKey || '';
@@ -320,18 +320,18 @@ function toggleApiKeyVisibility() {
 }
 
 async function saveBasicSettings() {
-  const data = await chrome.storage.local.get([KEY_OPT]);
+  const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
 
   opt.apiKey = settingElements.apiKey?.value || '';
   opt.model = settingElements.model?.value || 'gpt-4o-mini';
 
-  await chrome.storage.local.set({ [KEY_OPT]: opt });
+  await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('基本設定を保存しました');
 }
 
 async function saveAutomationSettings() {
-  const data = await chrome.storage.local.get([KEY_OPT]);
+  const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
 
   opt.autoGetOnPaste = settingElements.autoGetOnPaste?.checked;
@@ -344,7 +344,7 @@ async function saveAutomationSettings() {
   opt.veroEnabled = settingElements.veroEnabled?.checked;
   opt.turboListingMode = settingElements.turboListingMode?.checked;
 
-  await chrome.storage.local.set({ [KEY_OPT]: opt });
+  await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('自動化・UI設定を保存しました');
 }
 
