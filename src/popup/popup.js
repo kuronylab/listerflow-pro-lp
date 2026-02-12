@@ -181,18 +181,18 @@ async function loadAndDisplayStats() {
       const totalMs = stats.totalWorkTimeToday || 0;
       const count = stats.todayListings || 0;
       const hours = totalMs / 3600000;
-      const speed = hours > 0 ? (count / hours).toFixed(1) : "0.0";
+      const speedVal = hours > 0 ? Math.round(count / hours) : 0;
+      const speedDisplay = hours > 0 ? (count / hours).toFixed(1) : "0.0";
       
       let rank = "rank-very-slow";
       let rankText = "ゆったり🐢";
-      const s = parseFloat(speed);
-      if (s >= 120) { rank = "rank-fastest"; rankText = "爆速🚀"; }
-      else if (s >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
-      else if (s >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
-      else if (s >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
+      if (speedVal >= 120) { rank = "rank-fastest"; rankText = "爆速🚀"; }
+      else if (speedVal >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
+      else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
+      else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
 
       statsElements.listingSpeed.innerHTML = `
-        <span>${speed}品/時</span>
+        <span>${speedDisplay}品/時</span>
         <span class="rank-badge ${rank}">${rankText}</span>
       `;
     }
