@@ -144,6 +144,11 @@ function switchPage(page) {
   if (pageInfo) {
     document.getElementById(pageInfo.element).classList.add('active');
     pageTitle.textContent = pageInfo.title;
+    
+    // ページ切り替え時に最新設定を再ロード（APIキー表示不具合対策）
+    if (page === 'basic' || page === 'automation') {
+      loadSettings();
+    }
   }
 }
 
