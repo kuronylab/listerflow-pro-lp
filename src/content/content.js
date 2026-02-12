@@ -1591,10 +1591,11 @@ async function refreshListingCountUI() {
         }
       }
       
-      const diffMin = Math.floor(totalMs / (1000 * 60));
-      const hours = Math.floor(diffMin / 60);
-      const mins = diffMin % 60;
-      sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分`;
+      const totalSec = Math.floor(totalMs / 1000);
+      const hours = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+      sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
 
       // 累計作業時間をストレージに保存（ポップアップのカウンター同期用）
       if (stats && totalMs > 0) {

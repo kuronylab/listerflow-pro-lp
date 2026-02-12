@@ -172,9 +172,11 @@ async function loadAndDisplayStats() {
     // Working Hours & Speed
     if (statsElements.todayWorkingHours) {
       const totalMs = stats.totalWorkTimeToday || 0;
-      const hours = Math.floor(totalMs / 3600000);
-      const minutes = Math.floor((totalMs % 3600000) / 60000);
-      statsElements.todayWorkingHours.textContent = `${hours}時間${minutes}分`;
+      const totalSec = Math.floor(totalMs / 1000);
+      const hours = Math.floor(totalSec / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+      statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
     }
 
     if (statsElements.listingSpeed) {
