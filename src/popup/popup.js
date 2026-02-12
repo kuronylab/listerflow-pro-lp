@@ -149,6 +149,11 @@ function switchPage(page) {
     if (page === 'basic' || page === 'automation') {
       loadSettings();
     }
+    
+    // 履歴ページなら履歴を表示
+    if (page === 'history') {
+      displayHistory();
+    }
   }
 }
 
@@ -484,10 +489,73 @@ async function clearHistory() {
     try {
       await chrome.storage.local.set({ [KEY_HIST]: [] });
       await loadAndDisplayStats();
+      await displayHistory();
       alert('履歴を削除しました。');
     } catch (err) {
       console.error('[Popup] clearHistory error:', err);
       alert('履歴の削除に失敗しました。');
     }
+  }
+}
+
+async function displayHistory() {
+  const historyList = document.getElementById('historyList');
+  const historyCountDetail = document.getElementById('historyCountDetail');
+  
+  if (!historyList) return;
+  
+  try {
+    const history = await loadHistory();
+    
+    if (historyCountDetail) {
+      historyCountDetail.textContent = `${history.length}件`;
+    }
+    
+    if (history.length === 0) {
+      historyList.innerHTML = '<div class="no-history">履歴がありません。</div>';
+      return;
+    }
+    
+    historyList.innerHTML = '';
+    
+    // 履歴を新しい順に表示
+    [...history].reverse().forEach((item, index) => {
+      const originalIndex = history.length - 1 - index;
+      const historyItem = document.createElement('div');
+      historyItem.className = 'history-item';
+      
+      let statusText = "-";
+      if (item.flags?.protected) statusText = "Protected";
+      else if (item.flags?.brand) statusText = "Brand Warning";
+      else if (item.flags?.already_listed) statusText = "Already Listed";
+      else if (item.flags?.no_listings) statusText = "No listings";
+      else if (item.flags?.no_item) statusText = "No Item";
+      
+      historyItem.innerHTML = `
+        <div class="history-item-content">
+          <span class="history-asin">${item.asin}</span>
+          <span class="history-status">${statusText}</span>
+        </div>
+        <button class="history-delete-btn" data-index="${originalIndex}">✕</button>
+      `;
+      
+      historyList.appendChild(historyItem);
+    });
+    
+    // 削除ボタンのイベントリスナー
+    document.querySelectorAll('.history-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const index = parseInt(e.target.dataset.index);
+        const currentHistory = await loadHistory();
+        currentHistory.splice(index, 1);
+        await chrome.storage.local.set({ [KEY_HIST]: currentHistory });
+        await loadAndDisplayStats();
+        await displayHistory();
+      });
+    });
+    
+  } catch (err) {
+    console.error('[Popup] displayHistory error:', err);
+    historyList.innerHTML = '<div class="error">履歴の読み込みに失敗しました。</div>';
   }
 }
