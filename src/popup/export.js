@@ -18,6 +18,7 @@ async function loadAndRenderHistory() {
       return;
     }
 
+    // 新しい順に表示
     const sortedHistory = [...history].reverse();
 
     tableBody.innerHTML = '';
@@ -31,7 +32,10 @@ async function loadAndRenderHistory() {
       let dateCol1 = dateStr;
       let dateCol2 = '';
 
-      if (item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings || item.flags?.no_item) {
+      // エラー判定
+      const isError = item.flags?.protected || item.flags?.brand || item.flags?.already_listed || item.flags?.no_listings || item.flags?.no_item;
+
+      if (isError) {
         const flags = [];
         if (item.flags.protected) flags.push('Protected');
         if (item.flags.brand) flags.push('Brand');
@@ -39,10 +43,10 @@ async function loadAndRenderHistory() {
         if (item.flags.no_listings) flags.push('No listings');
         if (item.flags.no_item) flags.push('No item');
         
-        resultText = flags.join(', ');
+        resultText = flags.length > 0 ? flags.join(', ') : 'エラー';
         resultClass = 'status-error';
-        dateCol1 = '';
-        dateCol2 = dateStr;
+        dateCol1 = ''; // 正常列は空
+        dateCol2 = dateStr; // エラー列に日付
       }
 
       tr.innerHTML = `
@@ -55,6 +59,7 @@ async function loadAndRenderHistory() {
     });
   } catch (err) {
     console.error('Failed to load history:', err);
+    tableBody.innerHTML = '<tr><td colspan="4">データの読み込みに失敗しました</td></tr>';
   }
 }
 
@@ -70,11 +75,17 @@ async function copyTwoColumns() {
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length >= 4) {
+      // スプレッドシートへの貼り付け用にタブ区切り。空のセルは全角スペースを入れて位置を安定させる
       let col3 = cells[2].textContent.trim() || '　';
       let col4 = cells[3].textContent.trim() || '　';
       copyText += `${col3}\t${col4}\n`;
     }
   });
+
+  if (!copyText) {
+    alert('コピーするデータがありません');
+    return;
+  }
 
   try {
     await navigator.clipboard.writeText(copyText);
@@ -83,13 +94,19 @@ async function copyTwoColumns() {
     btn.innerHTML = '<span class="icon">✅</span> コピー完了！';
     setTimeout(() => { btn.innerHTML = originalContent; }, 2000);
   } catch (err) {
-    alert('コピーに失敗しました');
+    console.error('Clipboard copy failed:', err);
+    alert('コピーに失敗しました。ブラウザの権限設定を確認してください。');
   }
 }
 
 function downloadCsv() {
   const rows = document.querySelectorAll('#historyTable tr');
-  let csvContent = "\uFEFF";
+  if (rows.length <= 1) {
+    alert('ダウンロードするデータがありません');
+    return;
+  }
+
+  let csvContent = "\uFEFF"; // BOM for Japanese Excel
 
   rows.forEach(row => {
     const cols = row.querySelectorAll('th, td');
@@ -103,4 +120,5 @@ function downloadCsv() {
   link.setAttribute("href", url);
   link.setAttribute("download", `LFP_ASIN履歴_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
   link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }

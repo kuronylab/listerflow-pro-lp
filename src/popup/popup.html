@@ -56,15 +56,15 @@
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-label">本日の出品</div>
-            <div class="stat-value" id="todayListings">-</div>
+            <div class="stat-value" id="todayListings">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">今週の出品</div>
-            <div class="stat-value" id="weekListings">-</div>
+            <div class="stat-value" id="weekListings">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">累計出品</div>
-            <div class="stat-value" id="totalListings">-</div>
+            <div class="stat-value" id="totalListings">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">最後の出品</div>
@@ -78,65 +78,49 @@
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-label">本日の作業時間</div>
-            <div class="stat-value" id="todayWorkingHours">-</div>
+            <div class="stat-value" id="todayWorkingHours">0時間00分00秒</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">出品速度</div>
-            <div class="stat-value" id="listingSpeed" style="display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap;">-品/時</div>
+            <div class="stat-value" id="listingSpeed">
+              <span>0.0品/時</span>
+              <span class="rank-badge rank-very-slow">ゆったり🐢</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="stats-section">
-        <h2>📋 ASIN履歴 <span id="errorRateLabel" style="font-size: 10px; font-weight: bold; margin-left: 8px; padding: 2px 6px; border-radius: 10px; display: inline-block; vertical-align: middle;"></span></h2>
+        <h2>📋 ASIN履歴 <span id="errorRateLabel" style="font-size: 0.75em; font-weight: bold; margin-left: 12px; padding: 2px 8px; border-radius: 12px; display: inline-block; vertical-align: middle; color: rgb(253, 126, 20); background-color: rgb(255, 243, 224);">エラー率: 0% ✨</span></h2>
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-label">出品完了件数</div>
-            <div class="stat-value" id="completedListingsCount">-</div>
+            <div class="stat-value" id="completedListingsCount">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">⚠️ Protected</div>
-            <div class="stat-value" id="protectedCount">-</div>
+            <div class="stat-value" id="protectedCount">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">🛡️ Brand Warnings</div>
-            <div class="stat-value" id="brandCount">-</div>
+            <div class="stat-value" id="brandCount">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">📭 No listings</div>
-            <div class="stat-value" id="noListingsCount">-</div>
+            <div class="stat-value" id="noListingsCount">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">🔄 Already Listed</div>
-            <div class="stat-value" id="alreadyListedCount">-</div>
+            <div class="stat-value" id="alreadyListedCount">0件</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">🔍 No Item</div>
-            <div class="stat-value" id="noItemCount">-</div>
+            <div class="stat-value" id="noItemCount">0件</div>
           </div>
         </div>
       </div>
 
       <button class="btn-secondary" id="resetStatsBtn">統計をリセット</button>
-    </div>
-
-    <!-- 基本設定ページ -->
-    <div class="page" id="basicPage">
-      <div class="setting-section">
-        <h2>OpenAI API設定</h2>
-        <div class="form-group">
-          <label for="apiKey">API Key</label>
-          <input type="password" id="apiKey" placeholder="sk-...">
-          <button class="btn-show-key" id="showKeyBtn">表示</button>
-        </div>
-        <div class="form-group">
-          <label for="model">モデル</label>
-          <select id="model">
-            <option value="gpt-4o-mini">gpt-4o-mini</option>
-          </select>
-        </div>
-        <button class="btn-primary" id="saveBasicBtn">設定を保存</button>
-      </div>
     </div>
 
     <!-- ASIN履歴管理ページ -->
@@ -259,8 +243,26 @@
           </label>
         </div>
       </div>
-
       <button class="btn-primary" id="saveAutomationBtn">設定を保存</button>
+    </div>
+
+    <!-- 基本設定ページ -->
+    <div class="page" id="basicPage">
+      <div class="setting-section">
+        <h2>OpenAI API設定</h2>
+        <div class="form-group">
+          <label for="apiKey">API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-...">
+          <button class="btn-show-key" id="showKeyBtn">表示</button>
+        </div>
+        <div class="form-group">
+          <label for="model">モデル</label>
+          <select id="model">
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="saveBasicBtn">設定を保存</button>
+      </div>
     </div>
 
     <!-- バージョン情報ページ -->
@@ -270,11 +272,11 @@
         <div class="version-info">
           <div class="version-item">
             <span class="version-label">バージョン:</span>
-            <span class="version-value" id="versionNumber">-</span>
+            <span class="version-value" id="versionNumber">1.2.4</span>
           </div>
           <div class="version-item">
             <span class="version-label">リリース日:</span>
-            <span class="version-value" id="releaseDate">-</span>
+            <span class="version-value" id="releaseDate">2026/02/12</span>
           </div>
         </div>
         <div class="version-desc">

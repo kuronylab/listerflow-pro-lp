@@ -29,7 +29,6 @@ function initializeElements() {
     todayListings: document.getElementById('todayListings'),
     weekListings: document.getElementById('weekListings'),
     totalListings: document.getElementById('totalListings'),
-    optimizeCount: document.getElementById('optimizeCount'),
     lastListing: document.getElementById('lastListing'),
     completedListingsCount: document.getElementById('completedListingsCount'),
     protectedCount: document.getElementById('protectedCount'),
@@ -64,7 +63,7 @@ function initializeElements() {
   // Load version from manifest
   const manifest = chrome.runtime.getManifest();
   if (versionNumber) versionNumber.textContent = `v${manifest.version}`;
-  if (releaseDate) releaseDate.textContent = '2026年1月26日';
+  if (releaseDate) releaseDate.textContent = '2026/02/12';
 }
 
 function setupEventListeners() {
@@ -156,7 +155,6 @@ async function loadAndDisplayStats() {
     if (statsElements.todayListings) statsElements.todayListings.textContent = `${stats.todayListings || 0}件`;
     if (statsElements.weekListings) statsElements.weekListings.textContent = `${stats.weekListings || 0}件`;
     if (statsElements.totalListings) statsElements.totalListings.textContent = `${stats.totalListings || 0}件`;
-    if (statsElements.optimizeCount) statsElements.optimizeCount.textContent = `${stats.optimizeCount || 0}回`;
 
     // Last listing time
     if (statsElements.lastListing) {
@@ -222,14 +220,18 @@ async function loadAndDisplayStats() {
     if (statsElements.errorRateLabel) {
       const total = history.length;
       const errors = total - completedCount;
-      const rate = total > 0 ? (errors / total * 100).toFixed(1) : 0;
+      const rate = total > 0 ? Math.round(errors / total * 100) : 0;
       
-      let rateClass = "error-rate-low";
-      if (rate > 50) rateClass = "error-rate-high";
-      else if (rate > 20) rateClass = "error-rate-mid";
+      let color = "rgb(40, 167, 69)";
+      let bgColor = "rgba(40, 167, 69, 0.1)";
+      let emoji = "✨";
       
-      statsElements.errorRateLabel.textContent = `エラー率: ${rate}%`;
-      statsElements.errorRateLabel.className = rateClass;
+      if (rate > 50) { color = "rgb(220, 53, 69)"; bgColor = "rgba(220, 53, 69, 0.1)"; emoji = "😱"; }
+      else if (rate > 20) { color = "rgb(253, 126, 20)"; bgColor = "rgba(253, 126, 20, 0.1)"; emoji = "🧐"; }
+      
+      statsElements.errorRateLabel.textContent = `エラー率: ${rate}% ${emoji}`;
+      statsElements.errorRateLabel.style.color = color;
+      statsElements.errorRateLabel.style.backgroundColor = bgColor;
     }
 
   } catch (err) {
@@ -238,230 +240,178 @@ async function loadAndDisplayStats() {
 }
 
 async function loadStatistics() {
-  try {
-    const data = await chrome.storage.local.get([KEY_STATS]);
-    let stats = data?.[KEY_STATS];
+  const data = await chrome.storage.local.get([KEY_STATS]);
+  let stats = data?.[KEY_STATS];
 
-    if (!stats || typeof stats !== 'object') {
-      stats = {
-        totalListings: 0,
-        todayListings: 0,
-        weekListings: 0,
-        lastListingDate: null,
-        optimizeCount: 0,
-        totalWorkTimeToday: 0,
-        lastResetDate: Date.now()
-      };
-    }
-
-    const now = new Date();
-    const lastReset = new Date(stats.lastResetDate);
-
-    if (now.toDateString() !== lastReset.toDateString()) {
-      stats.todayListings = 0;
-      stats.totalWorkTimeToday = 0;
-      if (now.getDay() < lastReset.getDay() || (now.getDay() === 0 && lastReset.getDay() !== 0)) {
-        stats.weekListings = 0;
-      }
-      stats.lastResetDate = now.getTime();
-      await chrome.storage.local.set({ [KEY_STATS]: stats });
-    }
-
-    return stats;
-  } catch (err) {
-    console.error('[Popup] loadStatistics error:', err);
-    return { todayListings: 0, weekListings: 0, totalListings: 0 };
-  }
-}
-
-async function resetStats() {
-  if (!confirm('統計情報をリセットしますか？')) return;
-  try {
-    const stats = {
+  if (!stats) {
+    stats = {
       totalListings: 0,
       todayListings: 0,
       weekListings: 0,
       lastListingDate: null,
-      optimizeCount: 0,
       totalWorkTimeToday: 0,
       lastResetDate: Date.now()
     };
-    await chrome.storage.local.set({ [KEY_STATS]: stats });
-    await loadAndDisplayStats();
-    alert('統計情報をリセットしました。');
-  } catch (err) {
-    console.error('[Popup] resetStats error:', err);
-    alert('統計情報のリセットに失敗しました。');
   }
+
+  // Daily reset
+  const now = new Date();
+  const lastReset = new Date(stats.lastResetDate || 0);
+  if (now.toDateString() !== lastReset.toDateString()) {
+    stats.todayListings = 0;
+    stats.totalWorkTimeToday = 0;
+    stats.lastResetDate = now.getTime();
+    
+    // Weekly reset (Monday)
+    if (now.getDay() === 1) {
+      stats.weekListings = 0;
+    }
+    await chrome.storage.local.set({ [KEY_STATS]: stats });
+  }
+
+  return stats;
+}
+
+async function resetStats() {
+  if (!confirm('統計情報をリセットしますか？')) return;
+  const stats = {
+    totalListings: 0,
+    todayListings: 0,
+    weekListings: 0,
+    lastListingDate: null,
+    totalWorkTimeToday: 0,
+    lastResetDate: Date.now()
+  };
+  await chrome.storage.local.set({ [KEY_STATS]: stats });
+  await loadAndDisplayStats();
 }
 
 // Settings functions
 async function loadSettings() {
-  try {
-    const DEFAULTS = {
-      apiKey: "",
-      model: "gpt-4o-mini",
-      veroEnabled: true,
-      autoGetOnPaste: true,
-      autoGetOnHistory: true,
-      autoMipAfterOptimize: false,
-      quickMipButton: true,
-      highlightOptimize: true,
-      historyEnabled: true,
-      autoClickOkAfterMip: true,
-      turboListingMode: false
-    };
+  const data = await chrome.storage.local.get([KEY_OPT]);
+  const opt = data?.[KEY_OPT] || {};
 
-    const data = await chrome.storage.sync.get([KEY_OPT]);
-    const options = { ...DEFAULTS, ...(data?.[KEY_OPT] || {}) };
+  if (settingElements.apiKey) settingElements.apiKey.value = opt.apiKey || '';
+  if (settingElements.model) settingElements.model.value = opt.model || 'gpt-4o-mini';
+  
+  // Automation & UI toggles
+  if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = !!opt.autoGetOnPaste;
+  if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
+  if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoMipAfterOptimize;
+  if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!opt.autoClickOkAfterMip;
+  if (settingElements.quickMipButton) settingElements.quickMipButton.checked = !!opt.quickMipButton;
+  if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = !!opt.highlightOptimize;
+  if (settingElements.historyEnabled) settingElements.historyEnabled.checked = !!opt.historyEnabled;
+  if (settingElements.veroEnabled) settingElements.veroEnabled.checked = !!opt.veroEnabled;
+  if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!opt.turboListingMode;
+}
 
-    if (settingElements.apiKey) settingElements.apiKey.value = options.apiKey || "";
-    if (settingElements.model) settingElements.model.value = options.model || "gpt-4o-mini";
-    if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = !!options.autoGetOnPaste;
-    if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!options.autoGetOnHistory;
-    if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!options.autoMipAfterOptimize;
-    if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!options.autoClickOkAfterMip;
-    if (settingElements.quickMipButton) settingElements.quickMipButton.checked = !!options.quickMipButton;
-    if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = !!options.highlightOptimize;
-    if (settingElements.historyEnabled) settingElements.historyEnabled.checked = !!options.historyEnabled;
-    if (settingElements.veroEnabled) settingElements.veroEnabled.checked = !!options.veroEnabled;
-    if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!options.turboListingMode;
-
-  } catch (err) {
-    console.error('[Popup] loadSettings error:', err);
+function toggleApiKeyVisibility() {
+  const el = settingElements.apiKey;
+  if (!el) return;
+  const btn = document.getElementById('showKeyBtn');
+  if (el.type === 'password') {
+    el.type = 'text';
+    if (btn) btn.textContent = '隠す';
+  } else {
+    el.type = 'password';
+    if (btn) btn.textContent = '表示';
   }
 }
 
 async function saveBasicSettings() {
-  try {
-    const data = await chrome.storage.sync.get([KEY_OPT]);
-    const options = data?.[KEY_OPT] || {};
-    
-    options.apiKey = settingElements.apiKey?.value.trim();
-    options.model = settingElements.model?.value;
+  const data = await chrome.storage.local.get([KEY_OPT]);
+  const opt = data?.[KEY_OPT] || {};
 
-    await chrome.storage.sync.set({ [KEY_OPT]: options });
-    alert('基本設定を保存しました。');
-  } catch (err) {
-    alert('保存に失敗しました。');
-  }
+  opt.apiKey = settingElements.apiKey?.value || '';
+  opt.model = settingElements.model?.value || 'gpt-4o-mini';
+
+  await chrome.storage.local.set({ [KEY_OPT]: opt });
+  alert('基本設定を保存しました');
 }
 
 async function saveAutomationSettings() {
-  try {
-    const data = await chrome.storage.sync.get([KEY_OPT]);
-    const options = data?.[KEY_OPT] || {};
-    
-    options.autoGetOnPaste = settingElements.autoGetOnPaste?.checked;
-    options.autoGetOnHistory = settingElements.autoGetOnHistory?.checked;
-    options.autoMipAfterOptimize = settingElements.autoMipAfterOptimize?.checked;
-    options.autoClickOkAfterMip = settingElements.autoClickOkAfterMip?.checked;
-    options.quickMipButton = settingElements.quickMipButton?.checked;
-    options.highlightOptimize = settingElements.highlightOptimize?.checked;
-    options.historyEnabled = settingElements.historyEnabled?.checked;
-    options.veroEnabled = settingElements.veroEnabled?.checked;
-    options.turboListingMode = settingElements.turboListingMode?.checked;
+  const data = await chrome.storage.local.get([KEY_OPT]);
+  const opt = data?.[KEY_OPT] || {};
 
-    await chrome.storage.sync.set({ [KEY_OPT]: options });
-    alert('自動化設定を保存しました。');
-  } catch (err) {
-    alert('保存に失敗しました。');
-  }
-}
+  opt.autoGetOnPaste = settingElements.autoGetOnPaste?.checked;
+  opt.autoGetOnHistory = settingElements.autoGetOnHistory?.checked;
+  opt.autoMipAfterOptimize = settingElements.autoMipAfterOptimize?.checked;
+  opt.autoClickOkAfterMip = settingElements.autoClickOkAfterMip?.checked;
+  opt.quickMipButton = settingElements.quickMipButton?.checked;
+  opt.highlightOptimize = settingElements.highlightOptimize?.checked;
+  opt.historyEnabled = settingElements.historyEnabled?.checked;
+  opt.veroEnabled = settingElements.veroEnabled?.checked;
+  opt.turboListingMode = settingElements.turboListingMode?.checked;
 
-function toggleApiKeyVisibility() {
-  const input = settingElements.apiKey;
-  const btn = document.getElementById('showKeyBtn');
-  if (!input || !btn) return;
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '隠す';
-  } else {
-    input.type = 'password';
-    btn.textContent = '表示';
-  }
+  await chrome.storage.local.set({ [KEY_OPT]: opt });
+  alert('自動化・UI設定を保存しました');
 }
 
 // History functions
 async function loadHistory() {
   const data = await chrome.storage.local.get([KEY_HIST]);
-  return Array.isArray(data?.[KEY_HIST]) ? data[KEY_HIST] : [];
+  return data?.[KEY_HIST] || [];
 }
 
 async function loadHistoryList() {
-  const historyList = document.getElementById('historyList');
-  const historyCountDetail = document.getElementById('historyCountDetail');
-  if (!historyList) return;
+  const history = await loadHistory();
+  const listEl = document.getElementById('historyList');
+  const countEl = document.getElementById('historyCountDetail');
+  
+  if (countEl) countEl.textContent = `${history.length}件`;
+  if (!listEl) return;
 
-  historyList.innerHTML = '<div class="loading">読み込み中...</div>';
-
-  try {
-    const history = await loadHistory();
-    if (historyCountDetail) historyCountDetail.textContent = `${history.length}件`;
-
-    if (history.length === 0) {
-      historyList.innerHTML = '<div class="loading">履歴がありません</div>';
-      return;
-    }
-
-    historyList.innerHTML = '';
-    [...history].reverse().forEach((item, index) => {
-      const originalIndex = history.length - 1 - index;
-      const div = document.createElement('div');
-      div.className = 'history-item';
-      
-      const flags = [];
-      if (item.flags?.protected) flags.push('Protected');
-      if (item.flags?.brand) flags.push('Brand');
-      if (item.flags?.already_listed) flags.push('Already listed');
-      if (item.flags?.no_listings) flags.push('No listings');
-      if (item.flags?.no_item) flags.push('No item');
-      
-      const statusText = flags.length > 0 ? flags.join(', ') : '-';
-
-      div.innerHTML = `
-        <div class="history-asin">${item.asin}</div>
-        <div class="history-flags">${statusText}</div>
-        <button class="history-delete-btn" data-index="${originalIndex}">✕</button>
-      `;
-      
-      div.querySelector('.history-delete-btn').addEventListener('click', (e) => {
-        deleteHistoryItem(parseInt(e.target.dataset.index));
-      });
-      
-      historyList.appendChild(div);
-    });
-  } catch (err) {
-    historyList.innerHTML = '<div class="loading">エラーが発生しました</div>';
+  if (history.length === 0) {
+    listEl.innerHTML = '<div class="no-data">履歴がありません</div>';
+    return;
   }
+
+  listEl.innerHTML = '';
+  history.forEach((item, index) => {
+    const card = document.createElement('div');
+    card.className = 'history-card';
+    
+    let status = '-';
+    if (item.flags?.protected) status = 'Protected';
+    else if (item.flags?.brand) status = 'Brand Warning';
+    else if (item.flags?.no_listings) status = 'No listings';
+    else if (item.flags?.already_listed) status = 'Already Listed';
+    else if (item.flags?.no_item) status = 'No Item';
+    else if (item.timestamp) status = '出品完了';
+
+    card.innerHTML = `
+      <div class="history-main">
+        <span class="history-asin">${item.asin}</span>
+        <span class="history-status">${status}</span>
+      </div>
+      <button class="history-delete" data-index="${index}">✕</button>
+    `;
+    listEl.appendChild(card);
+  });
+
+  // Delete buttons
+  listEl.querySelectorAll('.history-delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const idx = parseInt(e.target.dataset.index);
+      await deleteHistoryItem(idx);
+    });
+  });
 }
 
 async function deleteHistoryItem(index) {
-  try {
-    const history = await loadHistory();
-    history.splice(index, 1);
-    await chrome.storage.local.set({ [KEY_HIST]: history });
-    await loadHistoryList();
-    await loadAndDisplayStats();
-  } catch (err) {
-    alert('削除に失敗しました。');
-  }
+  const history = await loadHistory();
+  history.splice(index, 1);
+  await chrome.storage.local.set({ [KEY_HIST]: history });
+  await loadHistoryList();
 }
 
 async function clearHistory() {
   if (!confirm('すべての履歴を削除しますか？')) return;
-  try {
-    await chrome.storage.local.set({ [KEY_HIST]: [] });
-    await loadHistoryList();
-    await loadAndDisplayStats();
-    alert('履歴をすべて削除しました。');
-  } catch (err) {
-    alert('削除に失敗しました。');
-  }
+  await chrome.storage.local.set({ [KEY_HIST]: [] });
+  await loadHistoryList();
 }
 
 function exportToSpreadsheet() {
-  chrome.tabs.create({
-    url: chrome.runtime.getURL('src/popup/export.html')
-  });
+  chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
 }

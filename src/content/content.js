@@ -230,20 +230,21 @@ async function saveStatistics(stats) {
  * 30分以上の空きがあれば中断とみなす
  */
 function updateWorkTime(stats, now) {
-  const THRESHOLD_MS = 2 * 60 * 1000; // 2分
+  // 5分以上の空きがあれば「休憩中」とみなして作業時間に加算しない
+  const THRESHOLD_MS = 5 * 60 * 1000; 
   
   if (!stats.todayLastActivityTime) {
     // その日最初の活動
     stats.todayLastActivityTime = now;
-    // 最初の1回分として便宜上20秒加算しておく（1品分の目安）
-    stats.todayTotalWorkMs = 20 * 1000;
+    // 最初の1回分として便宜上20秒加算しておく（1品分の平均作業時間の目安）
+    stats.totalWorkTimeToday = 20 * 1000;
   } else {
     const diff = now - stats.todayLastActivityTime;
     if (diff > 0 && diff < THRESHOLD_MS) {
-      // 中断時間内でなければ加算
+      // 5分以内の間隔であれば、純粋な作業時間として加算
       stats.totalWorkTimeToday += diff;
     } else if (diff >= THRESHOLD_MS) {
-      // 中断明け：新しいセッションの開始として20秒加算
+      // 5分以上の空き（休憩）があった場合は、この1件分の作業時間として20秒だけ加算
       stats.totalWorkTimeToday += 20 * 1000;
     }
     stats.todayLastActivityTime = now;
