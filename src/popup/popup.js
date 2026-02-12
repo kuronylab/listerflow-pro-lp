@@ -171,9 +171,9 @@ function startWorkTimeCounter() {
     const now = Date.now();
     const lastActivity = stats.todayLastActivityTime || 0;
     const diff = now - lastActivity;
-    const THRESHOLD_MS = 5 * 60 * 1000; // 5分
+    const THRESHOLD_MS = 2 * 60 * 1000; // 2分
     
-    // 5分以上の空きがある場合は、カウントアップを停止
+    // 2分以上の空きがある場合は、カウントアップを停止
     if (diff >= THRESHOLD_MS) {
       return; // 休憩中なので更新しない
     }
@@ -472,8 +472,11 @@ async function deleteHistoryItem(index) {
 
 async function clearHistory() {
   if (!confirm('すべての履歴を削除しますか？')) return;
+  // 履歴だけを削除し、統計情報（本日の作業時間など）は保持
   await chrome.storage.local.set({ [KEY_HIST]: [] });
   await loadHistoryList();
+  // 統計情報を再読み込みして表示を更新
+  await loadAndDisplayStats();
 }
 
 async function updateHistoryStats(history) {
