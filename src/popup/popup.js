@@ -186,9 +186,9 @@ async function loadAndDisplayStats() {
       let rank = "rank-very-slow";
       let rankText = "ゆったり🐢";
       const s = parseFloat(speed);
-      if (s >= 100) { rank = "rank-fastest"; rankText = "爆速🚀"; }
+      if (s >= 120) { rank = "rank-fastest"; rankText = "爆速🚀"; }
       else if (s >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
-      else if (s >= 30) { rank = "rank-normal"; rankText = "普通🛵"; }
+      else if (s >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
       else if (s >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
 
       statsElements.listingSpeed.innerHTML = `

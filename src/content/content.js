@@ -174,7 +174,7 @@ async function loadStatistics() {
         optimizeCount: 0,
         brandCount: 0,
         alreadyListedCount: 0,
-        todayTotalWorkMs: 0,
+        totalWorkTimeToday: 0,
         todayLastActivityTime: null,
         todayMaxSpeed: 0,
         lastResetDate: Date.now()
@@ -183,7 +183,7 @@ async function loadStatistics() {
     // 既存データへのマイグレーション
     if (stats.brandCount === undefined) stats.brandCount = 0;
     if (stats.alreadyListedCount === undefined) stats.alreadyListedCount = 0;
-    if (stats.todayTotalWorkMs === undefined) stats.todayTotalWorkMs = 0;
+    if (stats.totalWorkTimeToday === undefined) stats.totalWorkTimeToday = 0;
     if (stats.todayLastActivityTime === undefined) stats.todayLastActivityTime = null;
     if (stats.todayMaxSpeed === undefined) stats.todayMaxSpeed = 0;
     
@@ -193,7 +193,7 @@ async function loadStatistics() {
     
     if (lastReset !== today) {
       stats.todayListings = 0;
-      stats.todayTotalWorkMs = 0;
+      stats.totalWorkTimeToday = 0;
       stats.todayLastActivityTime = null;
       stats.todayMaxSpeed = 0;
       stats.lastResetDate = Date.now();
@@ -241,10 +241,10 @@ function updateWorkTime(stats, now) {
     const diff = now - stats.todayLastActivityTime;
     if (diff > 0 && diff < THRESHOLD_MS) {
       // 中断時間内でなければ加算
-      stats.todayTotalWorkMs += diff;
+      stats.totalWorkTimeToday += diff;
     } else if (diff >= THRESHOLD_MS) {
       // 中断明け：新しいセッションの開始として20秒加算
-      stats.todayTotalWorkMs += 20 * 1000;
+      stats.totalWorkTimeToday += 20 * 1000;
     }
     stats.todayLastActivityTime = now;
   }
@@ -265,8 +265,8 @@ async function incrementListingCount() {
     updateWorkTime(stats, now);
 
     // 最高時速の更新チェック
-    if (stats.todayTotalWorkMs > 0) {
-      const hours = stats.todayTotalWorkMs / (1000 * 60 * 60);
+    if (stats.totalWorkTimeToday > 0) {
+      const hours = stats.totalWorkTimeToday / (1000 * 60 * 60);
       const currentSpeed = stats.todayListings / hours;
       if (currentSpeed > stats.todayMaxSpeed) {
         stats.todayMaxSpeed = currentSpeed;
@@ -1595,6 +1595,12 @@ async function refreshListingCountUI() {
       const hours = Math.floor(diffMin / 60);
       const mins = diffMin % 60;
       sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分`;
+
+      // 累計作業時間をストレージに保存（ポップアップのカウンター同期用）
+      if (stats && totalMs > 0) {
+        stats.totalWorkTimeToday = totalMs;
+        saveStatistics(stats);
+      }
     }
   }
   
