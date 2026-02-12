@@ -170,11 +170,11 @@ body {
 /* ランクバッジ */
 .rank-badge {
   display: inline-block;
-  padding: 1px 8px;
+  padding: 1px 6px;
   border-radius: 10px;
   font-size: 9px;
   font-weight: bold;
-  margin-left: 4px;
+  margin-left: 6px;
   border: 1px solid transparent;
 }
 

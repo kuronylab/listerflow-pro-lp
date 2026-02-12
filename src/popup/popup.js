@@ -181,8 +181,8 @@ async function loadAndDisplayStats() {
       const totalMs = stats.totalWorkTimeToday || 0;
       const count = stats.todayListings || 0;
       const hours = totalMs / 3600000;
-      const speedVal = hours > 0 ? Math.round(count / hours) : 0;
-      const speedDisplay = hours > 0 ? (count / hours).toFixed(1) : "0.0";
+      const speedVal = hours > 0 ? (count / hours) : 0;
+      const speedDisplay = speedVal.toFixed(1);
       
       let rank = "rank-very-slow";
       let rankText = "ゆったり🐢";
