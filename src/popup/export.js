@@ -75,9 +75,15 @@ async function copyTwoColumns() {
   rows.forEach(row => {
     const cells = row.querySelectorAll('td');
     if (cells.length >= 4) {
-      // スプレッドシートへの貼り付け用にタブ区切り。空のセルは全角スペースを入れて位置を安定させる
-      let col3 = cells[2].textContent.trim() || '　';
-      let col4 = cells[3].textContent.trim() || '　';
+      // スプレッドシートへの貼り付け用にタブ区切り。
+      // 表示上の「出品完了」を内部値の「-」に変換
+      let col3 = cells[2].textContent.trim();
+      let col4 = cells[3].textContent.trim();
+      
+      // 空の場合は「-」に変換
+      if (!col3) col3 = '-';
+      if (!col4) col4 = '-';
+      
       copyText += `${col3}\t${col4}\n`;
     }
   });

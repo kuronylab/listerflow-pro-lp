@@ -372,21 +372,33 @@ async function loadHistoryList() {
     const card = document.createElement('div');
     card.className = 'history-card';
     
-    let status = '-';
-    if (item.flags?.protected) status = 'Protected';
-    else if (item.flags?.brand) status = 'Brand Warning';
-    else if (item.flags?.no_listings) status = 'No listings';
-    else if (item.flags?.already_listed) status = 'Already Listed';
-    else if (item.flags?.no_item) status = 'No Item';
-    else if (item.timestamp) status = '出品完了';
+    let status = '出品完了';
+    let isError = false;
+    if (item.flags?.protected) { status = 'Protected'; isError = true; }
+    else if (item.flags?.brand) { status = 'Brand Warning'; isError = true; }
+    else if (item.flags?.no_listings) { status = 'No listings'; isError = true; }
+    else if (item.flags?.already_listed) { status = 'Already Listed'; isError = true; }
+    else if (item.flags?.no_item) { status = 'No Item'; isError = true; }
+
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'history-status';
+    statusSpan.textContent = status;
+    if (isError) {
+      statusSpan.style.color = '#E07167';
+      statusSpan.style.fontWeight = '600';
+    }
 
     card.innerHTML = `
       <div class="history-main">
         <span class="history-asin">${item.asin}</span>
-        <span class="history-status">${status}</span>
+        <span class="history-status-inline"></span>
       </div>
       <button class="history-delete" data-index="${index}">✕</button>
     `;
+    
+    const statusContainer = card.querySelector('.history-status-inline');
+    statusContainer.appendChild(statusSpan);
+    
     listEl.appendChild(card);
   });
 
@@ -397,6 +409,9 @@ async function loadHistoryList() {
       await deleteHistoryItem(idx);
     });
   });
+
+  // 統計情報を更新
+  await updateHistoryStats(history);
 }
 
 async function deleteHistoryItem(index) {
@@ -410,6 +425,19 @@ async function clearHistory() {
   if (!confirm('すべての履歴を削除しますか？')) return;
   await chrome.storage.local.set({ [KEY_HIST]: [] });
   await loadHistoryList();
+}
+
+async function updateHistoryStats(history) {
+  // 統計情報を更新（出品完了とエラーの件数）
+  const completedCount = history.filter(h => {
+    const f = h.flags || {};
+    return !f.protected && !f.brand && !f.already_listed && !f.no_listings && !f.no_item;
+  }).length;
+  
+  const errorCount = history.length - completedCount;
+  
+  // 統計情報の表示を更新（必要に応じて）
+  console.log(`[History] 出品完了: ${completedCount}件, エラー: ${errorCount}件`);
 }
 
 function exportToSpreadsheet() {

@@ -396,7 +396,10 @@ input:checked + .toggle-slider:before {
 
 .history-main {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
 .history-asin {
@@ -404,11 +407,17 @@ input:checked + .toggle-slider:before {
   font-size: 14px;
   font-weight: 700;
   color: #212529;
+  white-space: nowrap;
 }
 
 .history-status {
   font-size: 11px;
   color: #868e96;
+  white-space: nowrap;
+}
+
+.history-status-inline {
+  display: inline;
 }
 
 .history-delete {
