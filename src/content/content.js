@@ -1625,7 +1625,9 @@ async function refreshListingCountUI() {
         if (diff > 0 && diff < THRESHOLD_MS) {
           totalMs += diff;
         } else if (diff >= THRESHOLD_MS) {
-          totalMs += 20 * 1000;
+          // 2分以上の休憩：判定時間（2分）は作業時間に含めない
+          // 純粋な作業時間のみを加算
+          continue;
         }
       }
       
@@ -2633,19 +2635,34 @@ function startSessionTimeCounter(successItems) {
     clearInterval(sessionTimeUpdateInterval);
   }
   
-  // 最初のアイテムのタイムスタンプを基準にする
   if (successItems.length === 0) return;
   
-  const firstTime = Math.min(...successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t));
   const THRESHOLD_MS = 2 * 60 * 1000; // 2分
+  const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t).sort((a, b) => a - b);
+  
+  if (times.length === 0) return;
+  
+  // 純作業時間を計算（休憩時間を除外）
+  let accumulatedWorkTime = 0;
+  for (let i = 1; i < times.length; i++) {
+    const diff = times[i] - times[i-1];
+    if (diff > 0 && diff < THRESHOLD_MS) {
+      accumulatedWorkTime += diff;
+    }
+    // diff >= THRESHOLD_MS の場合は休憩とみなして加算しない
+  }
+  
+  const firstTime = times[0];
   
   sessionTimeUpdateInterval = setInterval(async () => {
     const now = Date.now();
     const timeSinceFirst = now - firstTime;
     
-    // 2分以上経過していない場合のみカウント
+    // 最初のアイテムからの経過時間が2分未満の場合のみカウント
     if (timeSinceFirst < THRESHOLD_MS) {
-      const totalSec = Math.floor(timeSinceFirst / 1000);
+      // 純作業時間 = 積算された作業時間 + 最初アイテム以降の経過時間
+      const totalMs = accumulatedWorkTime + timeSinceFirst;
+      const totalSec = Math.floor(totalMs / 1000);
       const hours = Math.floor(totalSec / 3600);
       const mins = Math.floor((totalSec % 3600) / 60);
       const secs = totalSec % 60;
