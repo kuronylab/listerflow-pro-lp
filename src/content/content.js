@@ -2925,8 +2925,6 @@ function updatePauseResumeButtonUI(btn, isPaused) {
 
 /* ---------- リアルタイムカウンター更新 ---------- */
 
-let workTimeUpdateInterval = null;
-
 /**
  * 出品作業画面のカウンターをリアルタイム更新（1秒ごと）
  */
