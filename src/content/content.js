@@ -1066,14 +1066,15 @@ function setStatusLine(len, veroCount, shipText, highlight) {
   if (!UI.status) return;
   UI.status.textContent = `文字数：${len} / Vero：${veroCount} / 出品：${shipText}`;
   if (UI.btnOpt && STORE.opt.highlightOptimize) {
-    if (highlight) {
-      UI.btnOpt.classList.add("highlight");
-      // インラインスタイルをクリア
-      UI.btnOpt.style.background = "";
-      UI.btnOpt.style.color = "";
-    } else {
-      UI.btnOpt.classList.remove("highlight");
-    }
+    // 修正: 最適化完了後も常に.highlightクラスを保持
+    // highlightOptimizeがONの場合、常に.highlightクラスを付与
+    UI.btnOpt.classList.add("highlight");
+    // インラインスタイルをクリア
+    UI.btnOpt.style.background = "";
+    UI.btnOpt.style.color = "";
+  } else if (UI.btnOpt) {
+    // highlightOptimizeがOFFの場合のみ削除
+    UI.btnOpt.classList.remove("highlight");
   }
 }
 
