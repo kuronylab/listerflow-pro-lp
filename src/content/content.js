@@ -1640,11 +1640,6 @@ async function refreshHistorySelect() {
 async function refreshListingCountUI() {
   if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   
-  // 再生/一時停止ボタンを作成（初回のみ）
-  if (!UI.pauseResumeBtn) {
-    await createPauseResumeButton();
-  }
-  
   const hist = await loadHistory();
   const stats = await loadStatistics();
   
@@ -1656,11 +1651,9 @@ async function refreshListingCountUI() {
   const successCount = successItems.length;
 
   // 本日の作業時間を計算
-  // 修正: 統計情報から直接取得（確定済み時間 + 現在のセッション経過時間）
   let confirmedMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
   let currentSessionMs = 0;
   
-  // 現在進行中のセッション経過時間を追加（一時停止中でない場合）
   if (stats && stats.currentSessionStartTime && !stats.isCounterPaused) {
     const now = Date.now();
     currentSessionMs = now - stats.currentSessionStartTime;
@@ -1680,7 +1673,7 @@ async function refreshListingCountUI() {
   }
   
   // ランク判定
-  let rankHtml = "";
+  let rankContent = "";
   if (totalMs > 0 && successCount > 0) {
     const speed = Math.round((successCount / (totalMs / (1000 * 60 * 60))));
     let feedback = "着実";
@@ -1702,34 +1695,43 @@ async function refreshListingCountUI() {
 
     const isMaxSpeed = speed >= (stats?.todayMaxSpeed || 0);
     const trophy = isMaxSpeed ? " 🏆" : "";
-
-    rankHtml = `<span style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; color: ${color}; background-color: ${bgColor}; border: 1px solid ${color}44; display: inline-block; vertical-align: middle; white-space: nowrap;">${feedback} ${emoji}${trophy}</span>`;
+    rankContent = `${feedback} ${emoji}${trophy}`;
+    
+    // ランク表示要素のスタイル更新
+    let rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
+    if (rankSpan) {
+      rankSpan.style.color = color;
+      rankSpan.style.backgroundColor = bgColor;
+      rankSpan.style.borderColor = `${color}44`;
+      rankSpan.textContent = rankContent;
+    }
   }
 
-  // ASIN履歴バーのラベル更新
-  // 新規: ボタンを保持しつつ、作業時間を更新
-  const existingBtn = UI.listingCountLabel.querySelector('.lfp-pause-resume-btn');
-  const btnHtml = existingBtn ? existingBtn.outerHTML : '<span id="lfp-pause-resume-btn-placeholder" style="margin-left: 12px; display: inline-flex; align-items: center;"></span>';
-  
-  UI.listingCountLabel.innerHTML = `
-    <span style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
-    <span style="margin-left: 15px; color: #666; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
-    ${btnHtml}
-    ${rankHtml}
-  `;
-  
-  // ボタンを再接続（上書き後のイベントリスナー再設定）
-  if (existingBtn) {
-    const newBtn = UI.listingCountLabel.querySelector('.lfp-pause-resume-btn');
-    if (newBtn) {
-      newBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        await togglePauseResume();
-        const updatedStats = await loadStatistics();
-        updatePauseResumeButtonUI(newBtn, updatedStats?.isCounterPaused || false);
-      });
-      UI.pauseResumeBtn = newBtn;
+  // 初回構築
+  if (!UI.listingCountLabel.querySelector('.lfp-count-val')) {
+    UI.listingCountLabel.innerHTML = `
+      <span class="lfp-count-val" style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
+      <span class="lfp-time-val" style="margin-left: 15px; color: #666; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
+      <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: inline-flex; align-items: center;"></span>
+      <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankContent ? 'inline-block' : 'none'}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent;">${rankContent}</span>
+    `;
+    await createPauseResumeButton();
+  } else {
+    // 部分更新
+    const countSpan = UI.listingCountLabel.querySelector('.lfp-count-val');
+    const timeSpan = UI.listingCountLabel.querySelector('.lfp-time-val');
+    const rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
+    
+    if (countSpan) countSpan.textContent = `出品完了: ${successCount}件`;
+    if (timeSpan) timeSpan.textContent = `本日の作業時間: ${sessionWorkTime}`;
+    if (rankSpan) {
+      rankSpan.style.display = rankContent ? 'inline-block' : 'none';
+      rankSpan.textContent = rankContent;
+    }
+    
+    // ボタンの状態も同期
+    if (UI.pauseResumeBtn) {
+      updatePauseResumeButtonUI(UI.pauseResumeBtn, stats?.isCounterPaused || false);
     }
   }
 }
@@ -2748,47 +2750,60 @@ function startRealtimeCounter() {
     // 2分以上ASIN入力操作がなければ自動停止
     if (stats.lastAsinInputTime && (now - stats.lastAsinInputTime) >= 2 * 60 * 1000) {
       stats.isCounterPaused = true;
+      // 自動停止時はその時点までの経過時間を確定させる
+      const sessionElapsedMs = now - stats.currentSessionStartTime;
+      stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
+      stats.currentSessionStartTime = null;
+      stats.currentSessionElapsedMs = 0;
+      
       await saveStatistics(stats);
       clearInterval(workTimeUpdateInterval);
       console.log('[LFP] 2分間の非操作により自動停止');
+      // UI更新
+      await refreshListingCountUI();
       return;
     }
     
-    // 現在のセッション経過時間を更新
-    stats.currentSessionElapsedMs = now - stats.currentSessionStartTime;
-    await saveStatistics(stats);
+    // 現在のセッション経過時間を更新（保存はせずUI表示のみに使用）
+    // stats.currentSessionElapsedMs = now - stats.currentSessionStartTime;
+    // await saveStatistics(stats);
     
     // UI更新（出品作業画面のカウンター表示）
-    updateWorkTimeDisplay();
+    await updateWorkTimeDisplay();
   }, 1000);
 }
 
 /**
  * 作業時間表示の更新（出品作業画面）
  */
-function updateWorkTimeDisplay() {
+async function updateWorkTimeDisplay() {
   if (!UI.listingCountLabel) return;
   
-  // 統計情報から現在の経過時間を取得
-  chrome.storage.local.get(['LFP_STATS'], (data) => {
-    const stats = data?.['LFP_STATS'];
-    if (!stats || !stats.currentSessionStartTime) return;
-    
-    const elapsedMs = stats.currentSessionElapsedMs || 0;
-    const totalMs = (stats.totalWorkTimeToday || 0) + elapsedMs;
-    
-    const totalSec = Math.floor(totalMs / 1000);
-    const hours = Math.floor(totalSec / 3600);
-    const mins = Math.floor((totalSec % 3600) / 60);
-    const secs = totalSec % 60;
-    
-    const timeStr = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
-    
-    // UIを更新
-    const existingLabel = UI.listingCountLabel.innerHTML;
-    const newLabel = existingLabel.replace(/本日の作業時間: [\d時分秒]+/g, `本日の作業時間: ${timeStr}`);
-    UI.listingCountLabel.innerHTML = newLabel;
-  });
+  const stats = await loadStatistics();
+  if (!stats) return;
+  
+  let confirmedMs = stats.totalWorkTimeToday || 0;
+  let currentSessionMs = 0;
+  
+  if (stats.currentSessionStartTime && !stats.isCounterPaused) {
+    currentSessionMs = Date.now() - stats.currentSessionStartTime;
+  } else if (stats.currentSessionElapsedMs) {
+    currentSessionMs = stats.currentSessionElapsedMs;
+  }
+  
+  const totalMs = confirmedMs + currentSessionMs;
+  const totalSec = Math.floor(totalMs / 1000);
+  const hours = Math.floor(totalSec / 3600);
+  const mins = Math.floor((totalSec % 3600) / 60);
+  const secs = totalSec % 60;
+  
+  const timeStr = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
+  
+  // 部分更新
+  const timeSpan = UI.listingCountLabel.querySelector('.lfp-time-val');
+  if (timeSpan) {
+    timeSpan.textContent = `本日の作業時間: ${timeStr}`;
+  }
 }
 
 /**
@@ -2796,22 +2811,31 @@ function updateWorkTimeDisplay() {
  */
 async function confirmWorkTime() {
   const stats = await loadStatistics();
-  if (!stats || !stats.currentSessionStartTime) return;
+  if (!stats) return;
   
-  const now = Date.now();
-  const sessionElapsedMs = now - stats.currentSessionStartTime;
-  
-  // 本日の累計作業時間に加算
-  stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
-  
-  // セッションをリセット
-  stats.currentSessionStartTime = null;
-  stats.currentSessionElapsedMs = 0;
-  stats.isCounterPaused = false;
-  
-  await saveStatistics(stats);
-  
-  console.log(`[LFP] 作業時間確定: ${Math.floor(sessionElapsedMs / 1000)}秒`);
+  if (stats.currentSessionStartTime) {
+    const now = Date.now();
+    const sessionElapsedMs = now - stats.currentSessionStartTime;
+    
+    // 本日の累計作業時間に加算
+    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
+    
+    // セッションをリセット
+    stats.currentSessionStartTime = null;
+    stats.currentSessionElapsedMs = 0;
+    stats.isCounterPaused = false;
+    
+    await saveStatistics(stats);
+    console.log(`[LFP] 作業時間確定: ${Math.floor(sessionElapsedMs / 1000)}秒`);
+  } else if (stats.currentSessionElapsedMs > 0) {
+    // 一時停止中に確定された場合
+    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + stats.currentSessionElapsedMs;
+    stats.currentSessionElapsedMs = 0;
+    stats.isCounterPaused = false;
+    
+    await saveStatistics(stats);
+    console.log(`[LFP] 作業時間確定（一時停止中から）: ${Math.floor(stats.currentSessionElapsedMs / 1000)}秒`);
+  }
 }
 
 /**
@@ -2821,13 +2845,21 @@ async function togglePauseResume() {
   const stats = await loadStatistics();
   if (!stats) return;
   
+  const now = Date.now();
   stats.isCounterPaused = !stats.isCounterPaused;
   
   if (stats.isCounterPaused) {
     console.log('[LFP] カウンター一時停止');
+    // 一時停止した瞬間の経過時間を保存
+    if (stats.currentSessionStartTime) {
+      stats.currentSessionElapsedMs = now - stats.currentSessionStartTime;
+      stats.currentSessionStartTime = null;
+    }
   } else {
     console.log('[LFP] カウンター再開');
-    stats.lastAsinInputTime = Date.now();
+    // 再開した瞬間の時刻を新しい開始時刻とする
+    stats.currentSessionStartTime = now;
+    stats.lastAsinInputTime = now;
     startRealtimeCounter();
   }
   
@@ -2843,17 +2875,17 @@ async function onAsinInput() {
   
   const now = Date.now();
   
-  // 2分以上の休憩後の再開
-  if (stats.isCounterPaused && stats.lastAsinInputTime && (now - stats.lastAsinInputTime) >= 2 * 60 * 1000) {
-    // 新しいセッションを開始
+  // 2分以上の休憩後の再開、または一時停止中の操作
+  if (stats.isCounterPaused) {
+    // 新しいセッションを開始（以前の経過時間は破棄せず、再開時に合算される仕組み）
     stats.currentSessionStartTime = now;
-    stats.currentSessionElapsedMs = 0;
+    // stats.currentSessionElapsedMs は保持（togglePauseResumeで設定された値）
     stats.isCounterPaused = false;
     stats.lastAsinInputTime = now;
     
     await saveStatistics(stats);
     startRealtimeCounter();
-    console.log('[LFP] 新しい作業セッション開始（休憩後）');
+    console.log('[LFP] 作業セッション再開（ASIN入力起点）');
   } else if (!stats.currentSessionStartTime) {
     // セッションが開始されていない場合は開始
     await startWorkTimeSession();
@@ -2913,12 +2945,12 @@ function updatePauseResumeButtonUI(btn, isPaused) {
   if (isPaused) {
     // 一時停止中 → ▶️ボタン（再開待機）
     btn.innerHTML = '▶️';
-    btn.style.backgroundColor = '#0082b2';
+    btn.style.backgroundColor = 'transparent';
     btn.title = 'クリックで再開';
   } else {
     // 作業中 → ⏸️ボタン（一時停止可能）
     btn.innerHTML = '⏸️';
-    btn.style.backgroundColor = '#5cb85c';
+    btn.style.backgroundColor = 'transparent';
     btn.title = 'クリックで一時停止';
   }
 }
