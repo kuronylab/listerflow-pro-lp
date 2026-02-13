@@ -1638,10 +1638,12 @@ async function refreshHistorySelect() {
 }
 
 async function refreshListingCountUI() {
+  if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
+  
   // 再生/一時停止ボタンを作成（初回のみ）
   if (!UI.pauseResumeBtn) {
     await createPauseResumeButton();
-  }if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
+  }
   
   const hist = await loadHistory();
   const stats = await loadStatistics();
@@ -1705,12 +1707,31 @@ async function refreshListingCountUI() {
   }
 
   // ASIN履歴バーのラベル更新
+  // 新規: ボタンを保持しつつ、作業時間を更新
+  const existingBtn = UI.listingCountLabel.querySelector('.lfp-pause-resume-btn');
+  const btnHtml = existingBtn ? existingBtn.outerHTML : '<span id="lfp-pause-resume-btn-placeholder" style="margin-left: 12px; display: inline-flex; align-items: center;"></span>';
+  
   UI.listingCountLabel.innerHTML = `
     <span style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
     <span style="margin-left: 15px; color: #666; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
-    <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 12px; display: inline-flex; align-items: center;"></span>
+    ${btnHtml}
     ${rankHtml}
   `;
+  
+  // ボタンを再接続（上書き後のイベントリスナー再設定）
+  if (existingBtn) {
+    const newBtn = UI.listingCountLabel.querySelector('.lfp-pause-resume-btn');
+    if (newBtn) {
+      newBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await togglePauseResume();
+        const updatedStats = await loadStatistics();
+        updatePauseResumeButtonUI(newBtn, updatedStats?.isCounterPaused || false);
+      });
+      UI.pauseResumeBtn = newBtn;
+    }
+  }
 }
 
 function refreshCustomDropdown(hist) {
@@ -2253,6 +2274,9 @@ async function init() {
         scheduleEvaluate(init, 300);
       });
       mainObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+      
+      // 新規: リアルタイム更新タイマーを起動
+      startWorkTimeUpdateTimer();
     }
     
     // 各種Observerの初期化（初回のみ）
@@ -2896,5 +2920,39 @@ function updatePauseResumeButtonUI(btn, isPaused) {
     btn.innerHTML = '⏸️';
     btn.style.backgroundColor = '#5cb85c';
     btn.title = 'クリックで一時停止';
+  }
+}
+
+/* ---------- リアルタイムカウンター更新 ---------- */
+
+let workTimeUpdateInterval = null;
+
+/**
+ * 出品作業画面のカウンターをリアルタイム更新（1秒ごと）
+ */
+function startWorkTimeUpdateTimer() {
+  if (workTimeUpdateInterval) {
+    clearInterval(workTimeUpdateInterval);
+  }
+  
+  workTimeUpdateInterval = setInterval(async () => {
+    // ASIN入力フィールドが存在する場合のみ更新
+    const asinInput = findAsinInputSmart();
+    if (!asinInput || !asinInput.isConnected) {
+      return;
+    }
+    
+    // 出品作業画面のカウンターを更新
+    await refreshListingCountUI();
+  }, 1000);
+  
+  console.log('[LFP] リアルタイムカウンター更新タイマーを開始しました');
+}
+
+function stopWorkTimeUpdateTimer() {
+  if (workTimeUpdateInterval) {
+    clearInterval(workTimeUpdateInterval);
+    workTimeUpdateInterval = null;
+    console.log('[LFP] リアルタイムカウンター更新タイマーを停止しました');
   }
 }
