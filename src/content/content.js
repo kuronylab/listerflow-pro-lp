@@ -1065,7 +1065,16 @@ function setBusy(isBusy) {
 function setStatusLine(len, veroCount, shipText, highlight) {
   if (!UI.status) return;
   UI.status.textContent = `文字数：${len} / Vero：${veroCount} / 出品：${shipText}`;
-  if (UI.btnOpt && STORE.opt.highlightOptimize) UI.btnOpt.classList.toggle("highlight", !!highlight);
+  if (UI.btnOpt && STORE.opt.highlightOptimize) {
+    if (highlight) {
+      UI.btnOpt.classList.add("highlight");
+      // インラインスタイルをクリア
+      UI.btnOpt.style.background = "";
+      UI.btnOpt.style.color = "";
+    } else {
+      UI.btnOpt.classList.remove("highlight");
+    }
+  }
 }
 
 function setBadge(text) {
