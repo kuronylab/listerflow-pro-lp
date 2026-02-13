@@ -42,6 +42,19 @@
   font-weight:800;
   line-height:1;
   min-width:74px;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  transition: all 0.2s ease;
+}
+
+.lfp-btn:hover {
+  background: #222;
+  color: #fff;
+}
+
+.lfp-btn:active {
+  background: #000;
 }
 
 .lfp-btn[disabled]{
@@ -50,14 +63,15 @@
 }
 
 .lfp-btn.highlight{
-  background: linear-gradient(90deg, #6D43F9 0%, #9747FF 100%);
-  color: #fff;
+  background: linear-gradient(90deg, #6D43F9 0%, #9747FF 100%) !important;
+  color: #fff !important;
   animation: lfp-pulse 1.5s ease-in-out infinite;
 }
 
 .lfp-btn.highlight:hover{
-  background: linear-gradient(90deg, #7D53FF 0%, #A857FF 100%);
-  color: #fff;
+  background: linear-gradient(90deg, #7D53FF 0%, #A857FF 100%) !important;
+  color: #fff !important;
+  filter: brightness(1.1);
 }
 
 @keyframes lfp-pulse{
