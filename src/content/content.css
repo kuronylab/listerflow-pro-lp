@@ -51,7 +51,13 @@
 
 .lfp-btn.highlight{
   background: linear-gradient(90deg, #6D43F9 0%, #9747FF 100%);
+  color: #fff;
   animation: lfp-pulse 1.5s ease-in-out infinite;
+}
+
+.lfp-btn.highlight:hover{
+  background: linear-gradient(90deg, #7D53FF 0%, #A857FF 100%);
+  color: #fff;
 }
 
 @keyframes lfp-pulse{

@@ -1047,10 +1047,14 @@ function setBusy(isBusy) {
   if (isBusy) {
     if (UI.btnLabel) UI.btnLabel.textContent = "最適化中";
     if (UI.spin) UI.spin.style.display = "inline-block";
+    // 最適化中もハイライトを保持
+    if (STORE.opt.highlightOptimize) UI.btnOpt.classList.add("highlight");
   } else {
     // 最適化完了時の表示：needsRetryに応じて「最適化」または「再実行」
     if (UI.btnLabel) UI.btnLabel.textContent = STORE.optimizeState.needsRetry ? "再実行" : "最適化";
     if (UI.spin) UI.spin.style.display = "none";
+    // 最適化完了後もハイライトを保持
+    if (STORE.opt.highlightOptimize) UI.btnOpt.classList.add("highlight");
   }
 }
 
