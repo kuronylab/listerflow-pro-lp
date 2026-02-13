@@ -187,7 +187,14 @@ async function updateUIBasedOnSettings() {
   weekListings: 0,   // 今週の出品数
   lastListingDate: null,  // 最後の出品日時
   optimizeCount: 0,  // 最適化使用回数
-  lastResetDate: Date.now()  // 最後のリセット日時
+  totalWorkTimeToday: 0,  // 本日の累計作業時間（ミリ秒）
+  lastResetDate: Date.now(),  // 最後のリセット日時
+  // 新規: 作業時間計測用
+  currentSessionStartTime: null,  // 現在のセッション開始時刻
+  currentSessionElapsedMs: 0,  // 現在のセッション経過時間
+  isCounterPaused: false,  // カウンター一時停止中
+  lastAsinInputTime: null,  // 最後のASIN入力時刻
+  todayMaxSpeed: 0  // 今日の最高時速
 } */
 
 async function loadStatistics() {
@@ -209,6 +216,10 @@ async function loadStatistics() {
         totalWorkTimeToday: 0,
         todayLastActivityTime: null,
         todayMaxSpeed: 0,
+        currentSessionStartTime: null,
+        currentSessionElapsedMs: 0,
+        isCounterPaused: false,
+        lastAsinInputTime: null,
         lastResetDate: Date.now()
       };
     }
@@ -218,6 +229,10 @@ async function loadStatistics() {
     if (stats.totalWorkTimeToday === undefined) stats.totalWorkTimeToday = 0;
     if (stats.todayLastActivityTime === undefined) stats.todayLastActivityTime = null;
     if (stats.todayMaxSpeed === undefined) stats.todayMaxSpeed = 0;
+    if (stats.currentSessionStartTime === undefined) stats.currentSessionStartTime = null;
+    if (stats.currentSessionElapsedMs === undefined) stats.currentSessionElapsedMs = 0;
+    if (stats.isCounterPaused === undefined) stats.isCounterPaused = false;
+    if (stats.lastAsinInputTime === undefined) stats.lastAsinInputTime = null;
     
     // 日付が変わったら日次データをリセット
     const today = new Date().toDateString();
@@ -228,6 +243,10 @@ async function loadStatistics() {
       stats.totalWorkTimeToday = 0;
       stats.todayLastActivityTime = null;
       stats.todayMaxSpeed = 0;
+      stats.currentSessionStartTime = null;
+      stats.currentSessionElapsedMs = 0;
+      stats.isCounterPaused = false;
+      stats.lastAsinInputTime = null;
       stats.lastResetDate = Date.now();
     }
     
@@ -298,15 +317,17 @@ async function incrementListingCount() {
     stats.weekListings++;
     stats.lastListingDate = now;
     
-      // 作業時間の更新
-    updateWorkTime(stats, now);
+    // 新規: 作業時間の確定（出品完了時）
+    await confirmWorkTime();
 
     // 最高時速の更新チェック
-    if (stats.totalWorkTimeToday > 0) {
-      const hours = stats.totalWorkTimeToday / (1000 * 60 * 60);
-      const currentSpeed = stats.todayListings / hours;
-      if (currentSpeed > stats.todayMaxSpeed) {
-        stats.todayMaxSpeed = currentSpeed;
+    const reloadedStats = await loadStatistics();
+    if (reloadedStats && reloadedStats.totalWorkTimeToday > 0) {
+      const hours = reloadedStats.totalWorkTimeToday / (1000 * 60 * 60);
+      const currentSpeed = reloadedStats.todayListings / hours;
+      if (currentSpeed > reloadedStats.todayMaxSpeed) {
+        reloadedStats.todayMaxSpeed = currentSpeed;
+        await saveStatistics(reloadedStats);
       }
     }
 
@@ -977,7 +998,8 @@ const UI = {
   histSel: null,
   quickMipBtn: null,
   statsBar: null,
-  listingCountLabel: null
+  listingCountLabel: null,
+  pauseResumeBtn: null
 };
 
 function destroyMainUI() {
@@ -1616,7 +1638,10 @@ async function refreshHistorySelect() {
 }
 
 async function refreshListingCountUI() {
-  if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
+  // 再生/一時停止ボタンを作成（初回のみ）
+  if (!UI.pauseResumeBtn) {
+    await createPauseResumeButton();
+  }if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   
   const hist = await loadHistory();
   const stats = await loadStatistics();
@@ -1628,12 +1653,23 @@ async function refreshListingCountUI() {
   });
   const successCount = successItems.length;
 
-  // 今回の作業時間を計算
-  // 修正: 統計情報から直接取得（セッション開始時刻を基準）
-  let totalMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
+  // 本日の作業時間を計算
+  // 修正: 統計情報から直接取得（確定済み時間 + 現在のセッション経過時間）
+  let confirmedMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
+  let currentSessionMs = 0;
+  
+  // 現在進行中のセッション経過時間を追加（一時停止中でない場合）
+  if (stats && stats.currentSessionStartTime && !stats.isCounterPaused) {
+    const now = Date.now();
+    currentSessionMs = now - stats.currentSessionStartTime;
+  } else if (stats && stats.currentSessionElapsedMs) {
+    currentSessionMs = stats.currentSessionElapsedMs;
+  }
+  
+  const totalMs = confirmedMs + currentSessionMs;
   let sessionWorkTime = "0時間00分00秒";
   
-  if (stats && totalMs > 0) {
+  if (totalMs > 0) {
     const totalSec = Math.floor(totalMs / 1000);
     const hours = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
@@ -1671,7 +1707,8 @@ async function refreshListingCountUI() {
   // ASIN履歴バーのラベル更新
   UI.listingCountLabel.innerHTML = `
     <span style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
-    <span style="margin-left: 15px; color: #666; vertical-align: middle;">今回の作業時間: ${sessionWorkTime}</span>
+    <span style="margin-left: 15px; color: #666; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
+    <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 12px; display: inline-flex; align-items: center;"></span>
     ${rankHtml}
   `;
 }
@@ -2191,9 +2228,17 @@ async function init() {
         if (t - lastPasteAt < 800) return;
         lastPasteAt = t;
 
+        // 新規: 作業時間計測開始
+        await onAsinInput();
+
         lockUI();
         await sleep(60);
         btnGet?.click();
+      });
+      
+      // 新規: 手動入力時も計測を開始
+      asinInput.addEventListener("input", async () => {
+        await onAsinInput();
       });
     }
 
@@ -2622,3 +2667,234 @@ startHealthCheck();
 
 console.log('✅ [LFP] ListerFlow Pro v1.1.1 が読み込まれました');
 
+
+
+/* ========== 新規: 作業時間計測ロジック（ASIN入力起点） ========== */
+
+// グローバル変数: リアルタイムカウンター更新用
+let workTimeUpdateInterval = null;
+
+/**
+ * 作業時間計測の開始（ASIN入力時）
+ */
+async function startWorkTimeSession() {
+  const stats = await loadStatistics();
+  if (!stats) return;
+  
+  const now = Date.now();
+  
+  // セッション開始時刻を記録
+  stats.currentSessionStartTime = now;
+  stats.currentSessionElapsedMs = 0;
+  stats.isCounterPaused = false;
+  stats.lastAsinInputTime = now;
+  
+  await saveStatistics(stats);
+  
+  // リアルタイムカウンター更新を開始
+  startRealtimeCounter();
+  
+  console.log('[LFP] 作業時間計測セッション開始');
+}
+
+/**
+ * リアルタイムカウンター更新（1秒ごと）
+ */
+function startRealtimeCounter() {
+  // 既存のインターバルをクリア
+  if (workTimeUpdateInterval) {
+    clearInterval(workTimeUpdateInterval);
+  }
+  
+  // 1秒ごとにカウンターを更新
+  workTimeUpdateInterval = setInterval(async () => {
+    const stats = await loadStatistics();
+    if (!stats || !stats.currentSessionStartTime) {
+      clearInterval(workTimeUpdateInterval);
+      return;
+    }
+    
+    // 一時停止中の場合は更新しない
+    if (stats.isCounterPaused) {
+      return;
+    }
+    
+    const now = Date.now();
+    
+    // 2分以上ASIN入力操作がなければ自動停止
+    if (stats.lastAsinInputTime && (now - stats.lastAsinInputTime) >= 2 * 60 * 1000) {
+      stats.isCounterPaused = true;
+      await saveStatistics(stats);
+      clearInterval(workTimeUpdateInterval);
+      console.log('[LFP] 2分間の非操作により自動停止');
+      return;
+    }
+    
+    // 現在のセッション経過時間を更新
+    stats.currentSessionElapsedMs = now - stats.currentSessionStartTime;
+    await saveStatistics(stats);
+    
+    // UI更新（出品作業画面のカウンター表示）
+    updateWorkTimeDisplay();
+  }, 1000);
+}
+
+/**
+ * 作業時間表示の更新（出品作業画面）
+ */
+function updateWorkTimeDisplay() {
+  if (!UI.listingCountLabel) return;
+  
+  // 統計情報から現在の経過時間を取得
+  chrome.storage.local.get(['LFP_STATS'], (data) => {
+    const stats = data?.['LFP_STATS'];
+    if (!stats || !stats.currentSessionStartTime) return;
+    
+    const elapsedMs = stats.currentSessionElapsedMs || 0;
+    const totalMs = (stats.totalWorkTimeToday || 0) + elapsedMs;
+    
+    const totalSec = Math.floor(totalMs / 1000);
+    const hours = Math.floor(totalSec / 3600);
+    const mins = Math.floor((totalSec % 3600) / 60);
+    const secs = totalSec % 60;
+    
+    const timeStr = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
+    
+    // UIを更新
+    const existingLabel = UI.listingCountLabel.innerHTML;
+    const newLabel = existingLabel.replace(/本日の作業時間: [\d時分秒]+/g, `本日の作業時間: ${timeStr}`);
+    UI.listingCountLabel.innerHTML = newLabel;
+  });
+}
+
+/**
+ * 作業時間の確定（出品完了時）
+ */
+async function confirmWorkTime() {
+  const stats = await loadStatistics();
+  if (!stats || !stats.currentSessionStartTime) return;
+  
+  const now = Date.now();
+  const sessionElapsedMs = now - stats.currentSessionStartTime;
+  
+  // 本日の累計作業時間に加算
+  stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
+  
+  // セッションをリセット
+  stats.currentSessionStartTime = null;
+  stats.currentSessionElapsedMs = 0;
+  stats.isCounterPaused = false;
+  
+  await saveStatistics(stats);
+  
+  console.log(`[LFP] 作業時間確定: ${Math.floor(sessionElapsedMs / 1000)}秒`);
+}
+
+/**
+ * 一時停止/再開ボタンの切り替え
+ */
+async function togglePauseResume() {
+  const stats = await loadStatistics();
+  if (!stats) return;
+  
+  stats.isCounterPaused = !stats.isCounterPaused;
+  
+  if (stats.isCounterPaused) {
+    console.log('[LFP] カウンター一時停止');
+  } else {
+    console.log('[LFP] カウンター再開');
+    stats.lastAsinInputTime = Date.now();
+    startRealtimeCounter();
+  }
+  
+  await saveStatistics(stats);
+}
+
+/**
+ * ASIN入力時の処理（セッション開始）
+ */
+async function onAsinInput() {
+  const stats = await loadStatistics();
+  if (!stats) return;
+  
+  const now = Date.now();
+  
+  // 2分以上の休憩後の再開
+  if (stats.isCounterPaused && stats.lastAsinInputTime && (now - stats.lastAsinInputTime) >= 2 * 60 * 1000) {
+    // 新しいセッションを開始
+    stats.currentSessionStartTime = now;
+    stats.currentSessionElapsedMs = 0;
+    stats.isCounterPaused = false;
+    stats.lastAsinInputTime = now;
+    
+    await saveStatistics(stats);
+    startRealtimeCounter();
+    console.log('[LFP] 新しい作業セッション開始（休憩後）');
+  } else if (!stats.currentSessionStartTime) {
+    // セッションが開始されていない場合は開始
+    await startWorkTimeSession();
+  } else {
+    // セッション中の場合は最後のASIN入力時刻を更新
+    stats.lastAsinInputTime = now;
+    await saveStatistics(stats);
+  }
+}
+
+
+/**
+ * 再生/一時停止トグルボタンを作成
+ */
+async function createPauseResumeButton() {
+  const placeholder = document.getElementById('lfp-pause-resume-btn-placeholder');
+  if (!placeholder || placeholder.querySelector('.lfp-pause-resume-btn')) {
+    return; // 既に作成済み
+  }
+  
+  // ボタン要素を作成
+  const btn = document.createElement('button');
+  btn.className = 'lfp-pause-resume-btn';
+  btn.id = 'lfp-pause-resume-btn';
+  btn.type = 'button';
+  btn.title = 'クリックで再開/一時停止';
+  
+  // 初期状態を取得
+  const stats = await loadStatistics();
+  const isPaused = stats?.isCounterPaused || false;
+  
+  // アイコンと色を設定
+  updatePauseResumeButtonUI(btn, isPaused);
+  
+  // クリックイベントを追加
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    await togglePauseResume();
+    
+    // ボタンのUI更新
+    const updatedStats = await loadStatistics();
+    updatePauseResumeButtonUI(btn, updatedStats?.isCounterPaused || false);
+  });
+  
+  placeholder.appendChild(btn);
+  UI.pauseResumeBtn = btn;
+  
+  console.log('[LFP] 再生/一時停止ボタンを作成しました');
+}
+
+/**
+ * 再生/一時停止ボタンのUI更新
+ */
+function updatePauseResumeButtonUI(btn, isPaused) {
+  if (isPaused) {
+    // 一時停止中 → ▶️ボタン（再開待機）
+    btn.innerHTML = '▶️';
+    btn.style.backgroundColor = '#0082b2';
+    btn.title = 'クリックで再開';
+  } else {
+    // 作業中 → ⏸️ボタン（一時停止可能）
+    btn.innerHTML = '⏸️';
+    btn.style.backgroundColor = '#5cb85c';
+    btn.title = 'クリックで一時停止';
+  }
+}

@@ -160,14 +160,33 @@ function switchPage(page) {
 // 作業時間のリアルタイムカウント開始
 // 作業時間の表示更新（読み取り专用）
 function startWorkTimeCounter() {
-  // content.jsが作業時間を加算し、ポップアップを開いた時に自動的に読み込まれる
-  // タイマーを実装しないことで、データ競合を防ぐ
+  // 新規: 1秒ごとに統計情報を再読み込み、ポップアップを動的に更新
+  if (workTimeUpdateInterval) {
+    clearInterval(workTimeUpdateInterval);
+  }
+  
+  workTimeUpdateInterval = setInterval(async () => {
+    await loadAndDisplayStats();
+  }, 1000);
 }
 
 // 作業時間表示の更新
+// 新規: 確定済み時間 + 現在のセッション経過時間を合算
 function updateWorkTimeDisplay(stats) {
   if (statsElements.todayWorkingHours) {
-    const totalMs = stats.totalWorkTimeToday || 0;
+    // 確定済み時間 + 現在進行中のセッション経過時間
+    let confirmedMs = stats.totalWorkTimeToday || 0;
+    let currentSessionMs = 0;
+    
+    // 現在進行中のセッション経過時間を追加（一時停止中でない場合）
+    if (stats.currentSessionStartTime && !stats.isCounterPaused) {
+      const now = Date.now();
+      currentSessionMs = now - stats.currentSessionStartTime;
+    } else if (stats.currentSessionElapsedMs) {
+      currentSessionMs = stats.currentSessionElapsedMs;
+    }
+    
+    const totalMs = confirmedMs + currentSessionMs;
     const totalSec = Math.floor(totalMs / 1000);
     const hours = Math.floor(totalSec / 3600);
     const minutes = Math.floor((totalSec % 3600) / 60);
@@ -176,11 +195,25 @@ function updateWorkTimeDisplay(stats) {
   }
   
   if (statsElements.listingSpeed) {
-    const totalMs = stats.totalWorkTimeToday || 0;
+    // 新規: バッジの種類が変わる時のみ更新
+    let confirmedMs = stats.totalWorkTimeToday || 0;
+    let currentSessionMs = 0;
+    
+    if (stats.currentSessionStartTime && !stats.isCounterPaused) {
+      const now = Date.now();
+      currentSessionMs = now - stats.currentSessionStartTime;
+    } else if (stats.currentSessionElapsedMs) {
+      currentSessionMs = stats.currentSessionElapsedMs;
+    }
+    
+    const totalMs = confirmedMs + currentSessionMs;
     const count = stats.todayListings || 0;
     const hours = totalMs / 3600000;
     const speedVal = hours > 0 ? (count / hours) : 0;
     const speedDisplay = speedVal.toFixed(1);
+    
+    // 前回のバッジを保持している場合、種類が変わらない限り更新しない
+    const currentBadge = statsElements.listingSpeed.querySelector('.rank-badge')?.textContent || '';
     
     let rank = "rank-very-slow";
     let rankText = "ゆったり🐢";
@@ -189,10 +222,13 @@ function updateWorkTimeDisplay(stats) {
     else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
     else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
 
-    statsElements.listingSpeed.innerHTML = `
-      <span>${speedDisplay}品/時</span>
-      <span class="rank-badge ${rank}">${rankText}</span>
-    `;
+    // バッジが変わった場合のみ更新
+    if (currentBadge !== rankText) {
+      statsElements.listingSpeed.innerHTML = `
+        <span>${speedDisplay}品/時</span>
+        <span class="rank-badge ${rank}">${rankText}</span>
+      `;
+    }
   }
 }
 
