@@ -258,29 +258,33 @@ async function saveStatistics(stats) {
 }
 
 /**
- * 作業時間の更新ロジック（中断時間を考慮）
- * 30分以上の空きがあれば中断とみなす
+ * 作業時間の更新ロジック（セッション開始時刻を基準）
+ * 修正: セッション開始時刻を基準に、実時間の経過時間を計測します
  */
 function updateWorkTime(stats, now) {
-  // 2分以上の空きがあれば「休憩中」とみなして作業時間に加算しない
-  const THRESHOLD_MS = 2 * 60 * 1000; 
+  // セッション開始時刻が設定されていない場合、現在時刻を開始時刻として設定
+  if (!stats.sessionStartTime) {
+    stats.sessionStartTime = now;
+  }
+  
+  // 2分以上の空きがあれば「休憩中」とみなしてセッションをリセット
+  const THRESHOLD_MS = 2 * 60 * 1000;
   
   if (!stats.todayLastActivityTime) {
     // その日最初の活動
     stats.todayLastActivityTime = now;
-    // 初期値は0で、ポップアップの動的カウントアップで時間を加算していく
-    stats.totalWorkTimeToday = stats.totalWorkTimeToday || 0;
   } else {
     const diff = now - stats.todayLastActivityTime;
-    if (diff > 0 && diff < THRESHOLD_MS) {
-      // 2分以内の間隔であれば、純粋な作業時間として加算
-      stats.totalWorkTimeToday += diff;
-    } else if (diff >= THRESHOLD_MS) {
-      // 2分以上の空き（休憩）があった場合は、この1件分の作業時間として２０秒だけ加算
-      stats.totalWorkTimeToday += 20 * 1000;
+    if (diff >= THRESHOLD_MS) {
+      // 2分以上の空き（休憩）があった場合は、セッション開始時刻をリセット
+      // これにより、休憩後の経過時間から新たにカウントが始まります
+      stats.sessionStartTime = now;
     }
     stats.todayLastActivityTime = now;
   }
+  
+  // セッション開始から現在までの経過時間を統計情報に反映
+  stats.totalWorkTimeToday = Math.max(0, now - stats.sessionStartTime);
 }
 
 async function incrementListingCount() {
@@ -1625,37 +1629,16 @@ async function refreshListingCountUI() {
   const successCount = successItems.length;
 
   // 今回の作業時間を計算
-  let totalMs = 0;
+  // 修正: 統計情報から直接取得（セッション開始時刻を基準）
+  let totalMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
   let sessionWorkTime = "0時間00分00秒";
   
-  if (successItems.length > 0) {
-    const times = successItems.map(h => h.lastSeen || h.timestamp).filter(t => !!t).sort((a, b) => a - b);
-    
-    if (times.length > 0) {
-      const THRESHOLD_MS = 2 * 60 * 1000; // 2分
-      totalMs = 0; // 初期値は0で、動的カウントで加算していく
-      
-      for (let i = 1; i < times.length; i++) {
-        const diff = times[i] - times[i-1];
-        if (diff > 0 && diff < THRESHOLD_MS) {
-          totalMs += diff;
-        } else if (diff >= THRESHOLD_MS) {
-          totalMs += 20 * 1000;
-        }
-      }
-      
-      const totalSec = Math.floor(totalMs / 1000);
-      const hours = Math.floor(totalSec / 3600);
-      const mins = Math.floor((totalSec % 3600) / 60);
-      const secs = totalSec % 60;
-      sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
-
-      // 累計作業時間をストレージに保存（ポップアップのカウンター同期用）
-      if (stats && totalMs > 0) {
-        stats.totalWorkTimeToday = totalMs;
-        saveStatistics(stats);
-      }
-    }
+  if (stats && totalMs > 0) {
+    const totalSec = Math.floor(totalMs / 1000);
+    const hours = Math.floor(totalSec / 3600);
+    const mins = Math.floor((totalSec % 3600) / 60);
+    const secs = totalSec % 60;
+    sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
   }
   
   // ランク判定
