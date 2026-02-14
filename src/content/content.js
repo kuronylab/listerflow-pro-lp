@@ -2867,7 +2867,6 @@ async function onAsinInput() {
     });
   });
 }
-}
 
 
 /**
