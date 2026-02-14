@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ListerFlow Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- ヘッダー -->
+  <div class="header">
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <h1 class="title" id="pageTitle">統計情報</h1>
+  </div>
+
+  <!-- サイドメニュー -->
+  <div class="side-menu" id="sideMenu">
+    <div class="side-menu-header">
+      <h2>Menu</h2>
+      <button class="close-btn" id="closeMenuBtn">✕</button>
+    </div>
+    <nav class="side-menu-nav">
+      <a href="#" class="menu-item active" data-page="stats">
+        <span class="menu-icon">📊</span>
+        <span class="menu-text">統計情報</span>
+      </a>
+      <a href="#" class="menu-item" data-page="history">
+        <span class="menu-icon">📋</span>
+        <span class="menu-text">ASIN履歴管理</span>
+      </a>
+      <a href="#" class="menu-item" data-page="automation">
+        <span class="menu-icon">🤖</span>
+        <span class="menu-text">自動化設定</span>
+      </a>
+      <a href="#" class="menu-item" data-page="basic">
+        <span class="menu-icon">⚙️</span>
+        <span class="menu-text">基本設定</span>
+      </a>
+      <a href="#" class="menu-item" data-page="version">
+        <span class="menu-icon">ℹ️</span>
+        <span class="menu-text">バージョン情報</span>
+      </a>
+      <a href="#" class="menu-item" data-page="links">
+        <span class="menu-icon">🔗</span>
+        <span class="menu-text">各種リンク</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <div class="content" id="content">
+    <!-- 統計情報ページ -->
+    <div class="page active" id="statsPage">
+      <div class="stats-section">
+        <h2>📊 出品統計</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">本日の出品</div>
+            <div class="stat-value" id="todayListings">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">今週の出品</div>
+            <div class="stat-value" id="weekListings">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">累計出品</div>
+            <div class="stat-value" id="totalListings">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">最後の出品</div>
+            <div class="stat-value" id="lastListing">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <h2>🚀 作業効率</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">本日の作業時間</div>
+            <div class="stat-value" id="todayWorkingHours">0時間00分00秒</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">出品速度</div>
+            <div class="stat-value" id="listingSpeed">
+              <span>0.0品/時</span>
+              <span class="rank-badge rank-very-slow">ゆったり🐢</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <h2>📋 ASIN履歴 <span id="errorRateLabel" style="font-size: 12px; font-weight: bold; margin-left: 12px; padding: 2px 8px; border-radius: 12px; display: inline-block; vertical-align: middle; color: rgb(253, 126, 20); background-color: rgb(255, 243, 224);">エラー率: 0% ✨</span></h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">出品完了件数</div>
+            <div class="stat-value" id="completedListingsCount">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">⚠️ Protected</div>
+            <div class="stat-value" id="protectedCount">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">🛡️ Brand Warnings</div>
+            <div class="stat-value" id="brandCount">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">📭 No listings</div>
+            <div class="stat-value" id="noListingsCount">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">🔍 No Item</div>
+            <div class="stat-value" id="noItemCount">0件</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">🔄 Already Listed</div>
+            <div class="stat-value" id="alreadyListedCount">0件</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-secondary" id="resetStatsBtn">統計をリセット</button>
+    </div>
+
+    <!-- ASIN履歴管理ページ -->
+    <div class="page" id="historyPage">
+      <div class="setting-section">
+        <h2>ASIN履歴</h2>
+        <div class="history-stats">
+          <div>履歴件数: <span id="historyCountDetail">-</span></div>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="loading">読み込み中...</div>
+        </div>
+        <div class="history-actions">
+          <button class="btn-primary" id="exportSpreadsheetBtn">スプレッドシート用に出力</button>
+          <button class="btn-danger" id="clearHistoryBtn">履歴をすべて削除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 自動化設定ページ -->
+    <div class="page" id="automationPage">
+      <div class="setting-section">
+        <h2>自動実行設定</h2>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">ASINペースト時にGet Item自動実行</div>
+            <div class="toggle-desc">ASINをペーストした時に自動的にGet Itemボタンをクリック</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoGetOnPaste">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">ASIN履歴選択時にGet Item自動実行</div>
+            <div class="toggle-desc">ASIN履歴から選択した時に自動的にGet Itemボタンをクリック</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoGetOnHistory">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">最適化後MIP自動クリック</div>
+            <div class="toggle-desc">最適化が完了したら自動的にMIPボタンをクリック</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoMipAfterOptimize">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">MIP後にOKボタン自動クリック</div>
+            <div class="toggle-desc">MIP完了後に表示されるOKボタンを自動的にクリック</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="autoClickOkAfterMip">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item turbo-item-box">
+          <div class="toggle-label">
+            <div class="toggle-title">最速出品モード (Turbo Mode)</div>
+            <div class="toggle-desc">ASINペースト後、出品完了まで全自動で実行します。</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="turboListingMode">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <h2>UI設定</h2>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">Quick MIPボタン表示</div>
+            <div class="toggle-desc">Get Itemボタンの右にQuick MIPボタンを表示</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="quickMipButton">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">最適化ボタン追加</div>
+            <div class="toggle-desc">タイトル最適化ボタンを表示</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="highlightOptimize">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="setting-section">
+        <h2>その他</h2>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">ASIN履歴管理</div>
+            <div class="toggle-desc">ASIN履歴を保存・表示</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="historyEnabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">VeRO警告チェック</div>
+            <div class="toggle-desc">VeRO警告を自動検出</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="veroEnabled">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <button class="btn-primary" id="saveAutomationBtn">設定を保存</button>
+    </div>
+
+    <!-- 基本設定ページ -->
+    <div class="page" id="basicPage">
+      <div class="setting-section">
+        <h2>OpenAI API設定</h2>
+        <div class="form-group">
+          <label for="apiKey">API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-...">
+          <button class="btn-show-key" id="showKeyBtn">表示</button>
+        </div>
+        <div class="form-group">
+          <label for="model">モデル</label>
+          <select id="model">
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="saveBasicBtn">設定を保存</button>
+      </div>
+    </div>
+
+    <!-- バージョン情報ページ -->
+    <div class="page" id="versionPage">
+      <div class="setting-section">
+        <h2>ListerFlow Pro for Yaballe</h2>
+        <div class="version-info">
+          <div class="version-item">
+            <span class="version-label">バージョン:</span>
+            <span class="version-value" id="versionNumber">1.2.4</span>
+          </div>
+          <div class="version-item">
+            <span class="version-label">リリース日:</span>
+            <span class="version-value" id="releaseDate">2026/02/12</span>
+          </div>
+        </div>
+        <div class="version-desc">
+          <p>Yaballe Listerで、タイトル最適化とMIP出品フローを高速化する拡張機能です。</p>
+          <p style="margin-top: 20px; color: #666; font-size: 12px;">© 2026 KURONYLAB</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 各種リンクページ -->
+    <div class="page" id="linksPage">
+      <div class="setting-section">
+        <h2>📺 導入・使い方の解説動画</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+          1.準備編 → 2.導入編 → 3.基本操作編 の順にご視聴ください。
+        </p>
+        <a href="https://youtube.com/playlist?list=PLwA7258oAk1-7cj4-7MQqRUQ-Nci7CZLN&si=O_RHyqVdhf1SP81O" target="_blank" class="link-item">
+          YouTubeプレイリストを開く
+        </a>
+      </div>
+
+      <div class="setting-section">
+        <h2>📩 サポート用グループLINE</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+          質問・共有・アップデート案内はこちら。必ずご参加ください。
+        </p>
+        <a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" class="link-item">
+          LINEグループに参加する
+        </a>
+      </div>
+
+      <div class="setting-section">
+        <h2>📥 最新版のダウンロード</h2>
+        <a href="https://github.com/kuronylab/listerflow-pro-for-yaballe/releases" target="_blank" class="link-item">
+          GitHub リリースページ
+        </a>
+      </div>
+
+      <div class="setting-section">
+        <h2>💬 お問い合わせ</h2>
+        <a href="mailto:kuronylab@gmail.com" class="link-item">
+          kuronylab@gmail.com
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

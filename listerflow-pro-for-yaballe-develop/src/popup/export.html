@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スプレッドシート用コピー画面 - ListerFlow Pro</title>
+  <link rel="stylesheet" href="export.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">スプレッドシート用コピー画面</h1>
+      <div class="actions">
+        <button id="copyTwoColumnsBtn" class="btn-copy">
+          <span class="icon">📋</span> 日付の2列をコピー
+        </button>
+        <button id="downloadCsvBtn" class="btn-csv">
+          <span class="icon">📥</span> CSVダウンロード
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>ASINコード</th>
+            <th>結果</th>
+            <th>出品日</th>
+            <th>エラーにより出品不可</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <!-- データの挿入箇所 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script src="export.js"></script>
+</body>
+</html>
