@@ -112,7 +112,7 @@ function resetAllFlags() {
 
 const KEY_OPT = "lfp_options_v1";
 const KEY_HIST = "lfp_asin_history_v1";
-const KEY_STATS = "lfp_statistics_v1";
+
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function normSpace(s) { return (s || "").replace(/\s+/g, " ").trim(); }
@@ -182,84 +182,19 @@ async function updateUIBasedOnSettings() {
 
 /* ---------- Statistics ---------- */
 
-/* 統計データ形式: {
-  totalListings: 0,  // 総出品数
-  todayListings: 0,  // 今日の出品数
-  weekListings: 0,   // 今週の出品数
-  lastListingDate: null,  // 最後の出品日時
-  optimizeCount: 0,  // 最適化使用回数
-  totalWorkTimeToday: 0,  // 本日の累計作業時間（ミリ秒）
-  lastResetDate: Date.now(),  // 最後のリセット日時
-  // 新規: 作業時間計測用
-  currentSessionStartTime: null,  // 現在のセッション開始時刻
-  currentSessionElapsedMs: 0,  // 現在のセッション経過時間
-  isCounterPaused: false,  // カウンター一時停止中
-  lastAsinInputTime: null,  // 最後のASIN入力時刻
-  todayMaxSpeed: 0  // 今日の最高時速
-} */
 
-async function loadStatistics() {
-  if (!isExtensionContextValid()) return null;
-  try {
-    const data = await chrome.storage.local.get([KEY_STATS]);
-    let stats = data?.[KEY_STATS];
-    
-    if (!stats || typeof stats !== 'object') {
-      stats = {
-        totalListings: 0,
-        todayListings: 0,
-        totalWorkTimeToday: 0,
-        isCounterPaused: true,
-        lastAsinInputTime: null,
-        lastResetDate: Date.now()
-      };
-    }
-    
-    // 日付が変わったら日次データをリセット
-    const today = new Date().toDateString();
-    const lastReset = new Date(stats.lastResetDate || 0).toDateString();
-    
-    if (lastReset !== today) {
-      stats.todayListings = 0;
-      stats.totalWorkTimeToday = 0;
-      stats.isCounterPaused = true;
-      stats.lastAsinInputTime = null;
-      stats.lastResetDate = Date.now();
-      await saveStatistics(stats);
-    }
-    
-    return stats;
-  } catch (err) {
-    return null;
-  }
-}
 
-async function saveStatistics(stats) {
-  if (!stats || !isExtensionContextValid()) return;
-  try {
-    await chrome.storage.local.set({ [KEY_STATS]: stats });
-  } catch (err) {}
-}
 
-function updateWorkTime(stats, now) {
-  // バックグラウンド側で計算するため、ここでは何もしない
-}
+
+
 
 async function incrementListingCount() {
   try {
-    const stats = await loadStatistics();
-    if (!stats) return;
-    
-    stats.totalListings = (stats.totalListings || 0) + 1;
-    stats.todayListings = (stats.todayListings || 0) + 1;
-    stats.lastListingDate = Date.now();
-    
-    await saveStatistics(stats);
+    // バックグラウンドに統計更新を依頼（連鎖更新はSW側で完結）
+    chrome.runtime.sendMessage({ type: "LFP_UPDATE_STATS" });
     
     // UI上の件数表示を更新
     await refreshListingCountUI();
-    // 同期リクエスト
-    chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
   } catch (err) {
     console.error('[LFP] incrementListingCount error:', err);
   }
@@ -267,17 +202,8 @@ async function incrementListingCount() {
 
 async function incrementOptimizeCount() {
   try {
-    const stats = await loadStatistics();
-    if (!stats) return; // コンテキスト無効時はスキップ
-    
-    const now = Date.now();
-    stats.optimizeCount++;
-    
-    // 作業時間の更新（中断時間を考慮）
-    updateWorkTime(stats, now);
-    
-    await saveStatistics(stats);
-    console.log(`📊 [Stats] 最適化回数を更新: ${stats.optimizeCount}回`);
+    // 最適化回数の更新はバックグラウンドに依頼
+    chrome.runtime.sendMessage({ type: "LFP_INCREMENT_OPTIMIZE_COUNT" });
     
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
@@ -287,11 +213,8 @@ async function incrementOptimizeCount() {
 
 async function incrementBrandCount() {
   try {
-    const stats = await loadStatistics();
-    if (!stats) return; // コンテキスト無効時はスキップ
-    stats.brandCount++;
-    await saveStatistics(stats);
-    console.log(`📊 [Stats] ブランド警告回数を更新: ${stats.brandCount}回`);
+    // ブランド警告回数の更新はバックグラウンドに依頼
+    chrome.runtime.sendMessage({ type: "LFP_INCREMENT_BRAND_COUNT" });
     
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
@@ -301,11 +224,8 @@ async function incrementBrandCount() {
 
 async function incrementAlreadyListedCount() {
   try {
-    const stats = await loadStatistics();
-    if (!stats) return;
-    stats.alreadyListedCount++;
-    await saveStatistics(stats);
-    console.log(`📊 [Stats] 出品済み回数を更新: ${stats.alreadyListedCount}回`);
+    // 出品済み回数の更新はバックグラウンドに依頼
+    chrome.runtime.sendMessage({ type: "LFP_INCREMENT_ALREADY_LISTED_COUNT" });
   } catch (err) {
     if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementAlreadyListedCount error:', err);
@@ -1561,16 +1481,8 @@ async function refreshHistorySelect() {
 async function refreshListingCountUI() {
   if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   
-  const hist = await loadHistory();
-  const stats = await loadStatistics();
+  const stats = await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
   
-  // 履歴の中からエラーでないものを抽出
-  const successItems = hist.filter(item => {
-    const f = item.flags || {};
-    return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
-  });
-  const successCount = successItems.length;
-
   // 本日の作業時間（バックグラウンドで計算された累積秒数を使用）
   const totalMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
   let sessionWorkTime = "0時間00分00秒";
@@ -1589,7 +1501,7 @@ async function refreshListingCountUI() {
   let bgColor = "#f8f9fa";
 
   if (totalMs > 0) {
-    const speedVal = (successCount / (totalMs / 3600000));
+    const speedVal = (stats.todayListings / (totalMs / 3600000));
     let feedback = "ゆったり";
     let emoji = "🐢";
 
@@ -1604,7 +1516,7 @@ async function refreshListingCountUI() {
   // 初回構築
   if (!UI.listingCountLabel.querySelector('.lfp-count-val')) {
     UI.listingCountLabel.innerHTML = `
-      <span class="lfp-count-val" style="font-weight: bold; color: black; vertical-align: middle;">出品完了: ${successCount}件</span>
+      <span class="lfp-count-val" style="font-weight: bold; color: black; vertical-align: middle;">出品完了: ${stats.todayListings || 0}件</span>
       <span class="lfp-time-val" style="margin-left: 15px; color: black; font-weight: bold; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: inline-flex; align-items: center;"></span>
       <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankContent ? 'inline-block' : 'none'}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent; color: ${color}; background-color: ${bgColor}; border-color: ${color}44;">${rankContent}</span>
@@ -1617,7 +1529,7 @@ async function refreshListingCountUI() {
     const rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
     
     if (countSpan) {
-      countSpan.textContent = `出品完了: ${successCount}件`;
+      countSpan.textContent = `出品完了: ${stats.todayListings || 0}件`;
       countSpan.style.color = "black";
       countSpan.style.fontWeight = "bold";
     }
@@ -2209,16 +2121,20 @@ async function init() {
     if (!observersInitialized) {
       setupNoListingsObserver();
       setupListingSuccessObserver();
-      
-      // メッセージリスナー
+       // メッセージリスナー
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type === 'LFP_SYNC_UI') {
           refreshListingCountUI();
           refreshHistorySelect();
+        } else if (message.type === 'RESET_UI') {
+          resetUIState();
+          // ASIN入力欄もクリア
+          const asinInput = findAsinInputSmart();
+          if (asinInput) setInputValue(asinInput, "");
+          sendResponse({ ok: true });
         }
-      });
-      
-      observersInitialized = true;
+        return true;
+      });bserversInitialized = true;
     }
 
   } catch (err) {
@@ -2739,21 +2655,7 @@ async function updateWorkTimeDisplay() {
     timeSpan.textContent = `本日の作業時間: ${timeStr}`;
   }
   
-  // バッジの更新もここで行う（同期を確実にするため）
-  const hist = await loadHistory();
-  const successItems = hist.filter(item => {
-    const f = item.flags || {};
-    return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
-  });
-  const successCount = successItems.length;
-  
-  let rankContent = "";
-  if (totalMs > 0) {
-    const speedVal = (successCount / (totalMs / 3600000));
-    let feedback = "ゆったり";
-    let emoji = "🐢";
-    let color = "#6c757d";
-    let bgColor = "#f8f9fa";
+
 
     if (speedVal >= 120) { feedback = "爆速"; emoji = "🚀"; color = "#6f42c1"; bgColor = "#f3e5f5"; }
     else if (speedVal >= 60) { feedback = "高速"; emoji = "🏎️"; color = "#007bff"; bgColor = "#e7f3ff"; }
@@ -2846,36 +2748,11 @@ async function togglePauseResume() {
  * ASIN入力時の処理（セッション開始）
  */
 async function onAsinInput() {
-  const stats = await loadStatistics();
-  if (!stats) return;
-  
-  const now = Date.now();
-  let changed = false;
-  
-  // 一時停止中の操作
-  if (stats.isCounterPaused) {
-    stats.currentSessionStartTime = now;
-    stats.currentSessionElapsedMs = 0;
-    stats.isCounterPaused = false;
-    stats.lastAsinInputTime = now;
-    changed = true;
-    
-    chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
-    startRealtimeCounter();
-    console.log('[LFP] 作業セッション再開（ASIN入力起点）');
-  } else if (!stats.currentSessionStartTime) {
-    await startWorkTimeSession();
-    // startWorkTimeSession内でsaveされるが、lastAsinInputTimeも更新したい
-    const newStats = await loadStatistics();
-    newStats.lastAsinInputTime = now;
-    await saveStatistics(newStats);
-  } else {
-    stats.lastAsinInputTime = now;
-    changed = true;
-  }
-
-  if (changed) {
-    await saveStatistics(stats);
+  try {
+    // バックグラウンドにASIN入力を通知
+    chrome.runtime.sendMessage({ type: "LFP_UPDATE_INPUT_TIME" });
+  } catch (err) {
+    console.error('[LFP] onAsinInput error:', err);
   }
 }
 

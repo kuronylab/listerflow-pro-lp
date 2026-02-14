@@ -1,6 +1,6 @@
 const KEY_OPT = "lfp_options_v1";
 const KEY_HIST = "lfp_asin_history_v1";
-const KEY_STATS = "lfp_statistics_v1";
+
 
 // DOM elements
 let menuBtn, closeMenuBtn, sideMenu, pageTitle, content;
@@ -204,7 +204,7 @@ function updateWorkTimeDisplay(stats) {
 
 async function loadAndDisplayStats() {
   try {
-    const stats = await loadStatistics();
+    const stats = await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
     const history = await loadHistory();
 
     if (statsElements.todayListings) statsElements.todayListings.textContent = `${stats.todayListings || 0}件`;
@@ -263,25 +263,19 @@ async function loadAndDisplayStats() {
   }
 }
 
-async function loadStatistics() {
-  const data = await chrome.storage.local.get([KEY_STATS]);
-  return data?.[KEY_STATS] || {
-    totalListings: 0,
-    todayListings: 0,
-    weekListings: 0,
-    lastListingDate: null,
-    totalWorkTimeToday: 0,
-    currentSessionStartTime: null,
-    currentSessionElapsedMs: 0,
-    isCounterPaused: true,
-    todayMaxSpeed: 0,
-    lastResetDate: Date.now()
-  };
-}
+
 
 async function resetStats() {
-  if (!confirm('統計情報をリセットしますか？')) return;
+  if (!confirm('統計情報をリセットしますか？（本日の作業時間と出品数がリセットされます）')) return;
+  
+  // 統計リセットをSWに依頼
   chrome.runtime.sendMessage({ type: 'RESET_STATS' }, async () => {
+    // UI側の入力欄などもクリアするためにメッセージを送信
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'LFP_RESET_UI' }).catch(() => {});
+      }
+    });
     await loadAndDisplayStats();
   });
 }

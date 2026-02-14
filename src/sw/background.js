@@ -13,12 +13,15 @@ async function loadOpt(){
 
 async function loadStats() {
   const data = await chrome.storage.local.get([KEY_STATS]);
-  return data[KEY_STATS] || {
-    totalWorkTimeToday: 0,
-    isCounterPaused: true,
-    todayListings: 0,
-    todayMaxSpeed: 0,
-    lastAsinInputTime: null
+  const stats = data[KEY_STATS] || {};
+  return {
+    totalWorkTimeToday: stats.totalWorkTimeToday || 0,
+    isCounterPaused: stats.isCounterPaused !== undefined ? stats.isCounterPaused : true,
+    todayListings: stats.todayListings || 0,
+    weekListings: stats.weekListings || 0,
+    totalListings: stats.totalListings || 0,
+    todayMaxSpeed: stats.todayMaxSpeed || 0,
+    lastAsinInputTime: stats.lastAsinInputTime || null
   };
 }
 
@@ -30,7 +33,6 @@ async function saveStats(stats) {
 async function updateTimer() {
   const stats = await loadStats();
   
-  // 停止状態ならタイマーを止める
   if (stats.isCounterPaused) {
     stopTimer();
     return;
@@ -41,24 +43,17 @@ async function updateTimer() {
   // 2分放置チェック
   if (stats.lastAsinInputTime && (now - stats.lastAsinInputTime > 120000)) {
     console.log("[LFP-SW] 2分放置を検知。タイマーを停止し、120秒差し引きます。");
-    
-    // 120秒（2分）を差し引いて停止
-    stats.totalWorkTimeToday = Math.max(0, (stats.totalWorkTimeToday || 0) - 120000);
+    stats.totalWorkTimeToday = Math.max(0, stats.totalWorkTimeToday - 120000);
     stats.isCounterPaused = true;
-    
     await saveStats(stats);
     stopTimer();
-    
-    // 全画面に通知
     broadcastSync();
     return;
   }
 
-  // 1秒加算（1000ms）
-  stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + 1000;
+  // 1秒加算
+  stats.totalWorkTimeToday += 1000;
   await saveStats(stats);
-  
-  // 全画面に通知（リアルタイム更新用）
   broadcastSync();
 }
 
@@ -94,11 +89,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const opt = await loadOpt();
       const apiKey = (opt.apiKey || "").trim();
       const model = (opt.model || "gpt-4o-mini").trim();
-
       if (!apiKey) return sendResponse({ ok:false, error:"API key未設定" });
       const messages = Array.isArray(msg.messages) ? msg.messages : null;
       if (!messages) return sendResponse({ ok:false, error:"messagesが不正" });
-
       try {
         const out = await callResponses({ apiKey, model, messages });
         sendResponse({ ok:true, text: out });
@@ -116,13 +109,61 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   // タイマー制御
   if (msg.type === "LFP_TIMER_CONTROL") {
-    if (msg.action === "start") {
-      startTimer();
-    } else if (msg.action === "stop") {
-      stopTimer();
-    }
-    sendResponse({ ok: true });
-    return false;
+    (async () => {
+      const stats = await loadStats();
+      if (msg.action === "start") {
+        stats.isCounterPaused = false;
+        stats.lastAsinInputTime = Date.now();
+        await saveStats(stats);
+        startTimer();
+      } else if (msg.action === "stop") {
+        stats.isCounterPaused = true;
+        await saveStats(stats);
+        stopTimer();
+      }
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  // 統計更新（出品完了時）
+  if (msg.type === "LFP_UPDATE_STATS") {
+    (async () => {
+      const stats = await loadStats();
+      stats.todayListings = (stats.todayListings || 0) + 1;
+      stats.weekListings = (stats.weekListings || 0) + 1;
+      stats.totalListings = (stats.totalListings || 0) + 1;
+      
+      // 速度計算（簡易版）
+      const hours = stats.totalWorkTimeToday / 3600000;
+      if (hours > 0.01) {
+        const speed = Math.round(stats.todayListings / hours);
+        if (speed > stats.todayMaxSpeed) stats.todayMaxSpeed = speed;
+      }
+      
+      await saveStats(stats);
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  // ASIN入力時刻の更新
+  if (msg.type === "LFP_UPDATE_INPUT_TIME") {
+    (async () => {
+      const stats = await loadStats();
+      stats.lastAsinInputTime = Date.now();
+      // もし停止中なら自動開始
+      if (stats.isCounterPaused) {
+        stats.isCounterPaused = false;
+        startTimer();
+      }
+      await saveStats(stats);
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
   }
 
   // 同期リクエスト
@@ -132,18 +173,69 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return false;
   }
 
-  // 統計リセット
+  // ハートビート（生存確認）
+  if (msg.type === "LFP_HEARTBEAT") {
+    sendResponse({ ok: true, status: "alive" });
+    return false;
+  }
+
+  // 統計情報取得
+  if (msg.type === "LFP_GET_STATS") {
+    (async () => {
+      const stats = await loadStats();
+      sendResponse(stats);
+    })();
+    return true;
+  }
+
+  // 統計リセット（ポップアップからの明示的なリセット）
   if (msg.type === "RESET_STATS") {
     (async () => {
-      const stats = {
-        totalWorkTimeToday: 0,
-        isCounterPaused: true,
-        todayListings: 0,
-        todayMaxSpeed: 0,
-        lastAsinInputTime: null
-      };
+      const stats = await loadStats();
+      stats.totalWorkTimeToday = 0;
+      stats.isCounterPaused = true;
+      stats.todayListings = 0;
+      stats.todayMaxSpeed = 0;
+      stats.lastAsinInputTime = null;
+      // weekListings と totalListings はリセットしない（仕様）
       await saveStats(stats);
       stopTimer();
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  // 最適化回数インクリメント
+  if (msg.type === "LFP_INCREMENT_OPTIMIZE_COUNT") {
+    (async () => {
+      const stats = await loadStats();
+      stats.optimizeCount = (stats.optimizeCount || 0) + 1;
+      await saveStats(stats);
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  // ブランド警告回数インクリメント
+  if (msg.type === "LFP_INCREMENT_BRAND_COUNT") {
+    (async () => {
+      const stats = await loadStats();
+      stats.brandCount = (stats.brandCount || 0) + 1;
+      await saveStats(stats);
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  // 出品済み回数インクリメント
+  if (msg.type === "LFP_INCREMENT_ALREADY_LISTED_COUNT") {
+    (async () => {
+      const stats = await loadStats();
+      stats.alreadyListedCount = (stats.alreadyListedCount || 0) + 1;
+      await saveStats(stats);
       broadcastSync();
       sendResponse({ ok: true });
     })();
@@ -168,7 +260,7 @@ loadStats().then(stats => {
   }
 });
 
-// 以下、OpenAI API呼び出し用の既存関数
+// OpenAI API呼び出し用の既存関数
 function extractResponsesText(data){
   if (typeof data?.output_text === "string" && data.output_text.trim()) return data.output_text;
   const out = data?.output;
