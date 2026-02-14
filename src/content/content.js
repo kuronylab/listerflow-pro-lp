@@ -320,17 +320,20 @@ async function incrementListingCount() {
     // 新規: 作業時間の確定（出品完了時）
     await confirmWorkTime();
 
-    // 最高時速の更新チェック
+    // 最高時速の更新チェック（confirmWorkTimeで更新されたstatsを再読み込み）
     const reloadedStats = await loadStatistics();
     if (reloadedStats && reloadedStats.totalWorkTimeToday > 0) {
       const hours = reloadedStats.totalWorkTimeToday / (1000 * 60 * 60);
       const currentSpeed = reloadedStats.todayListings / hours;
       if (currentSpeed > reloadedStats.todayMaxSpeed) {
         reloadedStats.todayMaxSpeed = currentSpeed;
-        await saveStatistics(reloadedStats);
+        // stats オブジェクトも最新の状態に更新して、後の saveStatistics で上書きされないようにする
+        stats.todayMaxSpeed = currentSpeed;
       }
     }
 
+    // 既に confirmWorkTime 内で saveStatistics されているため、
+    // ここではインクリメントした件数のみを反映した stats を保存する
     await saveStatistics(stats);
     console.log(`[LFP] Listing incremented: 累計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
     
@@ -1622,7 +1625,9 @@ async function refreshHistorySelect() {
   const maxCount = 1000;
   
   // 既存のselectを更新（件数カウント付き）
-  UI.histSel.innerHTML = `<option value="">ASIN履歴（直近1000件） ${count}/${maxCount}</option>`;
+  UI.histSel.innerHTML = `<option value="" style="font-weight: bold; color: black;">ASIN履歴（直近1000件） ${count}/${maxCount}</option>`;
+  UI.histSel.style.fontWeight = "bold";
+  UI.histSel.style.color = "black";
   for (const entry of hist) {
     const opt = document.createElement("option");
     opt.value = entry.asin;
@@ -1703,8 +1708,8 @@ async function refreshListingCountUI() {
   // 初回構築
   if (!UI.listingCountLabel.querySelector('.lfp-count-val')) {
     UI.listingCountLabel.innerHTML = `
-      <span class="lfp-count-val" style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
-      <span class="lfp-time-val" style="margin-left: 15px; color: #666; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
+      <span class="lfp-count-val" style="font-weight: bold; color: black; vertical-align: middle;">出品完了: ${successCount}件</span>
+      <span class="lfp-time-val" style="margin-left: 15px; font-weight: bold; color: black; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: inline-flex; align-items: center;"></span>
       <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankContent ? 'inline-block' : 'none'}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent;">${rankContent}</span>
     `;
@@ -1715,8 +1720,16 @@ async function refreshListingCountUI() {
     const timeSpan = UI.listingCountLabel.querySelector('.lfp-time-val');
     const rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
     
-    if (countSpan) countSpan.textContent = `出品完了: ${successCount}件`;
-    if (timeSpan) timeSpan.textContent = `本日の作業時間: ${sessionWorkTime}`;
+    if (countSpan) {
+      countSpan.textContent = `出品完了: ${successCount}件`;
+      countSpan.style.color = 'black';
+      countSpan.style.fontWeight = 'bold';
+    }
+    if (timeSpan) {
+      timeSpan.textContent = `本日の作業時間: ${sessionWorkTime}`;
+      timeSpan.style.color = 'black';
+      timeSpan.style.fontWeight = 'bold';
+    }
     if (rankSpan) {
       rankSpan.style.display = rankContent ? 'inline-block' : 'none';
       rankSpan.textContent = rankContent;
@@ -1724,7 +1737,9 @@ async function refreshListingCountUI() {
     
     // ボタンの状態も同期
     if (UI.pauseResumeBtn) {
-      updatePauseResumeButtonUI(UI.pauseResumeBtn, stats?.isCounterPaused || false);
+      // stats が null または未定義の場合（リセット直後など）は一時停止状態（再生ボタン表示）とする
+      const isPaused = stats ? (stats.isCounterPaused !== false) : true;
+      updatePauseResumeButtonUI(UI.pauseResumeBtn, isPaused);
     }
   }
 }
@@ -1947,6 +1962,15 @@ let initRunning = false;
 async function init() {
   if (initRunning) return;
   initRunning = true;
+  
+  // ポップアップからの統計リセット通知などを受け取る
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'LFP_STATS_UPDATED') {
+      console.log('[LFP] 統計情報の更新通知を受信しました');
+      refreshListingCountUI();
+      refreshHistorySelect();
+    }
+  });
 
   try {
 
@@ -2949,7 +2973,8 @@ async function createPauseResumeButton() {
   
   // 初期状態を取得
   const stats = await loadStatistics();
-  const isPaused = stats?.isCounterPaused || false;
+  // stats が存在しない、またはセッションが開始されていない場合は一時停止状態（再生ボタン表示）とする
+  const isPaused = stats ? (stats.isCounterPaused !== false) : true;
   
   // アイコンと色を設定
   updatePauseResumeButtonUI(btn, isPaused);

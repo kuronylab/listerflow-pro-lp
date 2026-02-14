@@ -1,100 +1,71 @@
-const KEY_OPT = "lfp_options_v1";
-const KEY_HIST = "lfp_asin_history_v1";
-const KEY_STATS = "lfp_statistics_v1";
+// popup.js - ListerFlow Pro Popup Logic
 
-// DOM elements
-let menuBtn, closeMenuBtn, sideMenu, pageTitle, content;
-let statsElements = {};
-let settingElements = {};
+const KEY_OPT = 'lfp_options';
+const KEY_STATS = 'lfp_stats';
+const KEY_HIST = 'lfp_history';
 
-// 作業時間の動的カウント用タイマーID
-let workTimeUpdateInterval = null;
+// Elements
+const pageTitle = document.getElementById('pageTitle');
+const statsElements = {
+  todayListings: document.getElementById('todayListings'),
+  weekListings: document.getElementById('weekListings'),
+  totalListings: document.getElementById('totalListings'),
+  lastListing: document.getElementById('lastListing'),
+  todayWorkingHours: document.getElementById('todayWorkingHours'),
+  listingSpeed: document.getElementById('listingSpeed'),
+  completedListingsCount: document.getElementById('completedListingsCount'),
+  protectedCount: document.getElementById('protectedCount'),
+  brandCount: document.getElementById('brandCount'),
+  noListingsCount: document.getElementById('noListingsCount'),
+  alreadyListedCount: document.getElementById('alreadyListedCount'),
+  noItemCount: document.getElementById('noItemCount'),
+  errorRateLabel: document.getElementById('errorRateLabel')
+};
+
+const settingElements = {
+  apiKey: document.getElementById('apiKey'),
+  model: document.getElementById('model'),
+  autoGetOnPaste: document.getElementById('autoGetOnPaste'),
+  autoGetOnHistory: document.getElementById('autoGetOnHistory'),
+  autoMipAfterOptimize: document.getElementById('autoMipAfterOptimize'),
+  autoClickOkAfterMip: document.getElementById('autoClickOkAfterMip'),
+  veroEnabled: document.getElementById('veroEnabled'),
+  turboListingMode: document.getElementById('turboListingMode')
+};
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-  initializeElements();
   setupEventListeners();
-  await loadAndDisplayStats();
   await loadSettings();
-  startWorkTimeCounter();
-});
-
-// ページを離れるときにタイマーをクリア
-window.addEventListener('beforeunload', () => {
-  if (workTimeUpdateInterval) {
-    clearInterval(workTimeUpdateInterval);
-    workTimeUpdateInterval = null;
-  }
-});
-
-function initializeElements() {
-  // Menu
-  menuBtn = document.getElementById('menuBtn');
-  closeMenuBtn = document.getElementById('closeMenuBtn');
-  sideMenu = document.getElementById('sideMenu');
-  pageTitle = document.getElementById('pageTitle');
-  content = document.getElementById('content');
-
-  // Stats elements
-  statsElements = {
-    todayListings: document.getElementById('todayListings'),
-    weekListings: document.getElementById('weekListings'),
-    totalListings: document.getElementById('totalListings'),
-    lastListing: document.getElementById('lastListing'),
-    completedListingsCount: document.getElementById('completedListingsCount'),
-    protectedCount: document.getElementById('protectedCount'),
-    brandCount: document.getElementById('brandCount'),
-    noListingsCount: document.getElementById('noListingsCount'),
-    alreadyListedCount: document.getElementById('alreadyListedCount'),
-    noItemCount: document.getElementById('noItemCount'),
-    todayWorkingHours: document.getElementById('todayWorkingHours'),
-    listingSpeed: document.getElementById('listingSpeed'),
-    errorRateLabel: document.getElementById('errorRateLabel')
-  };
-
-  // Setting elements
-  settingElements = {
-    apiKey: document.getElementById('apiKey'),
-    model: document.getElementById('model'),
-    autoGetOnPaste: document.getElementById('autoGetOnPaste'),
-    autoGetOnHistory: document.getElementById('autoGetOnHistory'),
-    autoMipAfterOptimize: document.getElementById('autoMipAfterOptimize'),
-    autoClickOkAfterMip: document.getElementById('autoClickOkAfterMip'),
-    quickMipButton: document.getElementById('quickMipButton'),
-    highlightOptimize: document.getElementById('highlightOptimize'),
-    historyEnabled: document.getElementById('historyEnabled'),
-    veroEnabled: document.getElementById('veroEnabled'),
-    turboListingMode: document.getElementById('turboListingMode')
-  };
-
-  // Version elements
-  const versionNumber = document.getElementById('versionNumber');
-  const releaseDate = document.getElementById('releaseDate');
+  await loadAndDisplayStats();
   
-  // Load version from manifest
-  const manifest = chrome.runtime.getManifest();
-  if (versionNumber) versionNumber.textContent = `v${manifest.version}`;
-  if (releaseDate) releaseDate.textContent = '2026/02/12';
-}
+  // 1秒ごとに表示を更新（リアルタイムカウンター用）
+  setInterval(async () => {
+    const stats = await loadStatistics();
+    updateWorkTimeDisplay(stats);
+  }, 1000);
+});
 
 function setupEventListeners() {
-  // Menu toggle
-  menuBtn?.addEventListener('click', () => {
-    sideMenu?.classList.add('open');
-  });
-
-  closeMenuBtn?.addEventListener('click', () => {
-    sideMenu?.classList.remove('open');
-  });
-
-  // Menu items
+  // Menu navigation
   document.querySelectorAll('.menu-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
       const page = item.dataset.page;
       switchPage(page);
-      sideMenu?.classList.remove('open');
+      
+      // Close side menu on mobile if needed
+      document.getElementById('sideMenu').classList.remove('open');
     });
+  });
+
+  // Hamburger menu
+  document.getElementById('menuBtn')?.addEventListener('click', () => {
+    document.getElementById('sideMenu').classList.add('open');
+  });
+
+  document.getElementById('closeMenuBtn')?.addEventListener('click', () => {
+    document.getElementById('sideMenu').classList.remove('open');
   });
 
   // Stats page buttons
@@ -158,20 +129,6 @@ function switchPage(page) {
 
 // Statistics functions
 // 作業時間のリアルタイムカウント開始
-// 作業時間の表示更新（読み取り专用）
-function startWorkTimeCounter() {
-  // 新規: 1秒ごとに統計情報を再読み込み、ポップアップを動的に更新
-  if (workTimeUpdateInterval) {
-    clearInterval(workTimeUpdateInterval);
-  }
-  
-  workTimeUpdateInterval = setInterval(async () => {
-    await loadAndDisplayStats();
-  }, 1000);
-}
-
-// 作業時間表示の更新
-// 新規: 確定済み時間 + 現在のセッション経過時間を合算
 function updateWorkTimeDisplay(stats) {
   // 確定済み時間 + 現在進行中のセッション経過時間
   let confirmedMs = stats.totalWorkTimeToday || 0;
@@ -279,13 +236,13 @@ async function loadAndDisplayStats() {
       if (rate > 50) { color = "rgb(220, 53, 69)"; bgColor = "rgba(220, 53, 69, 0.1)"; emoji = "😱"; }
       else if (rate > 20) { color = "rgb(253, 126, 20)"; bgColor = "rgba(253, 126, 20, 0.1)"; emoji = "🧐"; }
       
-      statsElements.errorRateLabel.textContent = `エラー率: ${rate}% ${emoji}`;
+      statsElements.errorRateLabel.textContent = `${emoji} ${rate}%`;
       statsElements.errorRateLabel.style.color = color;
       statsElements.errorRateLabel.style.backgroundColor = bgColor;
+      statsElements.errorRateLabel.style.borderColor = color.replace('rgb', 'rgba').replace(')', ', 0.2)');
     }
-
   } catch (err) {
-    console.error('[Popup] Error loading stats:', err);
+    console.error('Failed to load stats:', err);
   }
 }
 
@@ -330,10 +287,20 @@ async function resetStats() {
     weekListings: 0,
     lastListingDate: null,
     totalWorkTimeToday: 0,
-    lastResetDate: Date.now()
+    lastResetDate: Date.now(),
+    isCounterPaused: true,
+    currentSessionStartTime: null,
+    currentSessionElapsedMs: 0
   };
   await chrome.storage.local.set({ [KEY_STATS]: stats });
   await loadAndDisplayStats();
+  
+  // 出品作業画面のUIを即座に更新させるためのメッセージ送信
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'LFP_STATS_UPDATED' }).catch(() => {});
+    }
+  });
 }
 
 // Settings functions
@@ -349,53 +316,42 @@ async function loadSettings() {
   if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
   if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoMipAfterOptimize;
   if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!opt.autoClickOkAfterMip;
-  if (settingElements.quickMipButton) settingElements.quickMipButton.checked = !!opt.quickMipButton;
-  if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = !!opt.highlightOptimize;
-  if (settingElements.historyEnabled) settingElements.historyEnabled.checked = !!opt.historyEnabled;
   if (settingElements.veroEnabled) settingElements.veroEnabled.checked = !!opt.veroEnabled;
   if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!opt.turboListingMode;
 }
 
-function toggleApiKeyVisibility() {
-  const el = settingElements.apiKey;
-  if (!el) return;
-  const btn = document.getElementById('showKeyBtn');
-  if (el.type === 'password') {
-    el.type = 'text';
-    if (btn) btn.textContent = '隠す';
-  } else {
-    el.type = 'password';
-    if (btn) btn.textContent = '表示';
-  }
-}
-
 async function saveBasicSettings() {
-  const data = await chrome.storage.sync.get([KEY_OPT]);
-  const opt = data?.[KEY_OPT] || {};
-
-  opt.apiKey = settingElements.apiKey?.value || '';
-  opt.model = settingElements.model?.value || 'gpt-4o-mini';
-
+  const opt = (await chrome.storage.sync.get([KEY_OPT]))[KEY_OPT] || {};
+  opt.apiKey = settingElements.apiKey.value.trim();
+  opt.model = settingElements.model.value;
+  
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('基本設定を保存しました');
 }
 
 async function saveAutomationSettings() {
-  const data = await chrome.storage.sync.get([KEY_OPT]);
-  const opt = data?.[KEY_OPT] || {};
-
-  opt.autoGetOnPaste = settingElements.autoGetOnPaste?.checked;
-  opt.autoGetOnHistory = settingElements.autoGetOnHistory?.checked;
-  opt.autoMipAfterOptimize = settingElements.autoMipAfterOptimize?.checked;
-  opt.autoClickOkAfterMip = settingElements.autoClickOkAfterMip?.checked;
-  opt.quickMipButton = settingElements.quickMipButton?.checked;
-  opt.highlightOptimize = settingElements.highlightOptimize?.checked;
-  opt.historyEnabled = settingElements.historyEnabled?.checked;
-  opt.veroEnabled = settingElements.veroEnabled?.checked;
-  opt.turboListingMode = settingElements.turboListingMode?.checked;
-
+  const opt = (await chrome.storage.sync.get([KEY_OPT]))[KEY_OPT] || {};
+  opt.autoGetOnPaste = settingElements.autoGetOnPaste.checked;
+  opt.autoGetOnHistory = settingElements.autoGetOnHistory.checked;
+  opt.autoMipAfterOptimize = settingElements.autoMipAfterOptimize.checked;
+  opt.autoClickOkAfterMip = settingElements.autoClickOkAfterMip.checked;
+  opt.veroEnabled = settingElements.veroEnabled.checked;
+  opt.turboListingMode = settingElements.turboListingMode.checked;
+  
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
-  alert('自動化・UI設定を保存しました');
+  alert('自動化設定を保存しました');
+}
+
+function toggleApiKeyVisibility() {
+  const input = settingElements.apiKey;
+  const btn = document.getElementById('showKeyBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '隠す';
+  } else {
+    input.type = 'password';
+    btn.textContent = '表示';
+  }
 }
 
 // History functions
@@ -448,15 +404,12 @@ async function loadHistoryList() {
       </div>
       <button class="history-delete" data-index="${index}">✕</button>
     `;
-    
-    const statusContainer = card.querySelector('.history-status-inline');
-    statusContainer.appendChild(statusSpan);
-    
+    card.querySelector('.history-status-inline').appendChild(statusSpan);
     listEl.appendChild(card);
   });
 
-  // Delete buttons
-  listEl.querySelectorAll('.history-delete').forEach(btn => {
+  // Add delete events
+  document.querySelectorAll('.history-delete').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const idx = parseInt(e.target.dataset.index);
       await deleteHistoryItem(idx);
@@ -478,9 +431,15 @@ async function clearHistory() {
   if (!confirm('すべての履歴を削除しますか？')) return;
   // 履歴だけを削除し、統計情報（本日の作業時間など）は保持
   await chrome.storage.local.set({ [KEY_HIST]: [] });
-  await loadHistoryList();
   // 統計情報を再読み込みして表示を更新
   await loadAndDisplayStats();
+  
+  // 出品作業画面のUIを即座に更新させるためのメッセージ送信
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'LFP_STATS_UPDATED' }).catch(() => {});
+    }
+  });
 }
 
 async function updateHistoryStats(history) {
@@ -492,10 +451,39 @@ async function updateHistoryStats(history) {
   
   const errorCount = history.length - completedCount;
   
-  // 統計情報の表示を更新（必要に応じて）
-  console.log(`[History] 出品完了: ${completedCount}件, エラー: ${errorCount}件`);
+  if (statsElements.completedListingsCount) statsElements.completedListingsCount.textContent = `${completedCount}件`;
+  // 他のエラー統計も必要に応じて更新
 }
 
+// Export functions
 function exportToSpreadsheet() {
-  chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
+  chrome.storage.local.get([KEY_HIST], (data) => {
+    const history = data[KEY_HIST] || [];
+    if (history.length === 0) {
+      alert('エクスポートする履歴がありません');
+      return;
+    }
+
+    let csv = 'ASIN,Status,Date\n';
+    history.forEach(item => {
+      let status = 'Success';
+      if (item.flags?.protected) status = 'Protected';
+      else if (item.flags?.brand) status = 'Brand';
+      else if (item.flags?.no_listings) status = 'No Listings';
+      else if (item.flags?.already_listed) status = 'Already Listed';
+      else if (item.flags?.no_item) status = 'No Item';
+      
+      const date = new Date(item.timestamp || Date.now()).toLocaleString();
+      csv += `${item.asin},${status},"${date}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `listerflow_history_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
 }
