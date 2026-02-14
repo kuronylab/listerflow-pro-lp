@@ -1704,8 +1704,8 @@ async function refreshListingCountUI() {
   // 初回構築
   if (!UI.listingCountLabel.querySelector('.lfp-count-val')) {
     UI.listingCountLabel.innerHTML = `
-      <span class="lfp-count-val" style="font-weight: bold; color: #444; vertical-align: middle;">出品完了: ${successCount}件</span>
-      <span class="lfp-time-val" style="margin-left: 15px; color: #666; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
+      <span class="lfp-count-val" style="font-weight: bold; color: black; vertical-align: middle;">出品完了: ${successCount}件</span>
+      <span class="lfp-time-val" style="margin-left: 15px; color: black; font-weight: bold; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: inline-flex; align-items: center;"></span>
       <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankContent ? 'inline-block' : 'none'}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent;">${rankContent}</span>
     `;
@@ -1716,8 +1716,16 @@ async function refreshListingCountUI() {
     const timeSpan = UI.listingCountLabel.querySelector('.lfp-time-val');
     const rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
     
-    if (countSpan) countSpan.textContent = `出品完了: ${successCount}件`;
-    if (timeSpan) timeSpan.textContent = `本日の作業時間: ${sessionWorkTime}`;
+    if (countSpan) {
+      countSpan.textContent = `出品完了: ${successCount}件`;
+      countSpan.style.color = "black";
+      countSpan.style.fontWeight = "bold";
+    }
+    if (timeSpan) {
+      timeSpan.textContent = `本日の作業時間: ${sessionWorkTime}`;
+      timeSpan.style.color = "black";
+      timeSpan.style.fontWeight = "bold";
+    }
     if (rankSpan) {
       rankSpan.style.display = rankContent ? 'inline-block' : 'none';
       rankSpan.textContent = rankContent;
@@ -1983,12 +1991,26 @@ async function init() {
         if (confirm("ASIN履歴をすべて削除しますか？")) {
           try {
             await resetHistory();
-            // 履歴削除後、即座にドロップダウンを更新
+            // 統計もリセット（タイマー停止を含む）
+            const stats = await loadStatistics();
+            stats.totalWorkTimeToday = 0;
+            stats.currentSessionStartTime = null;
+            stats.currentSessionElapsedMs = 0;
+            stats.isCounterPaused = true;
+            stats.todayListings = 0;
+            await saveStatistics(stats);
+            
+            // バックグラウンドタイマー停止
+            chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "stop" });
+            // 全画面同期
+            chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+            
             await refreshHistorySelect();
-            alert("ASIN履歴を削除しました");
+            await refreshListingCountUI();
+            alert("ASIN履歴と統計をリセットしました");
           } catch (err) {
-            console.error('履歴削除エラー:', err);
-            alert("履歴削除中にエラーが発生しました。ページをリロードしてください。");
+            console.error('リセットエラー:', err);
+            alert("リセット中にエラーが発生しました。");
           }
         }
       });
@@ -2284,6 +2306,15 @@ async function init() {
     if (!observersInitialized) {
       setupNoListingsObserver();
       setupListingSuccessObserver();
+      
+      // メッセージリスナー
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.type === 'LFP_SYNC_UI') {
+          refreshListingCountUI();
+          refreshHistorySelect();
+        }
+      });
+      
       observersInitialized = true;
     }
 
@@ -2881,24 +2912,26 @@ async function togglePauseResume() {
   if (!stats) return;
   
   const now = Date.now();
-  stats.isCounterPaused = !stats.isCounterPaused;
+  const isPaused = !stats.isCounterPaused;
+  stats.isCounterPaused = isPaused;
   
-  if (stats.isCounterPaused) {
+  if (isPaused) {
     console.log('[LFP] カウンター一時停止');
-    // 一時停止した瞬間の経過時間を保存
     if (stats.currentSessionStartTime) {
-      // 経過時間を確定済み時間に合算してセッションをクリアする（跳躍防止）
       const elapsed = now - stats.currentSessionStartTime;
       stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + elapsed;
       stats.currentSessionStartTime = null;
       stats.currentSessionElapsedMs = 0;
     }
+    // バックグラウンドタイマー停止通知
+    chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "stop" });
   } else {
     console.log('[LFP] カウンター再開');
-    // 再開した瞬間の時刻を新しい開始時刻とする
     stats.currentSessionStartTime = now;
     stats.currentSessionElapsedMs = 0;
     stats.lastAsinInputTime = now;
+    // バックグラウンドタイマー開始通知
+    chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
     startRealtimeCounter();
   }
   
@@ -2914,24 +2947,31 @@ async function onAsinInput() {
   if (!stats) return;
   
   const now = Date.now();
+  let changed = false;
   
   // 一時停止中の操作
   if (stats.isCounterPaused) {
-    // 新しいセッションを開始
     stats.currentSessionStartTime = now;
     stats.currentSessionElapsedMs = 0;
     stats.isCounterPaused = false;
     stats.lastAsinInputTime = now;
+    changed = true;
     
-    await saveStatistics(stats);
+    chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
     startRealtimeCounter();
     console.log('[LFP] 作業セッション再開（ASIN入力起点）');
   } else if (!stats.currentSessionStartTime) {
-    // セッションが開始されていない場合は開始
     await startWorkTimeSession();
+    // startWorkTimeSession内でsaveされるが、lastAsinInputTimeも更新したい
+    const newStats = await loadStatistics();
+    newStats.lastAsinInputTime = now;
+    await saveStatistics(newStats);
   } else {
-    // セッション中の場合は最後のASIN入力時刻を更新
     stats.lastAsinInputTime = now;
+    changed = true;
+  }
+
+  if (changed) {
     await saveStatistics(stats);
   }
 }

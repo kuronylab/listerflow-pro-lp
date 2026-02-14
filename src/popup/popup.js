@@ -157,10 +157,6 @@ function switchPage(page) {
 }
 
 // Statistics functions
-/**
- * 作業時間のリアルタイムカウント開始
- * 1秒ごとに統計情報を再読み込みし、表示を更新する
- */
 function startWorkTimeCounter() {
   if (workTimeUpdateInterval) {
     clearInterval(workTimeUpdateInterval);
@@ -171,12 +167,7 @@ function startWorkTimeCounter() {
   }, 1000);
 }
 
-/**
- * 作業時間と出品速度の表示を更新
- * 確定済み時間 + 現在のセッション経過時間を合算して表示
- */
 function updateWorkTimeDisplay(stats) {
-  // 確定済み時間 + 現在進行中のセッション経過時間
   let confirmedMs = stats.totalWorkTimeToday || 0;
   let currentSessionMs = 0;
   
@@ -188,7 +179,6 @@ function updateWorkTimeDisplay(stats) {
   
   const totalMs = confirmedMs + currentSessionMs;
 
-  // 作業時間の表示更新
   if (statsElements.todayWorkingHours) {
     const totalSec = Math.floor(totalMs / 1000);
     const hours = Math.floor(totalSec / 3600);
@@ -197,7 +187,6 @@ function updateWorkTimeDisplay(stats) {
     statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
   }
   
-  // 出品速度とバッジの更新
   if (statsElements.listingSpeed) {
     const count = stats.todayListings || 0;
     const hours = totalMs / 3600000;
@@ -211,20 +200,13 @@ function updateWorkTimeDisplay(stats) {
     else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
     else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
     
-    // トロフィー判定（最高速度更新時）
     const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
     if (isMaxSpeed && speedVal > 0) rankText += " 🏆";
 
-    // バッジの種類または数値が変わった場合のみDOMを更新
-    const currentSpeedText = statsElements.listingSpeed.querySelector('span')?.textContent || '';
-    const currentBadge = statsElements.listingSpeed.querySelector('.rank-badge')?.textContent || '';
-    
-    if (currentBadge !== rankText || currentSpeedText !== `${speedDisplay}品/時`) {
-      statsElements.listingSpeed.innerHTML = `
-        <span>${speedDisplay}品/時</span>
-        <span class="rank-badge ${rank}">${rankText}</span>
-      `;
-    }
+    statsElements.listingSpeed.innerHTML = `
+      <span>${speedDisplay}品/時</span>
+      <span class="rank-badge ${rank}">${rankText}</span>
+    `;
   }
 }
 
@@ -233,12 +215,10 @@ async function loadAndDisplayStats() {
     const stats = await loadStatistics();
     const history = await loadHistory();
 
-    // 基本統計の表示
     if (statsElements.todayListings) statsElements.todayListings.textContent = `${stats.todayListings || 0}件`;
     if (statsElements.weekListings) statsElements.weekListings.textContent = `${stats.weekListings || 0}件`;
     if (statsElements.totalListings) statsElements.totalListings.textContent = `${stats.totalListings || 0}件`;
 
-    // 最終出品時刻
     if (statsElements.lastListing) {
       if (stats.lastListingDate) {
         const d = new Date(stats.lastListingDate);
@@ -249,10 +229,8 @@ async function loadAndDisplayStats() {
       }
     }
 
-    // 作業時間と速度の更新
     updateWorkTimeDisplay(stats);
 
-    // 履歴ベースの詳細統計
     const completedCount = history.filter(h => {
       const f = h.flags || {};
       return !f.protected && !f.brand && !f.already_listed && !f.no_listings && !f.no_item;
@@ -271,7 +249,6 @@ async function loadAndDisplayStats() {
     if (statsElements.alreadyListedCount) statsElements.alreadyListedCount.textContent = `${alreadyListedCount}件`;
     if (statsElements.noItemCount) statsElements.noItemCount.textContent = `${noItemCount}件`;
 
-    // エラー率の計算と表示
     if (statsElements.errorRateLabel) {
       const total = history.length;
       const errors = total - completedCount;
@@ -296,35 +273,18 @@ async function loadAndDisplayStats() {
 
 async function loadStatistics() {
   const data = await chrome.storage.local.get([KEY_STATS]);
-  let stats = data?.[KEY_STATS];
-
-  if (!stats) {
-    stats = {
-      totalListings: 0,
-      todayListings: 0,
-      weekListings: 0,
-      lastListingDate: null,
-      totalWorkTimeToday: 0,
-      lastResetDate: Date.now()
-    };
-  }
-
-  // 日付が変わっていたら本日の統計をリセット
-  const now = new Date();
-  const lastReset = new Date(stats.lastResetDate || 0);
-  if (now.toDateString() !== lastReset.toDateString()) {
-    stats.todayListings = 0;
-    stats.totalWorkTimeToday = 0;
-    stats.lastResetDate = now.getTime();
-    
-    // 月曜日なら週間の統計もリセット
-    if (now.getDay() === 1) {
-      stats.weekListings = 0;
-    }
-    await chrome.storage.local.set({ [KEY_STATS]: stats });
-  }
-
-  return stats;
+  return data?.[KEY_STATS] || {
+    totalListings: 0,
+    todayListings: 0,
+    weekListings: 0,
+    lastListingDate: null,
+    totalWorkTimeToday: 0,
+    currentSessionStartTime: null,
+    currentSessionElapsedMs: 0,
+    isCounterPaused: true,
+    todayMaxSpeed: 0,
+    lastResetDate: Date.now()
+  };
 }
 
 async function resetStats() {
@@ -335,9 +295,15 @@ async function resetStats() {
     weekListings: 0,
     lastListingDate: null,
     totalWorkTimeToday: 0,
+    currentSessionStartTime: null,
+    currentSessionElapsedMs: 0,
+    isCounterPaused: true,
+    todayMaxSpeed: 0,
     lastResetDate: Date.now()
   };
   await chrome.storage.local.set({ [KEY_STATS]: stats });
+  chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "stop" });
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
   await loadAndDisplayStats();
 }
 
@@ -351,7 +317,7 @@ async function loadSettings() {
   
   if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = !!opt.autoGetOnPaste;
   if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
-  if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoGetOnHistory; // 修正: autoMipAfterOptimize を参照すべき
+  if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoMipAfterOptimize;
   if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!opt.autoClickOkAfterMip;
   if (settingElements.quickMipButton) settingElements.quickMipButton.checked = !!opt.quickMipButton;
   if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = !!opt.highlightOptimize;
@@ -376,10 +342,8 @@ function toggleApiKeyVisibility() {
 async function saveBasicSettings() {
   const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
-
   opt.apiKey = settingElements.apiKey?.value || '';
   opt.model = settingElements.model?.value || 'gpt-4o-mini';
-
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('基本設定を保存しました');
 }
@@ -387,7 +351,6 @@ async function saveBasicSettings() {
 async function saveAutomationSettings() {
   const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
-
   opt.autoGetOnPaste = settingElements.autoGetOnPaste?.checked;
   opt.autoGetOnHistory = settingElements.autoGetOnHistory?.checked;
   opt.autoMipAfterOptimize = settingElements.autoMipAfterOptimize?.checked;
@@ -397,7 +360,6 @@ async function saveAutomationSettings() {
   opt.historyEnabled = settingElements.historyEnabled?.checked;
   opt.veroEnabled = settingElements.veroEnabled?.checked;
   opt.turboListingMode = settingElements.turboListingMode?.checked;
-
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('自動化・UI設定を保存しました');
 }
@@ -422,7 +384,7 @@ async function loadHistoryList() {
   }
 
   listEl.innerHTML = '';
-  history.forEach((item) => {
+  history.forEach((item, index) => {
     const card = document.createElement('div');
     card.className = 'history-card';
     
@@ -441,32 +403,29 @@ async function loadHistoryList() {
         <span class="history-asin">${item.asin}</span>
         <span class="history-status ${statusClass}">${status}</span>
       </div>
-      <button class="history-delete" data-asin="${item.asin}" title="この履歴を削除">×</button>
+      <button class="history-delete" data-index="${index}" title="この履歴を削除">×</button>
     `;
 
-    // 削除ボタンのイベントリスナー
-    card.querySelector('.history-delete').addEventListener('click', async (e) => {
-      const asinToDelete = e.target.dataset.asin;
-      if (confirm(`ASIN: ${asinToDelete} の履歴を削除しますか？`)) {
-        const currentHistory = await loadHistory();
-        const filtered = currentHistory.filter(h => h.asin !== asinToDelete);
-        await chrome.storage.local.set({ [KEY_HIST]: filtered });
-        await loadHistoryList();
-        await loadAndDisplayStats();
-      }
+    card.querySelector('.history-delete').addEventListener('click', async () => {
+      const idx = parseInt(card.querySelector('.history-delete').dataset.index);
+      const hist = await loadHistory();
+      hist.splice(idx, 1);
+      await chrome.storage.local.set({ [KEY_HIST]: hist });
+      chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+      loadHistoryList();
     });
 
     listEl.appendChild(card);
   });
 }
 
-async function clearHistory() {
-  if (!confirm('履歴をすべて削除しますか？')) return;
-  await chrome.storage.local.set({ [KEY_HIST]: [] });
-  await loadHistoryList();
-  await loadAndDisplayStats();
-}
-
 function exportToSpreadsheet() {
   chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
+}
+
+async function clearHistory() {
+  if (!confirm('すべての履歴を削除しますか？')) return;
+  await chrome.storage.local.set({ [KEY_HIST]: [] });
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+  loadHistoryList();
 }
