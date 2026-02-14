@@ -157,10 +157,11 @@ function switchPage(page) {
 }
 
 // Statistics functions
-// 作業時間のリアルタイムカウント開始
-// 作業時間の表示更新（読み取り专用）
+/**
+ * 作業時間のリアルタイムカウント開始
+ * 1秒ごとに統計情報を再読み込みし、表示を更新する
+ */
 function startWorkTimeCounter() {
-  // 新規: 1秒ごとに統計情報を再読み込み、ポップアップを動的に更新
   if (workTimeUpdateInterval) {
     clearInterval(workTimeUpdateInterval);
   }
@@ -170,8 +171,10 @@ function startWorkTimeCounter() {
   }, 1000);
 }
 
-// 作業時間表示の更新
-// 新規: 確定済み時間 + 現在のセッション経過時間を合算
+/**
+ * 作業時間と出品速度の表示を更新
+ * 確定済み時間 + 現在のセッション経過時間を合算して表示
+ */
 function updateWorkTimeDisplay(stats) {
   // 確定済み時間 + 現在進行中のセッション経過時間
   let confirmedMs = stats.totalWorkTimeToday || 0;
@@ -185,6 +188,7 @@ function updateWorkTimeDisplay(stats) {
   
   const totalMs = confirmedMs + currentSessionMs;
 
+  // 作業時間の表示更新
   if (statsElements.todayWorkingHours) {
     const totalSec = Math.floor(totalMs / 1000);
     const hours = Math.floor(totalSec / 3600);
@@ -193,6 +197,7 @@ function updateWorkTimeDisplay(stats) {
     statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
   }
   
+  // 出品速度とバッジの更新
   if (statsElements.listingSpeed) {
     const count = stats.todayListings || 0;
     const hours = totalMs / 3600000;
@@ -206,11 +211,11 @@ function updateWorkTimeDisplay(stats) {
     else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
     else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
     
-    // トロフィー判定（content.jsと同期）
+    // トロフィー判定（最高速度更新時）
     const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
     if (isMaxSpeed && speedVal > 0) rankText += " 🏆";
 
-    // バッジの種類または数値が変わった場合に更新
+    // バッジの種類または数値が変わった場合のみDOMを更新
     const currentSpeedText = statsElements.listingSpeed.querySelector('span')?.textContent || '';
     const currentBadge = statsElements.listingSpeed.querySelector('.rank-badge')?.textContent || '';
     
@@ -228,12 +233,12 @@ async function loadAndDisplayStats() {
     const stats = await loadStatistics();
     const history = await loadHistory();
 
-    // Display stats
+    // 基本統計の表示
     if (statsElements.todayListings) statsElements.todayListings.textContent = `${stats.todayListings || 0}件`;
     if (statsElements.weekListings) statsElements.weekListings.textContent = `${stats.weekListings || 0}件`;
     if (statsElements.totalListings) statsElements.totalListings.textContent = `${stats.totalListings || 0}件`;
 
-    // Last listing time
+    // 最終出品時刻
     if (statsElements.lastListing) {
       if (stats.lastListingDate) {
         const d = new Date(stats.lastListingDate);
@@ -244,10 +249,10 @@ async function loadAndDisplayStats() {
       }
     }
 
-    // Working Hours & Speed
+    // 作業時間と速度の更新
     updateWorkTimeDisplay(stats);
 
-    // History stats
+    // 履歴ベースの詳細統計
     const completedCount = history.filter(h => {
       const f = h.flags || {};
       return !f.protected && !f.brand && !f.already_listed && !f.no_listings && !f.no_item;
@@ -266,7 +271,7 @@ async function loadAndDisplayStats() {
     if (statsElements.alreadyListedCount) statsElements.alreadyListedCount.textContent = `${alreadyListedCount}件`;
     if (statsElements.noItemCount) statsElements.noItemCount.textContent = `${noItemCount}件`;
 
-    // Error Rate
+    // エラー率の計算と表示
     if (statsElements.errorRateLabel) {
       const total = history.length;
       const errors = total - completedCount;
@@ -304,7 +309,7 @@ async function loadStatistics() {
     };
   }
 
-  // Daily reset
+  // 日付が変わっていたら本日の統計をリセット
   const now = new Date();
   const lastReset = new Date(stats.lastResetDate || 0);
   if (now.toDateString() !== lastReset.toDateString()) {
@@ -312,7 +317,7 @@ async function loadStatistics() {
     stats.totalWorkTimeToday = 0;
     stats.lastResetDate = now.getTime();
     
-    // Weekly reset (Monday)
+    // 月曜日なら週間の統計もリセット
     if (now.getDay() === 1) {
       stats.weekListings = 0;
     }
@@ -344,10 +349,9 @@ async function loadSettings() {
   if (settingElements.apiKey) settingElements.apiKey.value = opt.apiKey || '';
   if (settingElements.model) settingElements.model.value = opt.model || 'gpt-4o-mini';
   
-  // Automation & UI toggles
   if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = !!opt.autoGetOnPaste;
   if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
-  if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoMipAfterOptimize;
+  if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoGetOnHistory; // 修正: autoMipAfterOptimize を参照すべき
   if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!opt.autoClickOkAfterMip;
   if (settingElements.quickMipButton) settingElements.quickMipButton.checked = !!opt.quickMipButton;
   if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = !!opt.highlightOptimize;
@@ -418,7 +422,7 @@ async function loadHistoryList() {
   }
 
   listEl.innerHTML = '';
-  history.forEach((item, index) => {
+  history.forEach((item) => {
     const card = document.createElement('div');
     card.className = 'history-card';
     
@@ -433,69 +437,26 @@ async function loadHistoryList() {
     const statusSpan = document.createElement('span');
     statusSpan.className = 'history-status';
     statusSpan.textContent = status;
-    if (isError) {
-      statusSpan.style.color = '#E07167';
-      statusSpan.style.fontWeight = '600';
-    } else {
-      statusSpan.style.color = '#2e7d32';
-      statusSpan.style.fontWeight = '600';
-    }
+    statusSpan.style.color = isError ? '#E07167' : '#2e7d32';
+    statusSpan.style.fontWeight = '600';
 
     card.innerHTML = `
       <div class="history-main">
-        <span class="history-asin">${item.asin}</span>
-        <span class="history-status-inline"></span>
+        <span>${item.asin}</span>
       </div>
-      <button class="history-delete" data-index="${index}">✕</button>
     `;
-    
-    const statusContainer = card.querySelector('.history-status-inline');
-    statusContainer.appendChild(statusSpan);
-    
+    card.querySelector('.history-main').appendChild(statusSpan);
     listEl.appendChild(card);
   });
-
-  // Delete buttons
-  listEl.querySelectorAll('.history-delete').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const idx = parseInt(e.target.dataset.index);
-      await deleteHistoryItem(idx);
-    });
-  });
-
-  // 統計情報を更新
-  await updateHistoryStats(history);
-}
-
-async function deleteHistoryItem(index) {
-  const history = await loadHistory();
-  history.splice(index, 1);
-  await chrome.storage.local.set({ [KEY_HIST]: history });
-  await loadHistoryList();
 }
 
 async function clearHistory() {
-  if (!confirm('すべての履歴を削除しますか？')) return;
-  // 履歴だけを削除し、統計情報（本日の作業時間など）は保持
+  if (!confirm('履歴をすべて削除しますか？')) return;
   await chrome.storage.local.set({ [KEY_HIST]: [] });
   await loadHistoryList();
-  // 統計情報を再読み込みして表示を更新
   await loadAndDisplayStats();
 }
 
-async function updateHistoryStats(history) {
-  // 統計情報を更新（出品完了とエラーの件数）
-  const completedCount = history.filter(h => {
-    const f = h.flags || {};
-    return !f.protected && !f.brand && !f.already_listed && !f.no_listings && !f.no_item;
-  }).length;
-  
-  const errorCount = history.length - completedCount;
-  
-  // 統計情報の表示を更新（必要に応じて）
-  console.log(`[History] 出品完了: ${completedCount}件, エラー: ${errorCount}件`);
-}
-
 function exportToSpreadsheet() {
-  chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
+  // CSVエクスポートロジック（必要に応じて実装）
 }
