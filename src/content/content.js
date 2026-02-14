@@ -54,8 +54,8 @@ let historyLock = false;
 // エクステンションコンテキストの有効性チェック
 function isExtensionContextValid() {
   try {
-    // chrome.storageにアクセスできるかチェック
-    return !!(chrome && chrome.storage && chrome.storage.sync);
+    // chrome.runtime.idが存在し、chrome.storageにアクセスできるかチェック
+    return !!(chrome && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.sync);
   } catch (e) {
     return false;
   }
@@ -137,8 +137,9 @@ async function loadOptions() {
     const saved = data?.[KEY_OPT];
     if (saved && typeof saved === "object") STORE.opt = { ...STORE.opt, ...saved };
   } catch (err) {
-    if (err.message && err.message.includes("Extension context invalidated")) {
-      // Extension context invalidated - リカバリーを試行
+    // エラーメッセージのチェックをより堅牢に
+    const errMsg = err.message || "";
+    if (errMsg.includes("Extension context invalidated") || errMsg.includes("context_invalidated")) {
       console.log("[LFP] Extension context invalidated 検出。リカバリーを試行します。");
       attemptRecovery();
     } else {
@@ -1946,11 +1947,16 @@ let initRunning = false;
 
 async function init() {
   if (initRunning) return;
+  
+  // エクステンションコンテキストの有効性をチェック
+  if (!isExtensionContextValid()) {
+    console.log("[LFP] エクステンションコンテキストが無効です。初期化をスキップします。");
+    return;
+  }
+
   initRunning = true;
 
   try {
-
-
     await loadOptions();
     if (!isListerRoute()) { lockUI(); return; }
 
@@ -3020,3 +3026,18 @@ function stopWorkTimeUpdateTimer() {
     console.log('[LFP] リアルタイムカウンター更新タイマーを停止しました');
   }
 }
+
+// エクステンションコンテキストが無効化された際のクリーンアップ
+window.addEventListener('unload', () => {
+  stopWorkTimeUpdateTimer();
+  if (observersInitialized) {
+    // MutationObserverの停止などは必要に応じて追加
+  }
+});
+
+// 定期的にコンテキストの有効性をチェックし、無効ならタイマーを止める
+setInterval(() => {
+  if (!isExtensionContextValid()) {
+    stopWorkTimeUpdateTimer();
+  }
+}, 5000);
