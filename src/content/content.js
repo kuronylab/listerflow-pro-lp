@@ -1981,6 +1981,9 @@ async function init() {
     const asinInput = findAsinInputSmart(btnGet);
     const titleEl = findTitleFieldSmart();
 
+    // リアルタイムカウンターの表示更新を開始
+    startRealtimeCounter();
+
     if (STORE.opt.historyEnabled && asinInput && (!UI.asinBar || !UI.asinBar.isConnected)) {
       const bar = document.createElement("div");
       bar.className = "lfp-asinbar";
@@ -2742,49 +2745,14 @@ async function startWorkTimeSession() {
 /**
  * リアルタイムカウンター更新（1秒ごと）
  */
-function startRealtimeCounter() {
-  // 既存のインターバルをクリア
+async function startRealtimeCounter() {
   if (workTimeUpdateInterval) {
     clearInterval(workTimeUpdateInterval);
   }
   
-  // 1秒ごとにカウンターを更新
   workTimeUpdateInterval = setInterval(async () => {
-    const stats = await loadStatistics();
-    if (!stats || !stats.currentSessionStartTime) {
-      clearInterval(workTimeUpdateInterval);
-      return;
-    }
-    
-    // 一時停止中の場合は更新しない
-    if (stats.isCounterPaused) {
-      return;
-    }
-    
-    const now = Date.now();
-    
-    // 2分以上ASIN入力操作がなければ自動停止
-    if (stats.lastAsinInputTime && (now - stats.lastAsinInputTime) >= 2 * 60 * 1000) {
-      stats.isCounterPaused = true;
-      // 自動停止時は「2分前（最後の操作時）」までの経過時間を確定させる
-      const sessionElapsedMs = Math.max(0, stats.lastAsinInputTime - stats.currentSessionStartTime);
-      stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
-      stats.currentSessionStartTime = null;
-      stats.currentSessionElapsedMs = 0;
-      
-      await saveStatistics(stats);
-      clearInterval(workTimeUpdateInterval);
-      console.log('[LFP] 2分間の非操作により自動停止（2分分を差し引いて確定）');
-      // UI更新
-      await refreshListingCountUI();
-      return;
-    }
-    
-    // 現在のセッション経過時間を更新（保存はせずUI表示のみに使用）
-    // stats.currentSessionElapsedMs = now - stats.currentSessionStartTime;
-    // await saveStatistics(stats);
-    
     // UI更新（出品作業画面のカウンター表示）
+    // バックグラウンドがストレージを更新しているので、それを読み込んで表示するだけ
     await updateWorkTimeDisplay();
   }, 1000);
 }
@@ -2862,99 +2830,43 @@ async function updateWorkTimeDisplay() {
  * 作業時間の確定（出品完了時）
  */
 async function confirmWorkTime() {
-  // 注意: この関数は「現在のセッションを確定して累計に加算する」が、
-  // カウンター自体は止めず、新しいセッションを開始する（出品完了時用）
-  const stats = await loadStatistics();
-  if (!stats) return;
-  
-  let sessionElapsedMs = 0;
-  const now = Date.now();
-
-  if (stats.currentSessionStartTime && !stats.isCounterPaused) {
-    sessionElapsedMs = now - stats.currentSessionStartTime;
-  } else if (stats.currentSessionElapsedMs > 0) {
-    sessionElapsedMs = stats.currentSessionElapsedMs;
-  }
-  
-  if (sessionElapsedMs > 0) {
-    // 本日の累計作業時間に加算
-    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
-    
-    // セッションをリセットして新しく開始（出品完了後の継続作業のため）
-    if (!stats.isCounterPaused) {
-      stats.currentSessionStartTime = now;
-      stats.currentSessionElapsedMs = 0;
-    } else {
-      stats.currentSessionStartTime = null;
-      stats.currentSessionElapsedMs = 0;
-    }
-    
-    await saveStatistics(stats);
-    console.log(`[LFP] 作業時間確定: ${Math.floor(sessionElapsedMs / 1000)}秒, 累計: ${Math.floor(stats.totalWorkTimeToday / 1000)}秒`);
-  }
+  // バックグラウンドに確定を依頼
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'LFP_CONFIRM_WORK' }, (res) => {
+      resolve(res);
+    });
+  });
 }
 
 /**
  * 一時停止/再開ボタンの切り替え
  */
 async function togglePauseResume() {
-  const stats = await loadStatistics();
-  if (!stats) return;
-  
-  const now = Date.now();
-  
-  if (!stats.isCounterPaused) {
-    // 現在動作中 -> 一時停止へ
-    console.log('[LFP] カウンター一時停止');
-    if (stats.currentSessionStartTime) {
-      const elapsed = now - stats.currentSessionStartTime;
-      stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + elapsed;
-    }
-    stats.isCounterPaused = true;
-    stats.currentSessionStartTime = null;
-    stats.currentSessionElapsedMs = 0;
-  } else {
-    // 現在停止中 -> 再開へ
-    console.log('[LFP] カウンター再開');
-    stats.isCounterPaused = false;
-    stats.currentSessionStartTime = now;
-    stats.currentSessionElapsedMs = 0;
-    stats.lastAsinInputTime = now;
-    startRealtimeCounter();
-  }
-  
-  await saveStatistics(stats);
-  await refreshListingCountUI();
+  // バックグラウンドにトグルを依頼
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'LFP_TOGGLE_TIMER' }, (res) => {
+      if (res && res.ok) {
+        refreshListingCountUI();
+      }
+      resolve(res);
+    });
+  });
 }
 
 /**
  * ASIN入力時の処理（セッション開始）
  */
 async function onAsinInput() {
-  const stats = await loadStatistics();
-  if (!stats) return;
-  
-  const now = Date.now();
-  
-  // 一時停止中の操作
-  if (stats.isCounterPaused) {
-    // 新しいセッションを開始
-    stats.currentSessionStartTime = now;
-    stats.currentSessionElapsedMs = 0;
-    stats.isCounterPaused = false;
-    stats.lastAsinInputTime = now;
-    
-    await saveStatistics(stats);
-    startRealtimeCounter();
-    console.log('[LFP] 作業セッション再開（ASIN入力起点）');
-  } else if (!stats.currentSessionStartTime) {
-    // セッションが開始されていない場合は開始
-    await startWorkTimeSession();
-  } else {
-    // セッション中の場合は最後のASIN入力時刻を更新
-    stats.lastAsinInputTime = now;
-    await saveStatistics(stats);
-  }
+  // バックグラウンドにASIN入力を通知
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type: 'LFP_ASIN_INPUT' }, (res) => {
+      if (res && res.ok) {
+        refreshListingCountUI();
+      }
+      resolve(res);
+    });
+  });
+}
 }
 
 
