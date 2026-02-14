@@ -41,6 +41,8 @@ let dropdownClickHandler = null;
 let dropdownMousedownHandler = null;
 let okButtonCheckInterval = null;
 let historyLock = false;
+let initRunning = false;
+let optimizeRunning = false;
 
 const KEY_OPT = "lfp_options_v1";
 const KEY_HIST = "lfp_asin_history_v1";
