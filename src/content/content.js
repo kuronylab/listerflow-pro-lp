@@ -1672,28 +1672,21 @@ async function refreshListingCountUI() {
     sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
   }
   
-  // ランク判定
+  // ランク判定（ポップアップと共通のロジック）
   let rankContent = "";
-  if (totalMs > 0 && successCount > 0) {
-    const speed = Math.round((successCount / (totalMs / (1000 * 60 * 60))));
-    let feedback = "着実";
-    let emoji = "💪";
+  if (totalMs > 0) {
+    const speedVal = (successCount / (totalMs / 3600000));
+    let feedback = "ゆったり";
+    let emoji = "🐢";
     let color = "#6c757d";
     let bgColor = "#f8f9fa";
 
-    if (speed >= 120) {
-      feedback = "爆速";
-      emoji = "🚀";
-      color = "#673ab7";
-      bgColor = "#f3e5f5";
-    } else if (speed >= 60) {
-      feedback = "高速";
-      emoji = "🏎️";
-      color = "#007bff";
-      bgColor = "#e7f3ff";
-    }
+    if (speedVal >= 120) { feedback = "爆速"; emoji = "🚀"; color = "#673ab7"; bgColor = "#f3e5f5"; }
+    else if (speedVal >= 60) { feedback = "高速"; emoji = "🏎️"; color = "#007bff"; bgColor = "#e7f3ff"; }
+    else if (speedVal >= 30) { feedback = "着実"; emoji = "💪"; color = "#28a745"; bgColor = "#e8f5e9"; }
+    else if (speedVal >= 10) { feedback = "のんびり"; emoji = "🚲"; color = "#ffc107"; bgColor = "#fffde7"; }
 
-    const isMaxSpeed = speed >= (stats?.todayMaxSpeed || 0);
+    const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
     const trophy = isMaxSpeed ? " 🏆" : "";
     rankContent = `${feedback} ${emoji}${trophy}`;
     
@@ -2750,15 +2743,15 @@ function startRealtimeCounter() {
     // 2分以上ASIN入力操作がなければ自動停止
     if (stats.lastAsinInputTime && (now - stats.lastAsinInputTime) >= 2 * 60 * 1000) {
       stats.isCounterPaused = true;
-      // 自動停止時はその時点までの経過時間を確定させる
-      const sessionElapsedMs = now - stats.currentSessionStartTime;
+      // 自動停止時は「2分前（最後の操作時）」までの経過時間を確定させる
+      const sessionElapsedMs = Math.max(0, stats.lastAsinInputTime - stats.currentSessionStartTime);
       stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
       stats.currentSessionStartTime = null;
       stats.currentSessionElapsedMs = 0;
       
       await saveStatistics(stats);
       clearInterval(workTimeUpdateInterval);
-      console.log('[LFP] 2分間の非操作により自動停止');
+      console.log('[LFP] 2分間の非操作により自動停止（2分分を差し引いて確定）');
       // UI更新
       await refreshListingCountUI();
       return;
@@ -2779,6 +2772,7 @@ function startRealtimeCounter() {
 async function updateWorkTimeDisplay() {
   if (!UI.listingCountLabel) return;
   
+  // 統計情報を再読み込み
   const stats = await loadStatistics();
   if (!stats) return;
   
@@ -2803,6 +2797,41 @@ async function updateWorkTimeDisplay() {
   const timeSpan = UI.listingCountLabel.querySelector('.lfp-time-val');
   if (timeSpan) {
     timeSpan.textContent = `本日の作業時間: ${timeStr}`;
+  }
+  
+  // バッジの更新もここで行う（同期を確実にするため）
+  const hist = await loadHistory();
+  const successItems = hist.filter(item => {
+    const f = item.flags || {};
+    return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
+  });
+  const successCount = successItems.length;
+  
+  let rankContent = "";
+  if (totalMs > 0) {
+    const speedVal = (successCount / (totalMs / 3600000));
+    let feedback = "ゆったり";
+    let emoji = "🐢";
+    let color = "#6c757d";
+    let bgColor = "#f8f9fa";
+
+    if (speedVal >= 120) { feedback = "爆速"; emoji = "🚀"; color = "#6f42c1"; bgColor = "#f3e5f5"; }
+    else if (speedVal >= 60) { feedback = "高速"; emoji = "🏎️"; color = "#007bff"; bgColor = "#e7f3ff"; }
+    else if (speedVal >= 30) { feedback = "着実"; emoji = "💪"; color = "#28a745"; bgColor = "#e8f5e9"; }
+    else if (speedVal >= 10) { feedback = "のんびり"; emoji = "🚲"; color = "#ffc107"; bgColor = "#fffde7"; }
+
+    const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
+    const trophy = (isMaxSpeed && speedVal > 0) ? " 🏆" : "";
+    rankContent = `${feedback} ${emoji}${trophy}`;
+    
+    let rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
+    if (rankSpan) {
+      rankSpan.style.color = color;
+      rankSpan.style.backgroundColor = bgColor;
+      rankSpan.style.borderColor = `${color}44`;
+      rankSpan.textContent = rankContent;
+      rankSpan.style.display = 'inline-block';
+    }
   }
 }
 
@@ -2852,18 +2881,23 @@ async function togglePauseResume() {
     console.log('[LFP] カウンター一時停止');
     // 一時停止した瞬間の経過時間を保存
     if (stats.currentSessionStartTime) {
-      stats.currentSessionElapsedMs = now - stats.currentSessionStartTime;
+      // 経過時間を確定済み時間に合算してセッションをクリアする（跳躍防止）
+      const elapsed = now - stats.currentSessionStartTime;
+      stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + elapsed;
       stats.currentSessionStartTime = null;
+      stats.currentSessionElapsedMs = 0;
     }
   } else {
     console.log('[LFP] カウンター再開');
     // 再開した瞬間の時刻を新しい開始時刻とする
     stats.currentSessionStartTime = now;
+    stats.currentSessionElapsedMs = 0;
     stats.lastAsinInputTime = now;
     startRealtimeCounter();
   }
   
   await saveStatistics(stats);
+  await refreshListingCountUI();
 }
 
 /**
@@ -2875,11 +2909,11 @@ async function onAsinInput() {
   
   const now = Date.now();
   
-  // 2分以上の休憩後の再開、または一時停止中の操作
+  // 一時停止中の操作
   if (stats.isCounterPaused) {
-    // 新しいセッションを開始（以前の経過時間は破棄せず、再開時に合算される仕組み）
+    // 新しいセッションを開始
     stats.currentSessionStartTime = now;
-    // stats.currentSessionElapsedMs は保持（togglePauseResumeで設定された値）
+    stats.currentSessionElapsedMs = 0;
     stats.isCounterPaused = false;
     stats.lastAsinInputTime = now;
     

@@ -196,7 +196,7 @@ body {
 .rank-fastest { color: #6f42c1; background-color: #f3e5f5; border-color: rgba(111, 66, 193, 0.2); }
 .rank-fast { color: #007bff; background-color: #e7f3ff; border-color: rgba(0, 123, 255, 0.2); }
 .rank-normal { color: #28a745; background-color: #e8f5e9; border-color: rgba(40, 167, 69, 0.2); }
-.rank-slow { color: #fd7e14; background-color: #fff3e0; border-color: rgba(253, 126, 20, 0.2); }
+.rank-slow { color: #ffc107; background-color: #fffde7; border-color: rgba(255, 193, 7, 0.2); }
 .rank-very-slow { color: #6c757d; background-color: #f8f9fa; border-color: rgba(108, 117, 125, 0.2); }
 
 /* ボタン */

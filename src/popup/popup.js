@@ -205,6 +205,10 @@ function updateWorkTimeDisplay(stats) {
     else if (speedVal >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
     else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
     else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
+    
+    // トロフィー判定（content.jsと同期）
+    const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
+    if (isMaxSpeed && speedVal > 0) rankText += " 🏆";
 
     // バッジの種類または数値が変わった場合に更新
     const currentSpeedText = statsElements.listingSpeed.querySelector('span')?.textContent || '';
