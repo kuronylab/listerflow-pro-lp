@@ -434,18 +434,28 @@ async function loadHistoryList() {
     else if (item.flags?.already_listed) { status = 'Already Listed'; isError = true; }
     else if (item.flags?.no_item) { status = 'No Item'; isError = true; }
 
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'history-status';
-    statusSpan.textContent = status;
-    statusSpan.style.color = isError ? '#E07167' : '#2e7d32';
-    statusSpan.style.fontWeight = '600';
+    const statusClass = isError ? 'error' : 'completed';
 
     card.innerHTML = `
       <div class="history-main">
-        <span>${item.asin}</span>
+        <span class="history-asin">${item.asin}</span>
+        <span class="history-status ${statusClass}">${status}</span>
       </div>
+      <button class="history-delete" data-asin="${item.asin}" title="この履歴を削除">×</button>
     `;
-    card.querySelector('.history-main').appendChild(statusSpan);
+
+    // 削除ボタンのイベントリスナー
+    card.querySelector('.history-delete').addEventListener('click', async (e) => {
+      const asinToDelete = e.target.dataset.asin;
+      if (confirm(`ASIN: ${asinToDelete} の履歴を削除しますか？`)) {
+        const currentHistory = await loadHistory();
+        const filtered = currentHistory.filter(h => h.asin !== asinToDelete);
+        await chrome.storage.local.set({ [KEY_HIST]: filtered });
+        await loadHistoryList();
+        await loadAndDisplayStats();
+      }
+    });
+
     listEl.appendChild(card);
   });
 }
@@ -458,5 +468,5 @@ async function clearHistory() {
 }
 
 function exportToSpreadsheet() {
-  // CSVエクスポートロジック（必要に応じて実装）
+  chrome.tabs.create({ url: chrome.runtime.getURL('src/popup/export.html') });
 }
