@@ -168,16 +168,8 @@ function startWorkTimeCounter() {
 }
 
 function updateWorkTimeDisplay(stats) {
-  let confirmedMs = stats.totalWorkTimeToday || 0;
-  let currentSessionMs = 0;
-  
-  if (stats.currentSessionStartTime && !stats.isCounterPaused) {
-    currentSessionMs = Date.now() - stats.currentSessionStartTime;
-  } else if (stats.currentSessionElapsedMs) {
-    currentSessionMs = stats.currentSessionElapsedMs;
-  }
-  
-  const totalMs = confirmedMs + currentSessionMs;
+  // バックグラウンドで計算された累積秒数を使用
+  const totalMs = stats.totalWorkTimeToday || 0;
 
   if (statsElements.todayWorkingHours) {
     const totalSec = Math.floor(totalMs / 1000);
@@ -289,22 +281,9 @@ async function loadStatistics() {
 
 async function resetStats() {
   if (!confirm('統計情報をリセットしますか？')) return;
-  const stats = {
-    totalListings: 0,
-    todayListings: 0,
-    weekListings: 0,
-    lastListingDate: null,
-    totalWorkTimeToday: 0,
-    currentSessionStartTime: null,
-    currentSessionElapsedMs: 0,
-    isCounterPaused: true,
-    todayMaxSpeed: 0,
-    lastResetDate: Date.now()
-  };
-  await chrome.storage.local.set({ [KEY_STATS]: stats });
-  chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "stop" });
-  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
-  await loadAndDisplayStats();
+  chrome.runtime.sendMessage({ type: 'RESET_STATS' }, async () => {
+    await loadAndDisplayStats();
+  });
 }
 
 // Settings functions
@@ -403,14 +382,14 @@ async function loadHistoryList() {
         <span class="history-asin">${item.asin}</span>
         <span class="history-status ${statusClass}">${status}</span>
       </div>
-      <button class="history-delete" data-index="${index}" title="この履歴を削除">×</button>
+      <button class="history-delete" data-asin="${item.asin}" title="この履歴を削除">×</button>
     `;
 
     card.querySelector('.history-delete').addEventListener('click', async () => {
-      const idx = parseInt(card.querySelector('.history-delete').dataset.index);
+      const asin = card.querySelector('.history-delete').dataset.asin;
       const hist = await loadHistory();
-      hist.splice(idx, 1);
-      await chrome.storage.local.set({ [KEY_HIST]: hist });
+      const newHist = hist.filter(h => h.asin !== asin);
+      await chrome.storage.local.set({ [KEY_HIST]: newHist });
       chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
       loadHistoryList();
     });
@@ -425,7 +404,7 @@ function exportToSpreadsheet() {
 
 async function clearHistory() {
   if (!confirm('すべての履歴を削除しますか？')) return;
-  await chrome.storage.local.set({ [KEY_HIST]: [] });
-  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
-  loadHistoryList();
+  chrome.runtime.sendMessage({ type: 'CLEAR_HISTORY' }, () => {
+    loadHistoryList();
+  });
 }

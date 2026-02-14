@@ -205,64 +205,31 @@ async function loadStatistics() {
     let stats = data?.[KEY_STATS];
     
     if (!stats || typeof stats !== 'object') {
-      // 初期化
       stats = {
         totalListings: 0,
         todayListings: 0,
-        weekListings: 0,
-        lastListingDate: null,
-        optimizeCount: 0,
-        brandCount: 0,
-        alreadyListedCount: 0,
         totalWorkTimeToday: 0,
-        todayLastActivityTime: null,
-        todayMaxSpeed: 0,
-        currentSessionStartTime: null,
-        currentSessionElapsedMs: 0,
-        isCounterPaused: false,
+        isCounterPaused: true,
         lastAsinInputTime: null,
         lastResetDate: Date.now()
       };
     }
-    // 既存データへのマイグレーション
-    if (stats.brandCount === undefined) stats.brandCount = 0;
-    if (stats.alreadyListedCount === undefined) stats.alreadyListedCount = 0;
-    if (stats.totalWorkTimeToday === undefined) stats.totalWorkTimeToday = 0;
-    if (stats.todayLastActivityTime === undefined) stats.todayLastActivityTime = null;
-    if (stats.todayMaxSpeed === undefined) stats.todayMaxSpeed = 0;
-    if (stats.currentSessionStartTime === undefined) stats.currentSessionStartTime = null;
-    if (stats.currentSessionElapsedMs === undefined) stats.currentSessionElapsedMs = 0;
-    if (stats.isCounterPaused === undefined) stats.isCounterPaused = false;
-    if (stats.lastAsinInputTime === undefined) stats.lastAsinInputTime = null;
     
     // 日付が変わったら日次データをリセット
     const today = new Date().toDateString();
-    const lastReset = new Date(stats.lastResetDate).toDateString();
+    const lastReset = new Date(stats.lastResetDate || 0).toDateString();
     
     if (lastReset !== today) {
       stats.todayListings = 0;
       stats.totalWorkTimeToday = 0;
-      stats.todayLastActivityTime = null;
-      stats.todayMaxSpeed = 0;
-      stats.currentSessionStartTime = null;
-      stats.currentSessionElapsedMs = 0;
-      stats.isCounterPaused = false;
+      stats.isCounterPaused = true;
       stats.lastAsinInputTime = null;
       stats.lastResetDate = Date.now();
-    }
-    
-    // 週が変わったらweekListingsをリセット
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    if (!stats.lastListingDate || stats.lastListingDate < weekAgo) {
-      stats.weekListings = 0;
+      await saveStatistics(stats);
     }
     
     return stats;
   } catch (err) {
-    if (err.message && err.message.includes('Extension context invalidated')) {
-      return null;
-    }
-    console.error('[LFP] loadStatistics error:', err);
     return null;
   }
 }
@@ -271,76 +238,29 @@ async function saveStatistics(stats) {
   if (!stats || !isExtensionContextValid()) return;
   try {
     await chrome.storage.local.set({ [KEY_STATS]: stats });
-  } catch (err) {
-    if (err.message && err.message.includes('Extension context invalidated')) return;
-    console.error('[LFP] saveStatistics error:', err);
-  }
+  } catch (err) {}
 }
 
-/**
- * 作業時間の更新ロジック（セッション開始時刻を基準）
- * 修正: セッション開始時刻を基準に、実時間の経過時間を計測します
- */
 function updateWorkTime(stats, now) {
-  // セッション開始時刻が設定されていない場合、現在時刻を開始時刻として設定
-  if (!stats.sessionStartTime) {
-    stats.sessionStartTime = now;
-  }
-  
-  // 2分以上の空きがあれば「休憩中」とみなしてセッションをリセット
-  const THRESHOLD_MS = 2 * 60 * 1000;
-  
-  if (!stats.todayLastActivityTime) {
-    // その日最初の活動
-    stats.todayLastActivityTime = now;
-  } else {
-    const diff = now - stats.todayLastActivityTime;
-    if (diff >= THRESHOLD_MS) {
-      // 2分以上の空き（休憩）があった場合は、セッション開始時刻をリセット
-      // これにより、休憩後の経過時間から新たにカウントが始まります
-      stats.sessionStartTime = now;
-    }
-    stats.todayLastActivityTime = now;
-  }
-  
-  // セッション開始から現在までの経過時間を統計情報に反映
-  stats.totalWorkTimeToday = Math.max(0, now - stats.sessionStartTime);
+  // バックグラウンド側で計算するため、ここでは何もしない
 }
 
 async function incrementListingCount() {
   try {
     const stats = await loadStatistics();
-    if (!stats) return; // コンテキスト無効時はスキップ
+    if (!stats) return;
     
-    const now = Date.now();
-    stats.totalListings++;
-    stats.todayListings++;
-    stats.weekListings++;
-    stats.lastListingDate = now;
+    stats.totalListings = (stats.totalListings || 0) + 1;
+    stats.todayListings = (stats.todayListings || 0) + 1;
+    stats.lastListingDate = Date.now();
     
-    // 新規: 作業時間の確定（出品完了時）
-    await confirmWorkTime();
-
-    // 最高時速の更新チェック
-    const reloadedStats = await loadStatistics();
-    if (reloadedStats && reloadedStats.totalWorkTimeToday > 0) {
-      const hours = reloadedStats.totalWorkTimeToday / (1000 * 60 * 60);
-      const currentSpeed = reloadedStats.todayListings / hours;
-      if (currentSpeed > reloadedStats.todayMaxSpeed) {
-        reloadedStats.todayMaxSpeed = currentSpeed;
-        await saveStatistics(reloadedStats);
-      }
-    }
-
     await saveStatistics(stats);
-    console.log(`[LFP] Listing incremented: 累計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
     
     // UI上の件数表示を更新
     await refreshListingCountUI();
-    // 設定変更をトリガーしてUIを更新
-    updateUIBasedOnSettings();
+    // 同期リクエスト
+    chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
   } catch (err) {
-    if (err.message && err.message.includes('Extension context invalidated')) return;
     console.error('[LFP] incrementListingCount error:', err);
   }
 }
@@ -1644,25 +1564,15 @@ async function refreshListingCountUI() {
   const hist = await loadHistory();
   const stats = await loadStatistics();
   
-  // 履歴の中からエラーでない（flagsがすべてfalse）ものを抽出
+  // 履歴の中からエラーでないものを抽出
   const successItems = hist.filter(item => {
     const f = item.flags || {};
     return !(f.protected || f.brand || f.already_listed || f.no_listings || f.no_item);
   });
   const successCount = successItems.length;
 
-  // 本日の作業時間を計算
-  let confirmedMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
-  let currentSessionMs = 0;
-  
-  if (stats && stats.currentSessionStartTime && !stats.isCounterPaused) {
-    const now = Date.now();
-    currentSessionMs = now - stats.currentSessionStartTime;
-  } else if (stats && stats.currentSessionElapsedMs) {
-    currentSessionMs = stats.currentSessionElapsedMs;
-  }
-  
-  const totalMs = confirmedMs + currentSessionMs;
+  // 本日の作業時間（バックグラウンドで計算された累積秒数を使用）
+  const totalMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
   let sessionWorkTime = "0時間00分00秒";
   
   if (totalMs > 0) {
@@ -1673,32 +1583,22 @@ async function refreshListingCountUI() {
     sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
   }
   
-  // ランク判定（ポップアップと共通のロジック）
+  // ランク判定
   let rankContent = "";
+  let color = "#6c757d";
+  let bgColor = "#f8f9fa";
+
   if (totalMs > 0) {
     const speedVal = (successCount / (totalMs / 3600000));
     let feedback = "ゆったり";
     let emoji = "🐢";
-    let color = "#6c757d";
-    let bgColor = "#f8f9fa";
 
     if (speedVal >= 120) { feedback = "爆速"; emoji = "🚀"; color = "#673ab7"; bgColor = "#f3e5f5"; }
     else if (speedVal >= 60) { feedback = "高速"; emoji = "🏎️"; color = "#007bff"; bgColor = "#e7f3ff"; }
     else if (speedVal >= 30) { feedback = "着実"; emoji = "💪"; color = "#28a745"; bgColor = "#e8f5e9"; }
     else if (speedVal >= 10) { feedback = "のんびり"; emoji = "🚲"; color = "#ffc107"; bgColor = "#fffde7"; }
 
-    const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
-    const trophy = isMaxSpeed ? " 🏆" : "";
-    rankContent = `${feedback} ${emoji}${trophy}`;
-    
-    // ランク表示要素のスタイル更新
-    let rankSpan = UI.listingCountLabel.querySelector('.lfp-rank-badge');
-    if (rankSpan) {
-      rankSpan.style.color = color;
-      rankSpan.style.backgroundColor = bgColor;
-      rankSpan.style.borderColor = `${color}44`;
-      rankSpan.textContent = rankContent;
-    }
+    rankContent = `${feedback} ${emoji}`;
   }
 
   // 初回構築
@@ -1707,7 +1607,7 @@ async function refreshListingCountUI() {
       <span class="lfp-count-val" style="font-weight: bold; color: black; vertical-align: middle;">出品完了: ${successCount}件</span>
       <span class="lfp-time-val" style="margin-left: 15px; color: black; font-weight: bold; vertical-align: middle;">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: inline-flex; align-items: center;"></span>
-      <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankContent ? 'inline-block' : 'none'}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent;">${rankContent}</span>
+      <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankContent ? 'inline-block' : 'none'}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent; color: ${color}; background-color: ${bgColor}; border-color: ${color}44;">${rankContent}</span>
     `;
     await createPauseResumeButton();
   } else {
@@ -1729,6 +1629,9 @@ async function refreshListingCountUI() {
     if (rankSpan) {
       rankSpan.style.display = rankContent ? 'inline-block' : 'none';
       rankSpan.textContent = rankContent;
+      rankSpan.style.color = color;
+      rankSpan.style.backgroundColor = bgColor;
+      rankSpan.style.borderColor = `${color}44`;
     }
     
     // ボタンの状態も同期

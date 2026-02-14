@@ -15,9 +15,7 @@ async function loadStats() {
   const data = await chrome.storage.local.get([KEY_STATS]);
   return data[KEY_STATS] || {
     totalWorkTimeToday: 0,
-    currentSessionStartTime: null,
-    currentSessionElapsedMs: 0,
-    isCounterPaused: true, // 初期状態は停止
+    isCounterPaused: true,
     todayListings: 0,
     todayMaxSpeed: 0,
     lastAsinInputTime: null
@@ -28,36 +26,48 @@ async function saveStats(stats) {
   await chrome.storage.local.set({ [KEY_STATS]: stats });
 }
 
-// タイマーの更新処理
+// タイマーの更新処理（ストップウォッチ方式）
 async function updateTimer() {
   const stats = await loadStats();
-  if (stats.isCounterPaused || !stats.currentSessionStartTime) {
+  
+  // 停止状態ならタイマーを止める
+  if (stats.isCounterPaused) {
     stopTimer();
     return;
   }
 
   const now = Date.now();
+  
   // 2分放置チェック
   if (stats.lastAsinInputTime && (now - stats.lastAsinInputTime > 120000)) {
-    console.log("[LFP-SW] 2分放置を検知。タイマーを停止し、時間を差し引きます。");
+    console.log("[LFP-SW] 2分放置を検知。タイマーを停止し、120秒差し引きます。");
     
-    // 最後の操作時刻まで巻き戻して確定
-    const idleTime = now - stats.lastAsinInputTime;
-    const actualElapsed = (now - stats.currentSessionStartTime) - idleTime;
-    
-    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + Math.max(0, actualElapsed);
-    stats.currentSessionStartTime = null;
-    stats.currentSessionElapsedMs = 0;
+    // 120秒（2分）を差し引いて停止
+    stats.totalWorkTimeToday = Math.max(0, (stats.totalWorkTimeToday || 0) - 120000);
     stats.isCounterPaused = true;
     
     await saveStats(stats);
     stopTimer();
+    
+    // 全画面に通知
+    broadcastSync();
     return;
   }
 
-  // 通常の更新（ストレージには書かず、メモリ上または計算のみ。
-  // 実際には content.js や popup.js が stats を見て計算するので、
-  // ここでは「動き続けていること」を保証し、必要に応じて自動停止を行う）
+  // 1秒加算（1000ms）
+  stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + 1000;
+  await saveStats(stats);
+  
+  // 全画面に通知（リアルタイム更新用）
+  broadcastSync();
+}
+
+function broadcastSync() {
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach(tab => {
+      chrome.tabs.sendMessage(tab.id, { type: "LFP_SYNC_UI" }).catch(() => {});
+    });
+  });
 }
 
 function startTimer() {
@@ -106,27 +116,54 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   // タイマー制御
   if (msg.type === "LFP_TIMER_CONTROL") {
-    if (msg.action === "start") startTimer();
-    else if (msg.action === "stop") stopTimer();
+    if (msg.action === "start") {
+      startTimer();
+    } else if (msg.action === "stop") {
+      stopTimer();
+    }
     sendResponse({ ok: true });
     return false;
   }
 
   // 同期リクエスト
   if (msg.type === "LFP_SYNC_REQUEST") {
-    chrome.tabs.query({}, (tabs) => {
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, { type: "LFP_SYNC_UI" }).catch(() => {});
-      });
-    });
+    broadcastSync();
     sendResponse({ ok: true });
     return false;
+  }
+
+  // 統計リセット
+  if (msg.type === "RESET_STATS") {
+    (async () => {
+      const stats = {
+        totalWorkTimeToday: 0,
+        isCounterPaused: true,
+        todayListings: 0,
+        todayMaxSpeed: 0,
+        lastAsinInputTime: null
+      };
+      await saveStats(stats);
+      stopTimer();
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  // 履歴クリア
+  if (msg.type === "CLEAR_HISTORY") {
+    (async () => {
+      await chrome.storage.local.set({ [KEY_HIST]: [] });
+      broadcastSync();
+      sendResponse({ ok: true });
+    })();
+    return true;
   }
 });
 
 // 起動時にタイマー状態を復元
 loadStats().then(stats => {
-  if (!stats.isCounterPaused && stats.currentSessionStartTime) {
+  if (!stats.isCounterPaused) {
     startTimer();
   }
 });
