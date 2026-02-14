@@ -128,8 +128,9 @@ function switchPage(page) {
 }
 
 // Statistics functions
-// 作業時間のリアルタイムカウント開始
 function updateWorkTimeDisplay(stats) {
+  if (!stats) return;
+  
   // 確定済み時間 + 現在進行中のセッション経過時間
   let confirmedMs = stats.totalWorkTimeToday || 0;
   let currentSessionMs = 0;
@@ -290,7 +291,8 @@ async function resetStats() {
     lastResetDate: Date.now(),
     isCounterPaused: true,
     currentSessionStartTime: null,
-    currentSessionElapsedMs: 0
+    currentSessionElapsedMs: 0,
+    todayMaxSpeed: 0
   };
   await chrome.storage.local.set({ [KEY_STATS]: stats });
   await loadAndDisplayStats();
@@ -449,10 +451,7 @@ async function updateHistoryStats(history) {
     return !f.protected && !f.brand && !f.already_listed && !f.no_listings && !f.no_item;
   }).length;
   
-  const errorCount = history.length - completedCount;
-  
   if (statsElements.completedListingsCount) statsElements.completedListingsCount.textContent = `${completedCount}件`;
-  // 他のエラー統計も必要に応じて更新
 }
 
 // Export functions

@@ -311,31 +311,30 @@ async function incrementListingCount() {
     const stats = await loadStatistics();
     if (!stats) return; // コンテキスト無効時はスキップ
     
-    const now = Date.now();
-    stats.totalListings++;
-    stats.todayListings++;
-    stats.weekListings++;
-    stats.lastListingDate = now;
-    
     // 新規: 作業時間の確定（出品完了時）
     await confirmWorkTime();
 
-    // 最高時速の更新チェック（confirmWorkTimeで更新されたstatsを再読み込み）
-    const reloadedStats = await loadStatistics();
-    if (reloadedStats && reloadedStats.totalWorkTimeToday > 0) {
-      const hours = reloadedStats.totalWorkTimeToday / (1000 * 60 * 60);
-      const currentSpeed = reloadedStats.todayListings / hours;
-      if (currentSpeed > reloadedStats.todayMaxSpeed) {
-        reloadedStats.todayMaxSpeed = currentSpeed;
-        // stats オブジェクトも最新の状態に更新して、後の saveStatistics で上書きされないようにする
-        stats.todayMaxSpeed = currentSpeed;
+    // 最新の統計を読み込み（confirmWorkTimeで更新されたもの）
+    const currentStats = await loadStatistics();
+    if (currentStats) {
+      // 件数をインクリメント（confirmWorkTimeの前にやっていた重複を削除）
+      currentStats.totalListings = (currentStats.totalListings || 0) + 1;
+      currentStats.todayListings = (currentStats.todayListings || 0) + 1;
+      currentStats.weekListings = (currentStats.weekListings || 0) + 1;
+      currentStats.lastListingDate = Date.now();
+
+      // 最高時速の更新チェック
+      if (currentStats.totalWorkTimeToday > 0) {
+        const hours = currentStats.totalWorkTimeToday / (1000 * 60 * 60);
+        const currentSpeed = currentStats.todayListings / hours;
+        if (currentSpeed > (currentStats.todayMaxSpeed || 0)) {
+          currentStats.todayMaxSpeed = currentSpeed;
+        }
       }
+      await saveStatistics(currentStats);
+      console.log(`[LFP] Listing incremented: 累計${currentStats.totalListings}件, 今日${currentStats.todayListings}件`);
     }
 
-    // 既に confirmWorkTime 内で saveStatistics されているため、
-    // ここではインクリメントした件数のみを反映した stats を保存する
-    await saveStatistics(stats);
-    console.log(`[LFP] Listing incremented: 累計${stats.totalListings}件, 今日${stats.todayListings}件, 今週${stats.weekListings}件`);
     
     // UI上の件数表示を更新
     await refreshListingCountUI();
@@ -2863,31 +2862,35 @@ async function updateWorkTimeDisplay() {
  * 作業時間の確定（出品完了時）
  */
 async function confirmWorkTime() {
+  // 注意: この関数は「現在のセッションを確定して累計に加算する」が、
+  // カウンター自体は止めず、新しいセッションを開始する（出品完了時用）
   const stats = await loadStatistics();
   if (!stats) return;
   
-  if (stats.currentSessionStartTime) {
-    const now = Date.now();
-    const sessionElapsedMs = now - stats.currentSessionStartTime;
-    
+  let sessionElapsedMs = 0;
+  const now = Date.now();
+
+  if (stats.currentSessionStartTime && !stats.isCounterPaused) {
+    sessionElapsedMs = now - stats.currentSessionStartTime;
+  } else if (stats.currentSessionElapsedMs > 0) {
+    sessionElapsedMs = stats.currentSessionElapsedMs;
+  }
+  
+  if (sessionElapsedMs > 0) {
     // 本日の累計作業時間に加算
     stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + sessionElapsedMs;
     
-    // セッションをリセット
-    stats.currentSessionStartTime = null;
-    stats.currentSessionElapsedMs = 0;
-    stats.isCounterPaused = false;
+    // セッションをリセットして新しく開始（出品完了後の継続作業のため）
+    if (!stats.isCounterPaused) {
+      stats.currentSessionStartTime = now;
+      stats.currentSessionElapsedMs = 0;
+    } else {
+      stats.currentSessionStartTime = null;
+      stats.currentSessionElapsedMs = 0;
+    }
     
     await saveStatistics(stats);
-    console.log(`[LFP] 作業時間確定: ${Math.floor(sessionElapsedMs / 1000)}秒`);
-  } else if (stats.currentSessionElapsedMs > 0) {
-    // 一時停止中に確定された場合
-    stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + stats.currentSessionElapsedMs;
-    stats.currentSessionElapsedMs = 0;
-    stats.isCounterPaused = false;
-    
-    await saveStatistics(stats);
-    console.log(`[LFP] 作業時間確定（一時停止中から）: ${Math.floor(stats.currentSessionElapsedMs / 1000)}秒`);
+    console.log(`[LFP] 作業時間確定: ${Math.floor(sessionElapsedMs / 1000)}秒, 累計: ${Math.floor(stats.totalWorkTimeToday / 1000)}秒`);
   }
 }
 
@@ -2899,21 +2902,21 @@ async function togglePauseResume() {
   if (!stats) return;
   
   const now = Date.now();
-  stats.isCounterPaused = !stats.isCounterPaused;
   
-  if (stats.isCounterPaused) {
+  if (!stats.isCounterPaused) {
+    // 現在動作中 -> 一時停止へ
     console.log('[LFP] カウンター一時停止');
-    // 一時停止した瞬間の経過時間を保存
     if (stats.currentSessionStartTime) {
-      // 経過時間を確定済み時間に合算してセッションをクリアする（跳躍防止）
       const elapsed = now - stats.currentSessionStartTime;
       stats.totalWorkTimeToday = (stats.totalWorkTimeToday || 0) + elapsed;
-      stats.currentSessionStartTime = null;
-      stats.currentSessionElapsedMs = 0;
     }
+    stats.isCounterPaused = true;
+    stats.currentSessionStartTime = null;
+    stats.currentSessionElapsedMs = 0;
   } else {
+    // 現在停止中 -> 再開へ
     console.log('[LFP] カウンター再開');
-    // 再開した瞬間の時刻を新しい開始時刻とする
+    stats.isCounterPaused = false;
     stats.currentSessionStartTime = now;
     stats.currentSessionElapsedMs = 0;
     stats.lastAsinInputTime = now;
