@@ -1,0 +1,498 @@
+/* ListerFlow Pro UI (compact) */
+.lfp-status-box {
+  margin: 12px 0;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, .10);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* 旧.lfp-root（互換性のため残す） */
+.lfp-root {
+  margin: 6px 0 10px;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 0, 0, .10);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.lfp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lfp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, .12);
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  min-width: 74px;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lfp-btn:hover {
+  background: #222;
+  color: #fff;
+}
+
+.lfp-btn:active {
+  background: #000;
+}
+
+.lfp-btn[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.lfp-btn.highlight {
+  background-image: linear-gradient(90deg, #6D43F9 0%, #9747FF 100%) !important;
+  background-color: transparent !important;
+  background-attachment: fixed !important;
+  color: #fff !important;
+  animation: lfp-pulse 1.5s ease-in-out infinite;
+}
+
+.lfp-btn.highlight:hover {
+  background-image: linear-gradient(90deg, #7D53FF 0%, #A857FF 100%) !important;
+  background-color: transparent !important;
+  color: #fff !important;
+  filter: brightness(1.1);
+}
+
+@keyframes lfp-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(0, 0, 0, 0);
+    transform: scale(1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(0, 0, 0, 0.05);
+    transform: scale(1.02);
+  }
+}
+
+.lfp-spin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .45);
+  border-top-color: #fff;
+  animation: lfp-rot .9s linear infinite;
+}
+
+@keyframes lfp-rot {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lfp-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+}
+
+.lfp-badge {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #b00020;
+  white-space: nowrap;
+}
+
+.lfp-asinbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 8px;
+}
+
+.lfp-asinbar select {
+  width: 260px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, .12);
+  background: #fff;
+  font-size: 13px;
+  color: #111;
+}
+
+
+
+/* LFP MIP COMPACT START */
+/* 目的: MIPボタン表示を「MIP + 紙飛行機」に縮め、グレー背景内で中央寄せにする
+   注意: 背景色・角丸は既存を尊重し上書きしない
+*/
+
+#mip-list-item-btn>span,
+#lfp-quick-mip>span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+}
+
+#mip-list-item-btn,
+#lfp-quick-mip {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* アイコンがabsolute等でズレる/はみ出すのを防ぐ */
+#mip-list-item-btn i.glyph-icon.icon-linecons-paper-plane,
+#lfp-quick-mip i.glyph-icon.icon-linecons-paper-plane {
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+/* LFP MIP COMPACT END */
+
+/* Quick MIPボタンの無効化時のスタイル */
+#lfp-quick-mip:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%) !important;
+}
+
+#lfp-quick-mip:disabled>span {
+  opacity: 0.7 !important;
+}
+
+/* カスタムドロップダウン用のCSS変数 */
+:root {
+  --lfp-bad: #E07167;
+}
+
+/* カスタムドロップダウン */
+.lfp-custom-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.lfp-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #111;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lfp-dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.lfp-dropdown-placeholder {
+  color: #999;
+  cursor: default;
+  font-weight: 700;
+}
+
+.lfp-dropdown-placeholder:hover {
+  background: transparent;
+}
+
+/* 赤字対象の行 */
+.lfp-dropdown-item-bad {
+  color: var(--lfp-bad) !important;
+}
+
+.lfp-dropdown-item-bad:hover {
+  background: rgba(224, 113, 103, 0.08);
+}
+
+.lfp-dropdown-asin {
+  white-space: nowrap;
+}
+
+.lfp-dropdown-flag {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* リセットボタン */
+.lfp-reset-btn {
+  padding: 4px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f5f5f5;
+  color: #111;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.lfp-reset-btn:hover {
+  background: #e0e0e0;
+}
+
+.lfp-reset-btn:active {
+  background: #d0d0d0;
+}
+
+/* コピー・CSVボタン */
+.lfp-copy-btn,
+.lfp-csv-btn {
+  padding: 4px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #f5f5f5;
+  color: #111;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.lfp-copy-btn:hover,
+.lfp-csv-btn:hover {
+  background: #e0e0e0;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.lfp-copy-btn:active,
+.lfp-csv-btn:active {
+  background: #d0d0d0;
+}
+
+/* 履歴削除ボタン用のスタイル */
+.lfp-dropdown-item-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lfp-dropdown-item-wrapper .lfp-dropdown-item {
+  flex: 1;
+  padding: 8px 12px;
+}
+
+.lfp-dropdown-delete-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #999;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  margin-right: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.lfp-dropdown-delete-btn:hover {
+  background: rgba(224, 113, 103, 0.15);
+  color: var(--lfp-bad);
+}
+
+.lfp-dropdown-delete-btn:active {
+  background: rgba(224, 113, 103, 0.25);
+}
+
+/* カスタム確認モーダル (ブラウザ標準のconfirm()を再現) */
+.lfp-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.lfp-confirm-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.lfp-confirm-dialog {
+  background: #f0f0f0;
+  width: 320px;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: lfpConfirmPopIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+}
+
+@keyframes lfpConfirmPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lfp-confirm-header {
+  padding: 16px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lfp-confirm-header img {
+  width: 40px;
+  height: 40px;
+}
+
+.lfp-confirm-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.lfp-confirm-body {
+  padding: 0px 20px 20px;
+}
+
+.lfp-confirm-body p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+}
+
+.lfp-confirm-footer {
+  display: flex;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.lfp-confirm-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lfp-confirm-btn.cancel {
+  color: #007bff;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.lfp-confirm-btn.cancel:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.lfp-confirm-btn.ok {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.lfp-confirm-btn.ok:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 今回の作業時間表示 */
+.lfp-listing-stats {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+}
+
+
+/* 再生/一時停止トグルボタン */
+.lfp-pause-resume-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  user-select: none;
+  transition: transform 0.1s ease;
+  vertical-align: middle;
+  margin-left: 8px;
+}
+
+.lfp-pause-resume-btn:hover {
+  transform: scale(1.2);
+}
+
+.lfp-pause-resume-btn:active {
+  transform: scale(0.9);
+}
+
+.lfp-pause-resume-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
