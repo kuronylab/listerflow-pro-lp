@@ -7,7 +7,7 @@
 export const STORAGE_KEYS = {
   OPTIONS: "lfp_options_v1",
   HISTORY: "lfp_asin_history_v1",
-  STATISTICS: "lfp_statistics_v1"
+  STATISTICS: "lfp_stats_v1"
 };
 
 // デフォルトオプション
@@ -22,7 +22,8 @@ export const DEFAULT_OPTIONS = {
   highlightOptimize: true,
   historyEnabled: true,
   autoClickOkAfterMip: true,
-  turboListingMode: false
+  turboListingMode: false,
+  showWorkTimePanel: true
 };
 
 // タイトル文字数の制約
@@ -35,7 +36,7 @@ export const TITLE_LENGTH = {
 
 // 履歴管理
 export const HISTORY = {
-  MAX_COUNT: 100
+  MAX_COUNT: 1000
 };
 
 // リトライ設定

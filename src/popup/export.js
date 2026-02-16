@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadAndRenderHistory() {
   const tableBody = document.getElementById('historyTableBody');
   if (!tableBody) return;
-  
+
   try {
     const data = await chrome.storage.local.get([KEY_HIST]);
     const history = Array.isArray(data?.[KEY_HIST]) ? data[KEY_HIST] : [];
@@ -42,7 +42,7 @@ async function loadAndRenderHistory() {
         if (item.flags.already_listed) flags.push('Already listed');
         if (item.flags.no_listings) flags.push('No listings');
         if (item.flags.no_item) flags.push('No item');
-        
+
         resultText = flags.length > 0 ? flags.join(', ') : 'エラー';
         resultClass = 'status-error';
         dateCol1 = ''; // 正常列は空
@@ -50,7 +50,7 @@ async function loadAndRenderHistory() {
       }
 
       tr.innerHTML = `
-        <td>${item.asin}</td>
+        <td><a href="https://www.amazon.com/dp/${item.asin}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: none;">${item.asin}</a></td>
         <td class="${resultClass}">${resultText}</td>
         <td>${dateCol1}</td>
         <td>${dateCol2}</td>
@@ -79,11 +79,11 @@ async function copyTwoColumns() {
       // 表示上の「出品完了」を内部値の「-」に変換
       let col3 = cells[2].textContent.trim();
       let col4 = cells[3].textContent.trim();
-      
+
       // 空の場合は「-」に変換
       if (!col3) col3 = '-';
       if (!col4) col4 = '-';
-      
+
       copyText += `${col3}\t${col4}\n`;
     }
   });

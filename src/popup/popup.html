@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ListerFlow Pro</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <!-- ヘッダー -->
   <div class="header">
@@ -91,7 +93,9 @@
       </div>
 
       <div class="stats-section">
-        <h2>📋 ASIN履歴 <span id="errorRateLabel" style="font-size: 12px; font-weight: bold; margin-left: 12px; padding: 2px 8px; border-radius: 12px; display: inline-block; vertical-align: middle; color: rgb(253, 126, 20); background-color: rgb(255, 243, 224);">エラー率: 0% ✨</span></h2>
+        <h2>📋 ASIN履歴 <span id="errorRateLabel"
+            style="font-size: 12px; font-weight: bold; margin-left: 12px; padding: 2px 8px; border-radius: 12px; display: inline-block; vertical-align: middle; color: rgb(253, 126, 20); background-color: rgb(255, 243, 224);">エラー率:
+            0% ✨</span></h2>
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-label">出品完了件数</div>
@@ -218,6 +222,16 @@
             <span class="toggle-slider"></span>
           </label>
         </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">作業時間パネルの表示</div>
+            <div class="toggle-desc">作業時間、一時停止ボタン、速度バッジを表示</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="showWorkTimePanel">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
       </div>
 
       <div class="setting-section">
@@ -289,11 +303,22 @@
     <!-- 各種リンクページ -->
     <div class="page" id="linksPage">
       <div class="setting-section">
+        <h2>🚀 Yaballeで出品を開始</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+          ワンクリックでYaballeの出品画面を開きます。
+        </p>
+        <a href="https://app.yaballe.com/#/add-items" target="_blank" class="link-item">
+          Yaballeサイトを開く
+        </a>
+      </div>
+
+      <div class="setting-section">
         <h2>📺 導入・使い方の解説動画</h2>
         <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
           1.準備編 → 2.導入編 → 3.基本操作編 の順にご視聴ください。
         </p>
-        <a href="https://youtube.com/playlist?list=PLwA7258oAk1-7cj4-7MQqRUQ-Nci7CZLN&si=O_RHyqVdhf1SP81O" target="_blank" class="link-item">
+        <a href="https://youtube.com/playlist?list=PLwA7258oAk1-7cj4-7MQqRUQ-Nci7CZLN&si=O_RHyqVdhf1SP81O"
+          target="_blank" class="link-item">
           YouTubeプレイリストを開く
         </a>
       </div>
@@ -326,4 +351,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>

@@ -43,26 +43,29 @@ export async function loadStatistics() {
 
     if (!stats || typeof stats !== 'object') {
       stats = {
-        totalListings: 0,
+        totalWorkTimeToday: 0,
+        isCounterPaused: true,
         todayListings: 0,
         weekListings: 0,
+        totalListings: 0,
+        todayMaxSpeed: 0,
+        lastAsinInputTime: null,
         lastListingDate: null,
-        optimizeCount: 0,
         lastResetDate: Date.now()
       };
     }
 
     // 日次・週次リセット判定
     const { dayChanged, weekPassed } = shouldResetStats(stats.lastResetDate);
-    
+
     if (dayChanged) {
       stats.todayListings = 0;
     }
-    
+
     if (weekPassed) {
       stats.weekListings = 0;
     }
-    
+
     if (dayChanged || weekPassed) {
       stats.lastResetDate = Date.now();
       await saveStatistics(stats);
@@ -76,7 +79,6 @@ export async function loadStatistics() {
       todayListings: 0,
       weekListings: 0,
       lastListingDate: null,
-      optimizeCount: 0,
       lastResetDate: Date.now()
     };
   }
@@ -115,22 +117,6 @@ export async function incrementListingCount() {
 }
 
 /**
- * 最適化回数のインクリメント
- */
-export async function incrementOptimizeCount() {
-  try {
-    const stats = await loadStatistics();
-    stats.optimizeCount += 1;
-    await saveStatistics(stats);
-    console.log(`[LFP] 最適化回数をカウント: ${stats.optimizeCount}`);
-    return true;
-  } catch (err) {
-    console.error("[LFP] incrementOptimizeCount error:", err);
-    return false;
-  }
-}
-
-/**
  * ASIN履歴の読み込み
  */
 export async function loadHistory() {
@@ -163,22 +149,22 @@ export async function saveHistory(history) {
 export async function addToHistory(asin, flags = {}) {
   try {
     const history = await loadHistory();
-    
+
     // 既存のエントリを削除
     const filtered = history.filter(h => h.asin !== asin);
-    
+
     // 新しいエントリを先頭に追加
     filtered.unshift({
       asin,
       flags,
       timestamp: Date.now()
     });
-    
+
     // 最大件数を超えた場合は古いものを削除
     if (filtered.length > HISTORY.MAX_COUNT) {
       filtered.splice(HISTORY.MAX_COUNT);
     }
-    
+
     await saveHistory(filtered);
     console.log(`[LFP] ASIN履歴に追加: ${asin}`, flags);
     return true;
@@ -195,7 +181,7 @@ export async function updateHistoryFlags(asin, flags) {
   try {
     const history = await loadHistory();
     const entry = history.find(h => h.asin === asin);
-    
+
     if (entry) {
       entry.flags = { ...entry.flags, ...flags };
       entry.timestamp = Date.now();
@@ -205,7 +191,7 @@ export async function updateHistoryFlags(asin, flags) {
       // エントリが存在しない場合は新規追加
       await addToHistory(asin, flags);
     }
-    
+
     return true;
   } catch (err) {
     console.error("[LFP] updateHistoryFlags error:", err);

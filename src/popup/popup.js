@@ -64,17 +64,23 @@ function initializeElements() {
     highlightOptimize: document.getElementById('highlightOptimize'),
     historyEnabled: document.getElementById('historyEnabled'),
     veroEnabled: document.getElementById('veroEnabled'),
-    turboListingMode: document.getElementById('turboListingMode')
+    turboListingMode: document.getElementById('turboListingMode'),
+    showWorkTimePanel: document.getElementById('showWorkTimePanel')
   };
 
   // Version elements
   const versionNumber = document.getElementById('versionNumber');
   const releaseDate = document.getElementById('releaseDate');
-  
+
   // Load version from manifest
   const manifest = chrome.runtime.getManifest();
   if (versionNumber) versionNumber.textContent = `v${manifest.version}`;
-  if (releaseDate) releaseDate.textContent = '2026/02/12';
+  if (releaseDate) {
+    // version_nameから日付を抽出（例: "1.2.4 (2026/02/15)" → "2026/02/15"）
+    const versionName = manifest.version_name || '';
+    const dateMatch = versionName.match(/\((.+)\)/);
+    releaseDate.textContent = dateMatch ? dateMatch[1] : '-';
+  }
 }
 
 function setupEventListeners() {
@@ -161,7 +167,7 @@ function startWorkTimeCounter() {
   if (workTimeUpdateInterval) {
     clearInterval(workTimeUpdateInterval);
   }
-  
+
   workTimeUpdateInterval = setInterval(async () => {
     await loadAndDisplayStats();
   }, 1000);
@@ -178,22 +184,35 @@ function updateWorkTimeDisplay(stats) {
     const seconds = totalSec % 60;
     statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
   }
-  
+
   if (statsElements.listingSpeed) {
     const count = stats.todayListings || 0;
     const hours = totalMs / 3600000;
     const speedVal = hours > 0 ? (count / hours) : 0;
     const speedDisplay = speedVal.toFixed(1);
-    
+
     let rank = "rank-very-slow";
-    let rankText = "ゆったり🐢";
-    if (speedVal >= 120) { rank = "rank-fastest"; rankText = "爆速🚀"; }
-    else if (speedVal >= 60) { rank = "rank-fast"; rankText = "高速🏎️"; }
-    else if (speedVal >= 30) { rank = "rank-normal"; rankText = "着実💪"; }
-    else if (speedVal >= 10) { rank = "rank-slow"; rankText = "のんびり🚲"; }
-    
-    const isMaxSpeed = speedVal >= (stats?.todayMaxSpeed || 0);
-    if (isMaxSpeed && speedVal > 0) rankText += " 🏆";
+    let rankText = "ゆったり 🐢";
+    if (speedVal >= 120) {
+      rank = "rank-fastest";
+      rankText = "爆速 🚀";
+    } else if (speedVal >= 60) {
+      rank = "rank-fast";
+      rankText = "高速 🏎️";
+    } else if (speedVal >= 30) {
+      rank = "rank-normal";
+      rankText = "着実 💪";
+    } else if (speedVal >= 10) {
+      rank = "rank-slow";
+      rankText = "のんびり 🚲";
+    } else {
+      rankText = "ゆったり 🐢";
+    }
+
+    // トロフィー判定に遊び（バッファ）を持たせる（点滅防止）
+    const maxSpeed = stats?.todayMaxSpeed || 0;
+    const hasTrophy = speedVal > 0 && speedVal >= (maxSpeed - 2);
+    if (hasTrophy) rankText += " 🏆";
 
     statsElements.listingSpeed.innerHTML = `
       <span>${speedDisplay}品/時</span>
@@ -245,14 +264,14 @@ async function loadAndDisplayStats() {
       const total = history.length;
       const errors = total - completedCount;
       const rate = total > 0 ? Math.round(errors / total * 100) : 0;
-      
+
       let color = "rgb(40, 167, 69)";
       let bgColor = "rgba(40, 167, 69, 0.1)";
       let emoji = "✨";
-      
+
       if (rate > 50) { color = "rgb(220, 53, 69)"; bgColor = "rgba(220, 53, 69, 0.1)"; emoji = "😱"; }
       else if (rate > 20) { color = "rgb(253, 126, 20)"; bgColor = "rgba(253, 126, 20, 0.1)"; emoji = "🧐"; }
-      
+
       statsElements.errorRateLabel.textContent = `エラー率: ${rate}% ${emoji}`;
       statsElements.errorRateLabel.style.color = color;
       statsElements.errorRateLabel.style.backgroundColor = bgColor;
@@ -266,17 +285,18 @@ async function loadAndDisplayStats() {
 
 
 async function resetStats() {
-  if (!confirm('統計情報をリセットしますか？（本日の作業時間と出品数がリセットされます）')) return;
-  
+  if (!confirm('統計情報をリセットしますか？（ASIN履歴は維持されます）')) return;
+
   // 統計リセットをSWに依頼
-  chrome.runtime.sendMessage({ type: 'RESET_STATS' }, async () => {
-    // UI側の入力欄などもクリアするためにメッセージを送信
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  chrome.runtime.sendMessage({ type: 'RESET_STATS' }, async (response) => {
+    if (response && response.ok) {
+      // ページ内のUIリセット指示（タブに送信）
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: 'LFP_RESET_UI' }).catch(() => {});
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'LFP_RESET_UI' }).catch(() => { });
       }
-    });
-    await loadAndDisplayStats();
+      await loadAndDisplayStats();
+    }
   });
 }
 
@@ -287,7 +307,7 @@ async function loadSettings() {
 
   if (settingElements.apiKey) settingElements.apiKey.value = opt.apiKey || '';
   if (settingElements.model) settingElements.model.value = opt.model || 'gpt-4o-mini';
-  
+
   if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = !!opt.autoGetOnPaste;
   if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
   if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoMipAfterOptimize;
@@ -297,6 +317,7 @@ async function loadSettings() {
   if (settingElements.historyEnabled) settingElements.historyEnabled.checked = !!opt.historyEnabled;
   if (settingElements.veroEnabled) settingElements.veroEnabled.checked = !!opt.veroEnabled;
   if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!opt.turboListingMode;
+  if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = opt.showWorkTimePanel !== false; // デフォルトON
 }
 
 function toggleApiKeyVisibility() {
@@ -333,6 +354,7 @@ async function saveAutomationSettings() {
   opt.historyEnabled = settingElements.historyEnabled?.checked;
   opt.veroEnabled = settingElements.veroEnabled?.checked;
   opt.turboListingMode = settingElements.turboListingMode?.checked;
+  opt.showWorkTimePanel = settingElements.showWorkTimePanel?.checked;
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('自動化・UI設定を保存しました');
 }
@@ -347,7 +369,7 @@ async function loadHistoryList() {
   const history = await loadHistory();
   const listEl = document.getElementById('historyList');
   const countEl = document.getElementById('historyCountDetail');
-  
+
   if (countEl) countEl.textContent = `${history.length}件`;
   if (!listEl) return;
 
@@ -360,7 +382,7 @@ async function loadHistoryList() {
   history.forEach((item, index) => {
     const card = document.createElement('div');
     card.className = 'history-card';
-    
+
     let status = '出品完了';
     let isError = false;
     if (item.flags?.protected) { status = 'Protected'; isError = true; }
@@ -402,3 +424,4 @@ async function clearHistory() {
     loadHistoryList();
   });
 }
+
