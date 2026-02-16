@@ -1,7 +1,7 @@
 # ListerFlow Pro for Yaballe
 
-[![Version](https://img.shields.io/badge/version-1.1.0-orange.svg)](https://github.com/kuronylab/listerflow-pro-for-yaballe/tree/develop)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/kuronylab/listerflow-pro-for-yaballe)
+[![Version](https://img.shields.io/badge/version-1.1.0-orange.svg)](https://github.com/kuronylab/listerflow-pro-for-yaballe/tree/develop(v1.1.0))
+[![License](https://img.shields.io/badge/license-Commercial-red.svg)](file:///Users/kurokikouki2/Downloads/アプリ開発/listerflow-pro-for-yaballe-develop/LICENSE)
 
 **ListerFlow Pro for Yaballe**は、Yaballeでの出品作業を極限まで効率化するために設計されたChrome拡張機能です。AIによるタイトル最適化、VeROの動的検知、そして「ターボモード」による全自動出品により、あなたの出品スピードを数倍に引き上げます。
 
@@ -165,8 +165,15 @@ OpenAI GPT-4o-mini を活用し、最強のタイトルを自動生成します�
 
 ---
 
-## ライセンス・サポート
-- **License**: MIT
+## 🔒 ライセンス・サポート
+> [!CAUTION]
+> **商用ライセンス (Commercial License)**
+> 
+> 本ツールは **KURONYLAB** が提供する有料ソフトウェアです。正規購入者（または所属ユーザー）以外の利用、再配布、転売、ソースコードの解析は法的に禁止されています。
+> 
+> **著作権侵害および不正利用が発覚した場合、著作権法に基づき、損害賠償請求や刑事告訴を含む厳格な法的措置を直ちに講じます。**
+> 詳細は [LICENSE](file:///Users/kurokikouki2/Downloads/アプリ開発/listerflow-pro-for-yaballe-develop/LICENSE) をご確認ください。
+
 - **Support**: [公式LINEグループ](https://line.me/ti/g/dFVUneYZKS)
 
 ---

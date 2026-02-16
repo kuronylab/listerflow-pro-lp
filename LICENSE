@@ -1,21 +1,38 @@
-MIT License
+Commercial License
 
 Copyright (c) 2026 KURONYLAB
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+本文書において「本ソフトウェア」とは、"ListerFlow Pro for Yaballe" 拡張機能および付随するすべてのドキュメント、ソースコードを指します。
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. 利用権の制限
+本ソフトウェアは有料ツールであり、正規に購入した個人、または購入企業に所属するライセンス保持者のみが利用できます。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. 複製・再配布の禁止
+本ソフトウェアの全部または一部を、権利者の許可なく第三者へ配布、コピー、転売、貸与、またはインターネット上に公開することを固く禁じます。
+
+3. 解析・改変の禁止
+本ソフトウェアに対して、リバースエンジニアリング、逆コンパイル、逆アセンブル、またはソースコードの解析・改ざんを行うことを禁じます。
+
+4. 知的財産権の帰属
+本ソフトウェアに関するすべての知的財産権および著作権は、KURONYLAB に帰属します。
+
+5. 禁止事項の補足
+以下の行為を厳格に禁止します。
+(1) 1回分のライセンス料金で、複数名でのアカウント共有や、許可なき複数端末への不正な同時導入を行う行為。
+(2) 本ソフトウェアのブランド名、ロゴを無断で使用し、公式または提携関係を装う行為。
+(3) サーバーまたはシステムへの過度な負荷をかける自動操作や、不正な通信行為。
+
+6. 著作権侵害および不正利用への対応
+本ソフトウェアの著作権を侵害する行為（不正な複製、譲渡、転載、公開等）が発覚した場合、権利者は著作権法および関連法規に基づき、以下の措置を直ちに講じます。
+(1) 法的手段の実行: 損害賠償請求、差し止め請求、および悪質な場合は刑事告訴を含む法的措置。
+(2) ライセンスの失効: 不正利用が確認されたアカウントおよびライセンスの即時無効化。
+(3) 損害賠償: 不正利用によって生じた、または生じたと推定される損害額の請求。
+
+7. 免責事項
+本ソフトウェアの利用により生じたいかなる損害（データの損失、業務の中断、利益の損失等）についても、権利者は一切の責任を負いません。本ソフトウェアは「現状有姿」で提供されます。
+
+8. 準拠法および合意管轄
+(1) 本規約の解釈および適用にあたっては、日本法が適用されるものとします。
+(2) 本ソフトウェアに関する一切の紛争については、東京地方裁判所を第一審の専属的合意管轄裁判所とします。
+
+以上
