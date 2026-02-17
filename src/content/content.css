@@ -128,8 +128,17 @@
 .lfp-asinbar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  /* 追加: 画面幅が狭い時に折り返しを許可 */
   gap: 8px;
   margin: 6px 0 8px;
+}
+
+/* 各要素に下マージンを追加（折り返し時の重なり防止） */
+.lfp-asinbar select,
+.lfp-asinbar button,
+.lfp-listing-count-label {
+  margin-bottom: 4px;
 }
 
 .lfp-asinbar select {
@@ -306,6 +315,38 @@
   background: #d0d0d0;
 }
 
+.lfp-listing-count-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #111;
+  min-height: 32px;
+  flex-wrap: wrap;
+  /* 統計情報内でも折り返しを許可 */
+  gap: 10px;
+  /* ギャップを少し調整 */
+  margin-left: 12px;
+}
+
+.lfp-listing-count-label>span {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lfp-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85em;
+  font-weight: bold;
+  padding: 1px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  line-height: normal;
+  transform: translateY(-0.5px);
+}
+
 /* 履歴削除ボタン用のスタイル */
 .lfp-dropdown-item-wrapper {
   display: flex;
@@ -480,8 +521,9 @@
   padding: 0;
   user-select: none;
   transition: transform 0.1s ease;
-  vertical-align: middle;
-  margin-left: 8px;
+  margin-left: 2px;
+  /* 調整: 絵文字のベースラインによるズレを補正（下に下げる） */
+  transform: translateY(2px);
 }
 
 .lfp-pause-resume-btn:hover {

@@ -58,6 +58,51 @@ let okButtonCheckInterval = null;
 // 履歴操作のロック（競合状況防止）
 let historyLock = false;
 
+/* ---------- Utilities ---------- */
+
+/**
+ * 監視対象となるメインコンテンツコンテナを特定する
+ * 適切なコンテナが見つからない場合は document.body を返す
+ */
+function getContentContainer() {
+  // Yaballeの構成に応じた主要なコンテナセレクタ
+  const selectors = [
+    'ui-view',           // Angular UI-Router (Yaballeでよく使われる)
+    '[ui-view]',
+    'md-content',        // Angular Material
+    '.md-content',
+    '#main-wrapper',
+    'main',
+    'div[role="main"]',
+    '.main-content',
+    '.content-wrapper',
+    'section#content',
+    '#inner-content',
+    '[ng-view]'          // Angular standard router
+  ];
+
+  for (const sel of selectors) {
+    const el = document.querySelector(sel);
+    if (el && el.isConnected) return el;
+  }
+
+  // フォールバック
+  return document.body;
+}
+
+/**
+ * モーダル等のオーバーレイが表示されるコンテナを特定する
+ * Angular Materialではbody直下の .cdk-overlay-container に配置されることが多い
+ */
+function getOverlayContainer() {
+  return document.querySelector('.cdk-overlay-container') || document.body;
+}
+
+function isListerRoute() {
+  const hash = (location.hash || "").toLowerCase();
+  return hash.includes("autolister") || hash.includes("add-items");
+}
+
 // 出品自動化およびOKボタン自動クリックの実行判定フラグ（ファイル全体で共有し、ASIN変更時のみリセット）
 let okButtonClicked = false;
 let listingCounted = false;
@@ -314,38 +359,42 @@ async function loadOptions() {
 }
 
 // 設定変更をリッスンしてUIを更新
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === 'sync' && changes[KEY_OPT]) {
-    const newOptions = changes[KEY_OPT].newValue;
-    if (newOptions) {
-      STORE.opt = { ...STORE.opt, ...newOptions };
-      console.log('[LFP] 設定が更新されました:', STORE.opt);
-      // ここでUIの更新処理を呼び出す
-      updateUIBasedOnSettings();
+if (isExtensionContextValid()) {
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'sync' && changes[KEY_OPT]) {
+      const newOptions = changes[KEY_OPT].newValue;
+      if (newOptions) {
+        STORE.opt = { ...STORE.opt, ...newOptions };
+        console.log('[LFP] 設定が更新されました:', STORE.opt);
+        // ここでUIの更新処理を呼び出す
+        updateUIBasedOnSettings();
+      }
     }
-  }
 
-  // 統計リセットの指示を受け取る
-  if (changes[KEY_HIST] && !changes[KEY_HIST].newValue) {
-    console.log('[LFP] 履歴がリセットされました');
-    refreshHistorySelect(true).catch(() => { });
-  }
-});
+    // 統計リセットの指示を受け取る
+    if (changes[KEY_HIST] && !changes[KEY_HIST].newValue) {
+      console.log('[LFP] 履歴がリセットされました');
+      refreshHistorySelect(true).catch(() => { });
+    }
+  });
+}
 
 // バックグラウンドからのメッセージを処理
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === 'LFP_RESET_UI') {
-    console.log('[LFP] UIリセット指示を受信');
-    refreshListingCountUI().catch(() => { });
-    refreshHistorySelect(true).catch(() => { });
-    return true;
-  }
-  // バックグラウンドからの同期放送を受信
-  if (msg.type === 'LFP_SYNC_UI') {
-    refreshListingCountUI().catch(() => { });
-    return true;
-  }
-});
+if (isExtensionContextValid()) {
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.type === 'LFP_RESET_UI') {
+      console.log('[LFP] UIリセット指示を受信');
+      refreshListingCountUI().catch(() => { });
+      refreshHistorySelect(true).catch(() => { });
+      return true;
+    }
+    // バックグラウンドからの同期放送を受信
+    if (msg.type === 'LFP_SYNC_UI') {
+      refreshListingCountUI().catch(() => { });
+      return true;
+    }
+  });
+}
 
 async function updateUIBasedOnSettings() {
   // Quick MIPボタンの表示/非表示（設定変更時のみ）
@@ -1022,7 +1071,10 @@ const UI = {
 };
 
 function destroyMainUI() {
-  if (UI.root && UI.root.isConnected) UI.root.remove();
+  if (UI.root && UI.root.isConnected) {
+    console.log('🗑️ [LFP] main UI removed');
+    UI.root.remove();
+  }
   UI.root = null;
   UI.status = null;
   UI.badge = null;
@@ -1640,6 +1692,12 @@ async function onOptimizeClick({ titleEl }) {
         if (finalLen >= 70 && finalLen <= 80) break;
       } catch (e) {
         console.error('[LFP] OpenAI API Error:', e);
+
+        // Extension context invalidated エラーのハンドリング
+        if (e.message && (e.message.includes('Extension context invalidated') || e.message.includes('context_invalidated'))) {
+          alert('拡張機能が更新されました。正常に動作させるためにページを再読み込みしてください。');
+        }
+
         setBusy(false);
         optimizeRunning = false;
         return;
@@ -1902,10 +1960,10 @@ async function refreshListingCountUI() {
     // 初回構築
     if (!UI.listingCountLabel.querySelector('.lfp-count-val')) {
       UI.listingCountLabel.innerHTML = `
-      <span class="lfp-count-val" style="font-weight: bold; color: #111; vertical-align: middle;">出品完了: ${stats.todayListings || 0}件</span>
-      <span class="lfp-time-val" style="margin-left: 15px; color: #111; font-weight: bold; vertical-align: middle; display: ${panelDisplay};">本日の作業時間: ${sessionWorkTime}</span>
+      <span class="lfp-count-val" style="font-weight: bold; color: #111;">出品完了: ${stats.todayListings || 0}件</span>
+      <span class="lfp-time-val" style="margin-left: 15px; color: #111; font-weight: bold; display: ${panelDisplay};">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: ${flexDisplay}; align-items: center;"></span>
-      <span class="lfp-rank-badge" style="margin-left: 10px; font-size: 0.85em; font-weight: bold; padding: 2px 10px; border-radius: 12px; display: ${rankDisplay}; vertical-align: middle; white-space: nowrap; border: 1px solid transparent; color: ${color}; background-color: ${bgColor}; border-color: ${color}44;">${rankContent}</span>
+      <span class="lfp-rank-badge" style="margin-left: 10px; display: ${rankDisplay}; color: ${color}; background-color: ${bgColor}; border-color: ${color}44;">${rankContent}</span>
     `;
       await createPauseResumeButton();
     } else {
@@ -2492,6 +2550,7 @@ async function init() {
       setupNoListingsObserver();
       setupListingSuccessObserver();
       setupGlobalEventListeners(); // 委譲リスナーをセットアップ
+      setupListerPageDetection();  // 出現監視
       // メッセージリスナー
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type === 'LFP_SYNC_UI') {
@@ -2539,8 +2598,11 @@ function handlePotentialErrorModal(modal) {
   const isAlreadyListed = /already listed|already monitored|Duplications are not possible/i.test(modalText);
 
   if (isAlreadyListed || isNoListings || isNoItem) {
-    // 処理済みマークを速やかに付与
+    // 処理済みマークと出現時刻を付与
     modal.dataset.lfpHandled = "1";
+    if (!modal.dataset.lfpCreatedAt) {
+      modal.dataset.lfpCreatedAt = Date.now().toString();
+    }
     console.log(`⚠️ [LFP] エラーモーダルを検知: Listed=${isAlreadyListed}, NoListings=${isNoListings}, NoItem=${isNoItem}`);
 
     // 2. 履歴フラグを更新
@@ -2564,7 +2626,7 @@ function handlePotentialErrorModal(modal) {
       const currentAsin = STORE.lastRequestedAsin;
       const now = Date.now();
       const isRecurrent = (currentAsin === STORE.errorHandling.lastAsin) &&
-        (now - STORE.errorHandling.timestamp < 10000); // 10秒以内の再発は同一とみなす
+        (now - STORE.errorHandling.timestamp < 5000); // 5秒以内の再発は同一とみなす（短縮して精度向上）
 
       if (isRecurrent) {
         console.log('🔥 [LFP] エラー再発（ゾンビ）を検知: 待機なしで即座に焼却します');
@@ -2577,13 +2639,13 @@ function handlePotentialErrorModal(modal) {
         STORE.errorHandling.lastAsin = currentAsin;
         STORE.errorHandling.timestamp = now;
 
-        // 1秒後に実行
+        // 1.5秒後に実行
         setTimeout(() => {
           // ボタンを探してクリック
           attemptCloseErrorModal(modal);
           // 以降、5秒間は掃討モード（定期監視）に入り、復活するモーダルを潰し続ける
           startAggressiveCleaner();
-        }, 1000);
+        }, 1500);
       }
     }
     return true;
@@ -2598,12 +2660,19 @@ function attemptCloseErrorModal(modalOrDocument) {
   // モーダル自体が渡されていない場合はdocumentから探す
   const root = modalOrDocument || document;
 
-  const closeBtn = Array.from(root.querySelectorAll('.modal button, [role="dialog"] button, button[class*="close"], [role="button"]')).find(btn =>
-    /ok|確定|確認|閉じる|close|×|キャンセル|cancel|got it/i.test(btn.textContent.trim()) ||
-    btn.classList.contains('close') ||
-    /close|dismiss/i.test(btn.getAttribute('aria-label') || '') ||
-    btn.querySelector('i.fa-times, .close-icon')
-  );
+  const closeBtn = Array.from(root.querySelectorAll('.modal button, [role="dialog"] button, .cdk-overlay-pane button, button[class*="close"], [role="button"]')).find(btn => {
+    // 保護ロジック: 出現から1.5秒経っていないモーダル内のボタンは（掃討モードからは）無視する
+    const modalParent = btn.closest('.modal, [role="dialog"], .cdk-overlay-pane');
+    if (modalParent && modalParent.dataset.lfpCreatedAt) {
+      const age = Date.now() - parseInt(modalParent.dataset.lfpCreatedAt);
+      if (age < 1400) return false; // 1.4秒の安全マージン
+    }
+
+    return /ok|確定|確認|閉じる|close|×|キャンセル|cancel|got it/i.test(btn.textContent.trim()) ||
+      btn.classList.contains('close') ||
+      /close|dismiss/i.test(btn.getAttribute('aria-label') || '') ||
+      btn.querySelector('i.fa-times, .close-icon');
+  });
 
   if (closeBtn && closeBtn.isConnected) {
     console.log('💥 [LFP] エラークローズ実行');
@@ -2646,11 +2715,12 @@ function setupNoListingsObserver() {
   if (noListingsObserver) return; // 既に初期化済み
   noListingsObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
+      if (mutation.addedNodes.length === 0) continue;
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
         // モーダルの検出（Yaballeのモーダル構造を想定）
-        const modal = node.matches('.modal, [role="dialog"]') ? node : node.querySelector('.modal, [role="dialog"]');
+        const modal = node.matches('.modal, [role="dialog"], .cdk-overlay-pane') ? node : node.querySelector('.modal, [role="dialog"], .cdk-overlay-pane');
         if (modal) {
           handlePotentialErrorModal(modal);
         }
@@ -2658,7 +2728,9 @@ function setupNoListingsObserver() {
     }
   });
 
-  noListingsObserver.observe(document.body, {
+  const container = document.body;
+  console.log(`[LFP] Error Observer を開始します: 全体`);
+  noListingsObserver.observe(container, {
     childList: true,
     subtree: true
   });
@@ -2754,11 +2826,12 @@ function setupListingSuccessObserver() {
   if (listingSuccessObserver) return; // 既に初期化済み
   listingSuccessObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
+      if (mutation.addedNodes.length === 0) continue;
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
         // モーダルの検出
-        const modal = node.matches('.modal, [role="dialog"]') ? node : node.querySelector('.modal, [role="dialog"]');
+        const modal = node.matches('.modal, [role="dialog"], .cdk-overlay-pane') ? node : node.querySelector('.modal, [role="dialog"], .cdk-overlay-pane');
         if (modal) {
           handlePotentialSuccessModal(modal);
         }
@@ -2766,7 +2839,9 @@ function setupListingSuccessObserver() {
     }
   });
 
-  listingSuccessObserver.observe(document.body, {
+  const container = getOverlayContainer();
+  console.log(`[LFP] Success Observer を開始します: ${container === document.body ? '全体' : '.cdk-overlay-container'}`);
+  listingSuccessObserver.observe(container, {
     childList: true,
     subtree: true
   });
@@ -2929,7 +3004,7 @@ window.addEventListener('focus', async () => {
     if (!isListerRoute()) return;
 
     // UIが存在するかチェック
-    const uiExists = document.querySelector('.lfp-ui, .lfp-asinbar, .lfp-status-box');
+    const uiExists = document.querySelector('.lfp-asinbar, .lfp-status-box');
     const titleEl = findTitleFieldSmart();
 
     if (!uiExists && titleEl) {
@@ -2987,7 +3062,7 @@ function startHealthCheck() {
       }
 
       // UIが存在するかチェック
-      const uiExists = document.querySelector('.lfp-ui');
+      const uiExists = document.querySelector('.lfp-asinbar');
       const titleEl = findTitleFieldSmart();
 
       if (!uiExists && titleEl) {
@@ -3037,7 +3112,8 @@ function setupListerPageDetection() {
     }, 300);
   });
 
-  listerPageObserver.observe(document.body, {
+  const container = document.body;
+  listerPageObserver.observe(container, {
     childList: true,
     subtree: true
   });
@@ -3086,7 +3162,6 @@ function setupGlobalEventListeners() {
     }
 
     // 2. リアルMIPボタン（Yaballe本来の出品ボタン）のクリック監視
-    // ユーザーがオリジナルのボタンを直接押した場合も、即座にLFP側の状態を「出品中」に同期させる
     const realMip = findRealMipButton();
     if (realMip && (e.target === realMip || realMip.contains(e.target))) {
       console.log("🎯 [LFP] リアルMIPボタンのクリックを検知。状態を同期します。");
@@ -3192,26 +3267,7 @@ async function handleGetItemClick() {
     });
     await refreshHistorySelect(true);
   }
-
-  // 取得後の変化を監視
-  await sleep(250);
-  t = findTitleFieldSmart();
-  if (!t) { lockUI(); return; }
-  const tv = normSpace(readText(t));
-  if (!tv) { lockUI(); return; }
-
-  unlockUI(t);
-  await evaluateAndRender({ titleEl: t, btnGet });
-
-  // ターボモード
-  if (STORE.opt.turboListingMode) {
-    handleTurboListing(t, btnGet);
-  }
-
-  if (STORE.opt.quickMipButton && btnGet) ensureQuickMipButton(btnGet);
 }
-
-console.log('✅ [LFP] ListerFlow Pro v1.1.2 が読み込まれました');
 
 
 
