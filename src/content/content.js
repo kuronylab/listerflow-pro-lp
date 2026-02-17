@@ -35,9 +35,15 @@ const STORE = {
   },
   // エラーハンドリング（掃討モード用）
   errorHandling: {
-    lastAsin: "",
     timestamp: 0,
     cleanerInterval: null
+  },
+  // サブスクリプション・ライセンス管理
+  license: {
+    plan: "basic",    // "basic", "pro", "premium" 等
+    dailyLimit: 1,    // basicプランの1日の上限
+    usageCount: 0,
+    lastUsedDate: ""  // "YYYY-MM-DD" 形式
   }
 };
 
@@ -57,6 +63,58 @@ let okButtonCheckInterval = null;
 
 // 履歴操作のロック（競合状況防止）
 let historyLock = false;
+
+/**
+ * ユーザーの利用制限をチェックする
+ * 無料プランの場合は1日1回まで。
+ * @returns {Promise<boolean>} 実行可能な場合はtrue
+ */
+async function checkUsageLimit() {
+  // プランが basic 以外なら無制限（Pro/Premium等）
+  if (STORE.license.plan !== "basic") return true;
+
+  const now = new Date();
+  const today = now.toISOString().split('T')[0]; // "2026-02-17"
+
+  // 日付が変わっていればリセット
+  if (STORE.license.lastUsedDate !== today) {
+    STORE.license.usageCount = 0;
+    STORE.license.lastUsedDate = today;
+  }
+
+  // 制限チェック
+  if (STORE.license.usageCount >= STORE.license.dailyLimit) {
+    await showSubscriptionAlert();
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * 利用回数をカウントアップして保存する
+ */
+async function incrementUsageCount() {
+  if (STORE.license.plan !== "basic") return;
+
+  STORE.license.usageCount++;
+  await chrome.storage.local.set({
+    lfp_usage_count: STORE.license.usageCount,
+    lfp_last_used_date: STORE.license.lastUsedDate
+  });
+}
+
+/**
+ * サブスクリプション購入を促すアラートを表示する
+ */
+async function showSubscriptionAlert() {
+  const msg = `【無料版の制限】\n本日の自動化（Get Item）の利用回数制限に達しました。\n\nListerFlow Pro を購読すると、無制限に「爆速出品」を継続できます。1つ1つの地道な作業から解放されませんか？`;
+  const confirmed = await showLfpConfirm(msg, "1日1回無料トライアル終了");
+  if (confirmed) {
+    // 購入ページへ誘導（URLは後で設定）
+    window.open("https://kuronylab.jp/listerflow-pro/plans", "_blank");
+  }
+}
 
 /* ---------- Utilities ---------- */
 
@@ -346,6 +404,9 @@ async function loadOptions() {
     const data = await chrome.storage.sync.get([KEY_OPT]);
     const saved = data?.[KEY_OPT];
     if (saved && typeof saved === "object") STORE.opt = { ...STORE.opt, ...saved };
+
+    // ライセンス情報をローカルストレージから読み込み
+    await loadLicenseData();
   } catch (err) {
     // エラーメッセージのチェックをより堅牢に
     const errMsg = err.message || "";
@@ -355,6 +416,27 @@ async function loadOptions() {
     } else {
       console.error("[LFP] loadOptions error:", err);
     }
+  }
+}
+
+/**
+ * ライセンス・利用状況データをストレージから読み込む
+ */
+async function loadLicenseData() {
+  try {
+    const localData = await chrome.storage.local.get([
+      'lfp_license_plan',
+      'lfp_usage_count',
+      'lfp_last_used_date'
+    ]);
+
+    if (localData.lfp_license_plan) STORE.license.plan = localData.lfp_license_plan;
+    if (localData.lfp_usage_count) STORE.license.usageCount = localData.lfp_usage_count;
+    if (localData.lfp_last_used_date) STORE.license.lastUsedDate = localData.lfp_last_used_date;
+
+    console.log('[LFP] ライセンス情報を読み込みました:', STORE.license);
+  } catch (err) {
+    console.error('[LFP] loadLicenseData error:', err);
   }
 }
 
@@ -1964,6 +2046,7 @@ async function refreshListingCountUI() {
       <span class="lfp-time-val" style="margin-left: 15px; color: #111; font-weight: bold; display: ${panelDisplay};">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: ${flexDisplay}; align-items: center;"></span>
       <span class="lfp-rank-badge" style="margin-left: 10px; display: ${rankDisplay}; color: ${color}; background-color: ${bgColor}; border-color: ${color}44;">${rankContent}</span>
+      <span class="lfp-trial-val" style="margin-left: 12px; color: #d32f2f; font-weight: bold; font-size: 11px; padding: 2px 6px; border: 1px solid #d32f2f; border-radius: 4px; background: #fff5f5;"></span>
     `;
       await createPauseResumeButton();
     } else {
@@ -1996,6 +2079,26 @@ async function refreshListingCountUI() {
         rankSpan.style.color = color;
         rankSpan.style.backgroundColor = bgColor;
         rankSpan.style.borderColor = `${color}44`;
+      }
+
+      // トライアル回数の表示
+      const trialSpan = UI.listingCountLabel.querySelector('.lfp-trial-val');
+      if (trialSpan) {
+        if (STORE.license.plan === "basic") {
+          const remaining = Math.max(0, STORE.license.dailyLimit - STORE.license.usageCount);
+          trialSpan.textContent = `試用残り: ${remaining}回`;
+          trialSpan.style.display = "inline-block";
+          if (remaining === 0) {
+            trialSpan.style.color = "#fff";
+            trialSpan.style.backgroundColor = "#d32f2f";
+            trialSpan.textContent = "試用終了 (Pro/Premium限定)";
+          } else {
+            trialSpan.style.color = "#d32f2f";
+            trialSpan.style.backgroundColor = "#fff5f5";
+          }
+        } else {
+          trialSpan.style.display = "none";
+        }
       }
 
       // ボタンの状態も同期
@@ -3234,6 +3337,10 @@ function setupGlobalEventListeners() {
  * Get Itemクリック時の統合処理
  */
 async function handleGetItemClick() {
+  // 1. 利用制限チェック（Basicプランは1日1回）
+  const canExecute = await checkUsageLimit();
+  if (!canExecute) return;
+
   const btnGet = findButtonByText(/^Get Item$/i);
   const asinInput = findAsinInputSmart(btnGet);
 
@@ -3266,6 +3373,9 @@ async function handleGetItemClick() {
       no_listings: false
     });
     await refreshHistorySelect(true);
+
+    // 成功・または実行開始としてカウントアップ
+    await incrementUsageCount();
   }
 }
 
