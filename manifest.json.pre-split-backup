@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "ListerFlow Pro for Yaballe",
+  "version": "1.1.0",
+  "version_name": "1.1.0 (2026/02/16)",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1ExNOFRwTQoSR7PJP8Zr8jxGrdsFyHwQN5JrncR88i3uTLj21qESw+iz9u15fET/OMr+b8CP0kPE+uQUZ+UTl1qKVDRkC0O9EZ7W1AedW9/Fi+KL3T0cfQ6iS2SiZ0D1T8rXvmi3X57g2eZys8NtCcsZG2QzFRWBA8DLD0eEXXRA8/ULVQUfID3JrPt8HlzDYXYuimExMbGWgsCrR60PBFLHrZmAD+pwPQvKIn67sZ4igPlKh6wWAQOFhjuUw27YozSlgvtxDE8wu/brXjpYia4YkheDDyzk1kN59OVxTYqtR295KBsVS10EmKvC9cbkbXwajWql+WQguU4kHn1OgwIDAQAB",
+  "description": "Yaballe Listerで、タイトル最適化とMIP出品フローを高速化する拡張機能。",
+  "author": "KURONYLAB",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://app.yaballe.com/*",
+    "https://api.openai.com/*",
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*",
+    "https://accounts.google.com/*"
+  ],
+  "background": {
+    "service_worker": "src/sw/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.yaballe.com/*"
+      ],
+      "js": [
+        "src/content/content.js"
+      ],
+      "css": [
+        "src/content/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/popup/export.html",
+        "src/popup/export.js",
+        "src/popup/export.css",
+        "src/pages/purchase.html",
+        "src/pages/purchase.css",
+        "src/pages/purchase.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

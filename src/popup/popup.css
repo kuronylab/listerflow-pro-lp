@@ -227,6 +227,44 @@ body {
   border-color: rgba(108, 117, 125, 0.2);
 }
 
+
+.badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+.badge-free {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.badge-pro {
+  background: #1a73e8;
+  color: #fff;
+  border-radius: 9px;
+}
+
+.plan-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+
+.badge-premium {
+  background: #e67700;
+  color: #fff;
+}
+
 /* ボタン */
 .btn-primary,
 .btn-danger {
@@ -389,7 +427,7 @@ body {
 }
 
 input:checked+.toggle-slider {
-  background-color: #007bff;
+  background-color: #1a73e8;
   /* 青色に統一 */
 }
 
@@ -563,4 +601,29 @@ input:checked+.toggle-slider:before {
   text-align: center;
   color: #adb5bd;
   font-style: italic;
+}
+
+/* トライアルバー用パーツ */
+.lfp-upgrade-link {
+  color: #007bff;
+  text-decoration: none;
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #198754;
+}
+
+.lfp-upgrade-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  background: #f8f9fa;
+}
+
+
+
+.lfp-shimmer-bar {
+  background: linear-gradient(90deg, #198754, #20c997);
 }

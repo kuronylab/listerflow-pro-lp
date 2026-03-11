@@ -3,6 +3,8 @@ const KEY_STATS = "lfp_stats_v1";
 const KEY_HIST = "lfp_asin_history_v1";
 const DEFAULTS = { apiKey: "", model: "gpt-4o-mini" };
 
+const LFP_LICENSE_API_URL = "https://script.google.com/macros/s/AKfycbz8Esv6o7yZt0iIi03q2dyPFA4TXAYWqEJCOzN1r11l-ufH3CV0c02ccykripH1ToYd/exec";
+
 // タイマー管理用の変数
 let timerInterval = null;
 
@@ -349,6 +351,187 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: true });
       } catch (err) {
         console.error("[LFP-SW] CLEAR_HISTORY error:", err);
+        sendResponse({ ok: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+
+  // Yaballeアカウント検知
+  if (msg.type === "LFP_YABALLE_ACCOUNT_DETECTED") {
+    (async () => {
+      try {
+        const prev = await chrome.storage.local.get(['lfp_current_yaballe_email']);
+        const prevEmail = prev.lfp_current_yaballe_email;
+        const newEmail = msg.email;
+
+        // アカウントが切り替わった場合
+        if (prevEmail && prevEmail !== newEmail) {
+          console.log(`[LFP-SW] アカウント切り替えを検知: ${prevEmail} → ${newEmail}`);
+
+          // 新しいアカウント用のライセンスを辞書から検索
+          const stored = await chrome.storage.local.get(['lfp_licenses_by_account']);
+          const dict = stored.lfp_licenses_by_account || {};
+          const newAccountLicense = dict[newEmail];
+
+          if (newAccountLicense) {
+            // このアカウントは過去に認証済み → そのライセンスを復元
+            console.log(`[LFP-SW] ${newEmail} のライセンスを復元します: ${newAccountLicense.plan}`);
+            const currentLicData = await chrome.storage.local.get(['lfp_license_v1']);
+            const lic = currentLicData.lfp_license_v1 || { usageCount: 0, lastResetDate: Date.now() };
+            lic.plan = newAccountLicense.plan;
+            lic.licenseKey = newAccountLicense.licenseKey;
+            await chrome.storage.local.set({
+              'lfp_license_v1': lic,
+              'lfp_license_plan': newAccountLicense.plan
+            });
+          } else {
+            // このアカウントは未認証 → ライセンスをFreeにリセット
+            console.log(`[LFP-SW] ${newEmail} のライセンスが見つかりません。Freeプランに戻します。`);
+            await chrome.storage.local.remove(['lfp_license_v1', 'lfp_license_plan']);
+          }
+
+          // ★ 新しいアカウントのTurbo状態を復元
+          // アカウントごとの自動OFFフラグを確認（キー名にemailを含める）
+          const turboKey = `lfp_turbo_auto_disabled_${newEmail}`;
+          const turboData = await chrome.storage.local.get([turboKey]);
+          const newAccountTurboDisabled = turboData[turboKey] === true;
+
+          // 新しいアカウントがTurboを使い切っていない場合 → OFFフラグをstripe.sync上でONに戻す
+          const optData = await chrome.storage.sync.get(['lfp_options_v1']);
+          const opt = optData.lfp_options_v1 || {};
+          if (!newAccountTurboDisabled) {
+            // このアカウントはまだTurboを使い切っていない → ONに戻す
+            opt.turboListingMode = true;
+            console.log(`[LFP-SW] ${newEmail} はTurbo未消費 → Turbo Mode を自動でONにします`);
+          } else {
+            // このアカウントは使い切り済み → OFFのまま
+            opt.turboListingMode = false;
+            console.log(`[LFP-SW] ${newEmail} はTurbo使い切り済み → Turbo Mode はOFFのまま`);
+          }
+          // 共通のauto_disabledフラグも新アカウントの状態に合わせる
+          if (!newAccountTurboDisabled) {
+            await chrome.storage.local.remove(['lfp_turbo_auto_disabled']);
+          } else {
+            await chrome.storage.local.set({ 'lfp_turbo_auto_disabled': true });
+          }
+          await chrome.storage.sync.set({ 'lfp_options_v1': opt });
+
+          // コンテンツスクリプトにアカウント切り替えを通知（UIを再描画させる）
+          chrome.tabs.query({}, (tabs) => {
+            tabs.forEach(tab => {
+              chrome.tabs.sendMessage(tab.id, {
+                type: "LFP_ACCOUNT_CHANGED",
+                restoredPlan: newAccountLicense?.plan || 'free',
+                turboEnabled: !newAccountTurboDisabled
+              }).catch(() => { });
+            });
+          });
+        }
+
+        // 現在のアカウントを保存
+        await chrome.storage.local.set({ 'lfp_current_yaballe_email': newEmail });
+        console.log('[LFP-SW] Yaballeアカウントを保存しました:', newEmail);
+        sendResponse({ ok: true, accountChanged: (prevEmail && prevEmail !== newEmail) });
+      } catch (err) {
+        sendResponse({ ok: false, error: err.message });
+      }
+    })();
+    return true;
+  }
+
+  // ライセンスサーバーへのリクエストを中継（CSP/CORS回避用）
+  if (msg.type === "LFP_LICENSE_SERVER_REQUEST") {
+    const payload = msg.payload;
+    (async () => {
+      try {
+        console.log('[LFP-SW] サーバー通信開始:', payload?.action);
+
+        let response;
+        let fetchErr;
+        // 最大2回のリトライループ（MV3特有のAbort対策）
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+          try {
+            console.log(`[LFP-SW] Fetch試行 ${attempt}回目...`);
+
+            response = await fetch(LFP_LICENSE_API_URL, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify(payload),
+              redirect: "follow",
+              credentials: "omit",
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            fetchErr = null;
+            break; // 成功した場合はループを抜ける
+          } catch (e) {
+            clearTimeout(timeoutId);
+            fetchErr = e;
+            console.warn(`[LFP-SW] Fetch試行 ${attempt}回目失敗:`, e.name, e.message);
+            if (attempt < 2) {
+              await new Promise(r => setTimeout(r, 1500)); // 少し長めに待機してリトライ
+            }
+          }
+        }
+
+        if (fetchErr) {
+          // エラーの詳細を構築
+          const errorInfo = {
+            name: fetchErr.name,
+            message: fetchErr.message,
+            stack: fetchErr.stack,
+            type: fetchErr instanceof TypeError ? 'Network/CORS/Permission Error' : 'Other Error',
+            url: LFP_LICENSE_API_URL
+          };
+          console.error('[LFP-SW] サーバー通信致命的エラー詳細:', JSON.stringify(errorInfo, null, 2));
+          throw fetchErr;
+        }
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        // GASがHTMLを返す場合（Googleアカウント競合時など）に備え、安全にパース
+        const text = await response.text();
+        let result;
+        try {
+          result = JSON.parse(text);
+        } catch (parseErr) {
+          // HTMLが返ってきた場合
+          if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+            throw new Error('サーバーがHTMLを返しました。Googleアカウントの競合が原因の可能性があります。ページをリロードしてください。');
+          }
+          throw new Error('サーバーの応答を解析できませんでした: ' + text.substring(0, 100));
+        }
+        console.log('[LFP-SW] サーバーレスポンス成功');
+        sendResponse({ ok: true, data: result });
+      } catch (err) {
+        let msg = (err.name === 'AbortError') ? 'タイムアウト(25s)' : `${err.name}: ${err.message}`;
+        sendResponse({ ok: false, error: msg });
+      }
+    })();
+    return true; // 非同期レスポンスを待機
+  }
+
+  // タイマーの一時停止/解除の切り替え
+  if (msg.type === "LFP_TOGGLE_PAUSE") {
+    (async () => {
+      try {
+        const stats = await loadStats();
+        stats.isCounterPaused = !stats.isCounterPaused;
+        if (!stats.isCounterPaused) {
+          stats.lastAsinInputTime = Date.now();
+          startTimer();
+        } else {
+          stopTimer();
+        }
+        await saveStats(stats);
+        broadcastSync();
+        sendResponse({ ok: true, isCounterPaused: stats.isCounterPaused });
+      } catch (err) {
         sendResponse({ ok: false, error: err.message });
       }
     })();

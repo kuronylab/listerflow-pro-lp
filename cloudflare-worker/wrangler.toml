@@ -1,0 +1,7 @@
+name = "listerflow-webhook-proxy"
+main = "webhook-proxy.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# GAS_WEBHOOK_URL と GAS_SECRET は Cloudflare ダッシュボードの
+# 「設定 > 変数」で設定してください（シークレットとして）

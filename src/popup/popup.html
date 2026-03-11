@@ -12,7 +12,8 @@
   <!-- ヘッダー -->
   <div class="header">
     <button class="menu-btn" id="menuBtn">☰</button>
-    <h1 class="title" id="pageTitle">統計情報</h1>
+    <h1 class="title" id="pageTitle" style="display: inline-block; margin-right: 8px;">統計情報</h1>
+    <span id="statsPlanBadge" style="display: none;"></span>
   </div>
 
   <!-- サイドメニュー -->
@@ -37,6 +38,10 @@
       <a href="#" class="menu-item" data-page="basic">
         <span class="menu-icon">⚙️</span>
         <span class="menu-text">基本設定</span>
+      </a>
+      <a href="#" class="menu-item" data-page="license">
+        <span class="menu-icon">🔑</span>
+        <span class="menu-text">ライセンス設定</span>
       </a>
       <a href="#" class="menu-item" data-page="version">
         <span class="menu-icon">ℹ️</span>
@@ -150,7 +155,7 @@
         <h2>自動実行設定</h2>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">ASINペースト時にGet Item自動実行</div>
+            <div class="toggle-title">ASINペースト時にGet Item自動実行 <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">ASINをペーストした時に自動的にGet Itemボタンをクリック</div>
           </div>
           <label class="toggle-switch">
@@ -160,7 +165,7 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">ASIN履歴選択時にGet Item自動実行</div>
+            <div class="toggle-title">ASIN履歴選択時にGet Item自動実行 <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">ASIN履歴から選択した時に自動的にGet Itemボタンをクリック</div>
           </div>
           <label class="toggle-switch">
@@ -170,7 +175,7 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">最適化後MIP自動クリック</div>
+            <div class="toggle-title">最適化後MIP自動クリック <span class="badge badge-pro">Pro</span></div>
             <div class="toggle-desc">最適化が完了したら自動的にMIPボタンをクリック</div>
           </div>
           <label class="toggle-switch">
@@ -180,7 +185,7 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">MIP後にOKボタン自動クリック</div>
+            <div class="toggle-title">MIP後にOKボタン自動クリック <span class="badge badge-pro">Pro</span></div>
             <div class="toggle-desc">MIP完了後に表示されるOKボタンを自動的にクリック</div>
           </div>
           <label class="toggle-switch">
@@ -190,7 +195,9 @@
         </div>
         <div class="toggle-item turbo-item-box">
           <div class="toggle-label">
-            <div class="toggle-title">最速出品モード (Turbo Mode)</div>
+            <div class="toggle-title">最速出品モード (Turbo Mode) <span class="badge badge-premium">Premium</span></div>
+            <div id="turboTrialCountLabel" style="font-size: 10px; color: #e67700; font-weight: bold; margin-top: 2px;">
+            </div>
             <div class="toggle-desc">ASINペースト後、出品完了まで全自動で実行します。</div>
           </div>
           <label class="toggle-switch">
@@ -204,7 +211,7 @@
         <h2>UI設定</h2>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">Quick MIPボタン表示</div>
+            <div class="toggle-title">Quick MIPボタン表示 <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">Get Itemボタンの右にQuick MIPボタンを表示</div>
           </div>
           <label class="toggle-switch">
@@ -214,7 +221,7 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">最適化ボタン追加</div>
+            <div class="toggle-title">最適化ボタン・ステータスバー表示 <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">タイトル最適化ボタンを表示</div>
           </div>
           <label class="toggle-switch">
@@ -224,11 +231,21 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">作業時間パネルの表示</div>
+            <div class="toggle-title">作業時間パネルの表示 <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">作業時間、一時停止ボタン、速度バッジを表示</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="showWorkTimePanel">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <div class="toggle-title">コピー・CSVボタン表示 <span class="badge badge-pro">Pro</span></div>
+            <div class="toggle-desc">作業画面にコピー・CSV出力ボタンを表示</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="showCopyCsvButtons">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -238,7 +255,7 @@
         <h2>その他</h2>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">ASIN履歴管理</div>
+            <div class="toggle-title">ASIN履歴管理 <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">ASIN履歴を保存・表示</div>
           </div>
           <label class="toggle-switch">
@@ -248,7 +265,7 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">VeRO警告チェック</div>
+            <div class="toggle-title">VeRO警告チェック <span class="badge badge-free">Free</span></div>
             <div class="toggle-desc">VeRO警告を自動検出</div>
           </div>
           <label class="toggle-switch">
@@ -276,6 +293,54 @@
           </select>
         </div>
         <button class="btn-primary" id="saveBasicBtn">設定を保存</button>
+      </div>
+    </div>
+
+    <!-- ライセンス設定ページ -->
+    <div class="page" id="licensePage">
+      <div class="setting-section">
+        <h2>🔑 ライセンス管理</h2>
+        <div class="current-plan-card">
+          <div class="plan-info">
+            <span class="plan-label">現在のプラン:</span>
+            <span class="plan-value" id="currentPlanName">Free</span>
+          </div>
+          <div class="plan-info">
+            <span class="plan-label">本日の使用状況:</span>
+            <span class="plan-value" id="todayUsageStatus">0 / 1回</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="licenseKey">ライセンスキー</label>
+          <input type="password" id="licenseKey" placeholder="LFP-...">
+          <button class="btn-show-key" id="showLicenseBtn">表示</button>
+        </div>
+
+        <div class="license-actions">
+          <button class="btn-primary" id="activateLicenseBtn">ライセンスを認証</button>
+          <button class="btn-secondary" id="deactivateLicenseBtn" style="display: none;">認証を解除</button>
+          <!-- 管理者モード用 -->
+          <button class="btn-primary" id="forceFreeBtn"
+            style="display: none; margin-top: 10px; background: #6c757d; border-color: #6c757d;">FREEに切り替え</button>
+          <button class="btn-danger" id="resetTrialBtn"
+            style="display: none; margin-top: 5px; background: #6c757d;">試用回数をリセット</button>
+          <button class="btn-primary" id="startTrialBtn"
+            style="display: none; margin-top: 5px; background: #198754;">Proトライアルを開始</button>
+          <button class="btn-danger" id="expireTrialBtn"
+            style="display: none; margin-top: 5px; background: #dc3545;">Proトライアルを終了</button>
+          <button class="btn-primary" id="forceProBtn"
+            style="display: none; margin-top: 5px; background: #0d6efd;">PROに切り替え</button>
+          <button class="btn-primary" id="forceProTrialBtn"
+            style="display: none; margin-top: 5px; background: #198754;">PRO(TRIAL)に切り替え</button>
+          <button class="btn-primary" id="forcePremiumBtn"
+            style="display: none; margin-top: 5px; background: #d63384;">PREMIUMに切り替え</button>
+          <button class="btn-secondary" id="disableAdminBtn" style="display: none; margin-top: 5px;">管理者モードを終了</button>
+        </div>
+
+        <div class="license-support">
+          <p>ライセンスをお持ちでない方は<a href="../pages/purchase.html" target="_blank">こちらから購入</a>できます。</p>
+        </div>
       </div>
     </div>
 

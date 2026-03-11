@@ -1,5 +1,6 @@
 const KEY_OPT = "lfp_options_v1";
 const KEY_HIST = "lfp_asin_history_v1";
+const KEY_LICENSE = "lfp_license_v1";
 
 
 // DOM elements
@@ -65,8 +66,14 @@ function initializeElements() {
     historyEnabled: document.getElementById('historyEnabled'),
     veroEnabled: document.getElementById('veroEnabled'),
     turboListingMode: document.getElementById('turboListingMode'),
-    showWorkTimePanel: document.getElementById('showWorkTimePanel')
+    showWorkTimePanel: document.getElementById('showWorkTimePanel'),
+    showCopyCsvButtons: document.getElementById('showCopyCsvButtons')
   };
+
+  // License elements
+  settingElements.licenseKey = document.getElementById('licenseKey');
+  statsElements.currentPlanName = document.getElementById('currentPlanName');
+  statsElements.todayUsageStatus = document.getElementById('todayUsageStatus');
 
   // Version elements
   const versionNumber = document.getElementById('versionNumber');
@@ -95,10 +102,10 @@ function setupEventListeners() {
 
   // Menu items
   document.querySelectorAll('.menu-item').forEach(item => {
-    item.addEventListener('click', (e) => {
+    item.addEventListener('click', async (e) => {
       e.preventDefault();
       const page = item.dataset.page;
-      switchPage(page);
+      await switchPage(page);
       sideMenu?.classList.remove('open');
     });
   });
@@ -113,12 +120,44 @@ function setupEventListeners() {
   // Automation settings page buttons
   document.getElementById('saveAutomationBtn')?.addEventListener('click', saveAutomationSettings);
 
+  // License page buttons
+  document.getElementById('showLicenseBtn')?.addEventListener('click', toggleLicenseKeyVisibility);
+  document.getElementById('activateLicenseBtn')?.addEventListener('click', activateLicense);
+  document.getElementById('deactivateLicenseBtn')?.addEventListener('click', deactivateLicense);
+  document.getElementById('resetTrialBtn')?.addEventListener('click', handleResetTrial);
+  document.getElementById('startTrialBtn')?.addEventListener('click', handleStartTrial);
+  document.getElementById('expireTrialBtn')?.addEventListener('click', handleExpireTrial);
+  document.getElementById('disableAdminBtn')?.addEventListener('click', disableAdminMode);
+  document.getElementById('forceFreeBtn')?.addEventListener('click', () => forcePlan('free'));
+  document.getElementById('forceProBtn')?.addEventListener('click', () => forcePlan('pro'));
+  document.getElementById('forceProTrialBtn')?.addEventListener('click', () => forcePlan('pro-trial'));
+  document.getElementById('forcePremiumBtn')?.addEventListener('click', () => forcePlan('premium'));
+
+  // Admin Mode trigger (Click version 5 times)
+  let versionClickCount = 0;
+  document.getElementById('versionNumber')?.addEventListener('click', () => {
+    versionClickCount++;
+    if (versionClickCount === 5) {
+      enableAdminMode();
+    }
+  });
+
   // 最速出品モードの連動処理
   settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
       settingElements.autoGetOnPaste.checked = true;
       settingElements.autoMipAfterOptimize.checked = true;
       settingElements.autoClickOkAfterMip.checked = true;
+    }
+  });
+
+  // コピー・CSVボタンの表示連動処理
+  settingElements.showCopyCsvButtons?.addEventListener('change', (e) => {
+    const exportBtn = document.getElementById('exportSpreadsheetBtn');
+    if (exportBtn) {
+      exportBtn.disabled = !e.target.checked;
+      exportBtn.style.opacity = e.target.checked ? '1' : '0.5';
+      exportBtn.style.cursor = e.target.checked ? 'pointer' : 'not-allowed';
     }
   });
 
@@ -132,9 +171,18 @@ function setupEventListeners() {
       setTimeout(() => loadHistoryList(), 100);
     });
   });
+
+  // Listen for sync requests to update UI
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg.type === "LFP_SYNC_REQUEST") {
+      console.log('[Popup] Sync request received');
+      loadAndDisplayStats();
+      loadSettings();
+    }
+  });
 }
 
-function switchPage(page) {
+async function switchPage(page) {
   // Update menu items
   document.querySelectorAll('.menu-item').forEach(item => {
     item.classList.toggle('active', item.dataset.page === page);
@@ -154,12 +202,16 @@ function switchPage(page) {
     automation: '自動化設定',
     basic: '基本設定',
     version: 'バージョン情報',
-    links: '各種リンク'
+    links: '各種リンク',
+    license: 'ライセンス設定'
   };
-  if (pageTitle) pageTitle.textContent = titles[page] || 'ListerFlow Pro';
 
-  // Reload stats when switching to stats page
-  if (page === 'stats') loadAndDisplayStats();
+  if (pageTitle) {
+    pageTitle.textContent = titles[page] || 'ListerFlow Pro';
+  }
+
+  // 常にバッジ情報を最新にするため、どのページに切り替えても実行
+  await loadAndDisplayStats();
 }
 
 // Statistics functions
@@ -261,20 +313,195 @@ async function loadAndDisplayStats() {
     if (statsElements.noItemCount) statsElements.noItemCount.textContent = `${noItemCount}件`;
 
     if (statsElements.errorRateLabel) {
-      const total = history.length;
-      const errors = total - completedCount;
-      const rate = total > 0 ? Math.round(errors / total * 100) : 0;
+      const totalErrorCount = protectedCount + brandCount + noListingsCount + alreadyListedCount + noItemCount;
+      const totalProcessed = completedCount + totalErrorCount;
+      const errorRate = totalProcessed > 0 ? Math.round((totalErrorCount / totalProcessed) * 100) : 0;
+      const emoji = errorRate === 0 ? '✨' : errorRate < 10 ? '👍' : errorRate < 30 ? '⚠️' : '🔴';
+      statsElements.errorRateLabel.textContent = `エラー率: ${errorRate}% ${emoji}`;
+    }
 
-      let color = "rgb(40, 167, 69)";
-      let bgColor = "rgba(40, 167, 69, 0.1)";
-      let emoji = "✨";
+    // License info
+    const licData = await chrome.storage.local.get([KEY_LICENSE]);
+    const license = licData?.[KEY_LICENSE] || { plan: 'free', usageCount: 0 };
 
-      if (rate > 50) { color = "rgb(220, 53, 69)"; bgColor = "rgba(220, 53, 69, 0.1)"; emoji = "😱"; }
-      else if (rate > 20) { color = "rgb(253, 126, 20)"; bgColor = "rgba(253, 126, 20, 0.1)"; emoji = "🧐"; }
+    const isProTrial = await checkProTrialStatus();
+    const isAdminData = await chrome.storage.local.get(['lfp_admin_mode']);
+    const isAdmin = isAdminData.lfp_admin_mode === true;
 
-      statsElements.errorRateLabel.textContent = `エラー率: ${rate}% ${emoji}`;
-      statsElements.errorRateLabel.style.color = color;
-      statsElements.errorRateLabel.style.backgroundColor = bgColor;
+    // トライアル残り日数の計算 (共通で使用)
+    let trialStatus = { active: false, daysLeft: 0 };
+    const trialData = await chrome.storage.local.get(['lfp_pro_trial_start_date']);
+    if (trialData.lfp_pro_trial_start_date) {
+      const startStr = trialData.lfp_pro_trial_start_date.split('T')[0];
+      const start = new Date(startStr + 'T00:00:00');
+      const todayStr = new Date().toISOString().split('T')[0];
+      const today = new Date(todayStr + 'T00:00:00');
+
+      if (!isNaN(start.getTime())) {
+        const diffMs = today - start;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays < 30) {
+          trialStatus = { active: true, daysLeft: 30 - diffDays };
+        }
+      }
+    }
+
+    // ★ P4-UI: 解約予定日をストレージから取得
+    const cancelData = await chrome.storage.local.get(['lfp_cancel_at']);
+    const cancelAt = cancelData.lfp_cancel_at || null;
+    let cancelLabel = '';
+    if (cancelAt) {
+      const cd = new Date(cancelAt);
+      cancelLabel = ` (${cd.getMonth() + 1}/${cd.getDate()}解約予定)`;
+    }
+
+    // ヘッダータイトルの右横のバッジ
+    const planBadge = document.getElementById('statsPlanBadge');
+    if (planBadge) {
+      const currentPlan = (license.plan || 'free').toLowerCase();
+
+
+      if (isAdmin) {
+        planBadge.textContent = "Admin";
+        planBadge.className = "badge";
+        planBadge.style.backgroundColor = "#343a40";
+        planBadge.style.color = "#fff";
+      } else if (currentPlan === 'premium') {
+        planBadge.textContent = `Premium${cancelLabel}`;
+        planBadge.className = "badge badge-premium";
+        planBadge.style.backgroundColor = "";
+        planBadge.style.color = "";
+      } else if (currentPlan === 'pro' || currentPlan === 'pro-trial') {
+        const isTrialMode = (currentPlan === 'pro-trial') || trialStatus.active;
+        planBadge.textContent = isTrialMode ? `Pro (Trial) 残り${trialStatus.daysLeft}日${cancelLabel}` : `Pro${cancelLabel}`;
+        planBadge.className = "badge";
+        planBadge.style.backgroundColor = isTrialMode ? "#198754" : "#1a73e8"; // トライアルなら緑、通常Proなら青
+        planBadge.style.borderRadius = "9px";
+        planBadge.style.color = "#fff";
+      } else if (currentPlan !== 'free') {
+        planBadge.textContent = license.plan.charAt(0).toUpperCase() + license.plan.slice(1);
+        planBadge.className = "badge badge-pro";
+        planBadge.style.backgroundColor = "#0d6efd";
+        planBadge.style.color = "#fff";
+      } else if (trialStatus.active) {
+        planBadge.textContent = `Pro (Trial) 残り${trialStatus.daysLeft}日`;
+        planBadge.className = "badge";
+        planBadge.style.backgroundColor = "#20c997";
+        planBadge.style.color = "#fff";
+      } else {
+        planBadge.textContent = "Free";
+        planBadge.className = "badge badge-free";
+        planBadge.style.backgroundColor = "";
+        planBadge.style.color = "";
+      }
+
+      // トライアル時のカウントダウンバー表示
+      let trialBar = document.getElementById('lfp-trial-countdown-bar');
+      if ((currentPlan === 'free' || currentPlan === 'pro-trial') && trialStatus.active && !isAdmin) {
+        if (!trialBar) {
+          trialBar = document.createElement('div');
+          trialBar.id = 'lfp-trial-countdown-bar';
+          // スリム化とプレミアムな色調
+          trialBar.style.cssText = 'background: #fff; padding: 6px 14px; border-bottom: 1px solid #e9ecef; font-size: 11px; font-weight: bold; color: #495057; display: flex; align-items: center; justify-content: space-between; gap: 10px;';
+          const header = document.querySelector('.header');
+          header.insertAdjacentElement('afterend', trialBar);
+        }
+        const percent = Math.round((trialStatus.daysLeft / 30) * 100);
+        trialBar.innerHTML = `
+          <div style="flex-shrink: 0; display: flex; align-items: center;">
+            <span style="margin-right: 6px;">Pro機能をフル体験中 🎁</span>
+            <a href="../pages/purchase.html" target="_blank" class="lfp-upgrade-link">アップグレード</a>
+          </div>
+          <div style="flex: 1; height: 6px; background: #e9ecef; border-radius: 3px; position: relative; overflow: hidden; max-width: 120px;">
+            <div class="lfp-shimmer-bar" style="width: ${percent}%; height: 100%; border-radius: 3px;"></div>
+          </div>
+        `;
+        trialBar.style.display = 'flex';
+      } else if (trialBar) {
+        trialBar.style.display = 'none';
+      }
+
+      planBadge.style.display = 'inline-block';
+    }
+
+    if (statsElements.currentPlanName) {
+      const currentPlan = (license.plan || 'free').toLowerCase();
+      if (isAdmin) {
+        statsElements.currentPlanName.textContent = 'ADMIN';
+        statsElements.currentPlanName.className = 'plan-badge plan-admin';
+      } else if (currentPlan === 'premium') {
+        statsElements.currentPlanName.textContent = `PREMIUM${cancelLabel}`;
+        statsElements.currentPlanName.className = 'plan-badge plan-premium';
+      } else if (currentPlan === 'pro' || currentPlan === 'pro-trial') {
+        const isTrialMode = (currentPlan === 'pro-trial') || trialStatus.active;
+        statsElements.currentPlanName.textContent = isTrialMode ? `PRO (TRIAL) 残り${trialStatus.daysLeft}日${cancelLabel}` : `PRO${cancelLabel}`;
+        statsElements.currentPlanName.className = 'plan-badge';
+        statsElements.currentPlanName.style.backgroundColor = isTrialMode ? "#198754" : "#1a73e8";
+        statsElements.currentPlanName.style.borderRadius = "9px";
+        statsElements.currentPlanName.style.color = "#fff";
+      } else if (currentPlan !== 'free') {
+        statsElements.currentPlanName.textContent = license.plan.toUpperCase();
+        statsElements.currentPlanName.className = 'plan-badge plan-pro';
+      } else if (isProTrial) {
+        statsElements.currentPlanName.textContent = 'PRO (TRIAL)';
+        statsElements.currentPlanName.className = 'plan-badge plan-pro';
+      } else {
+        statsElements.currentPlanName.textContent = 'FREE';
+        statsElements.currentPlanName.className = 'plan-badge plan-free';
+      }
+    }
+
+    if (statsElements.todayUsageStatus) {
+      if (license.plan === 'free') {
+        const limit = license.dailyLimit || 2;
+        statsElements.todayUsageStatus.textContent = `${license.usageCount} / ${limit}`;
+      } else {
+        statsElements.todayUsageStatus.textContent = `無制限`;
+      }
+    }
+
+    // ★ P7: 次回請求日の表示
+    const billingData = await chrome.storage.local.get(['lfp_next_billing_date', 'lfp_next_billing_amount', 'lfp_cancel_at']);
+    let billingInfoEl = document.getElementById('lfp-billing-info');
+    const currentPlanForBilling = (license.plan || 'free').toLowerCase();
+    const cancelAtFromStorage = billingData.lfp_cancel_at;
+
+    if (billingData.lfp_next_billing_date && currentPlanForBilling !== 'free' && !isAdmin) {
+      const bd = new Date(billingData.lfp_next_billing_date);
+      const billingDateStr = `${bd.getFullYear()}/${bd.getMonth() + 1}/${bd.getDate()}`;
+      const amount = billingData.lfp_next_billing_amount;
+      const amountStr = amount ? `¥${Number(amount).toLocaleString()}` : '';
+
+      if (!billingInfoEl) {
+        billingInfoEl = document.createElement('div');
+        billingInfoEl.id = 'lfp-billing-info';
+        billingInfoEl.style.cssText = 'padding: 4px 14px 8px; font-size: 11px; color: #6b7280; text-align: right;';
+        // statsPlanBadge の親要素の後に挿入
+        const planBadgeParent = document.getElementById('statsPlanBadge')?.parentElement;
+        if (planBadgeParent) {
+          planBadgeParent.insertAdjacentElement('afterend', billingInfoEl);
+        }
+      }
+      let billingText = `次回請求: ${billingDateStr}`;
+      if (amountStr) billingText += ` ${amountStr}`;
+
+      if (cancelAtFromStorage) {
+        const cd = new Date(cancelAtFromStorage);
+        billingText = `${cd.getMonth() + 1}/${cd.getDate()} に解約予定`;
+        billingInfoEl.style.color = '#ef4444'; // 赤色で強調
+      } else {
+        billingInfoEl.style.color = '#6b7280';
+      }
+
+      billingInfoEl.textContent = billingText;
+      billingInfoEl.style.display = 'block';
+    } else if (billingInfoEl) {
+      billingInfoEl.style.display = 'none';
+    }
+
+    const deactivateBtn = document.getElementById('deactivateLicenseBtn');
+    if (deactivateBtn) {
+      deactivateBtn.style.display = (license.plan !== 'free') ? 'block' : 'none';
     }
 
   } catch (err) {
@@ -302,6 +529,14 @@ async function resetStats() {
 
 // Settings functions
 async function loadSettings() {
+  // ブラウザ側の強制制限を同期 (Basicプランかつ利用不可オプションが残っている場合を考慮)
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tabs[0]) {
+    // コンテントスクリプト側で実行 (storage/constantsが利用可能なため)
+    // ただしポップアップ側でも storage.js をインポートしているので直接呼べるか？
+    // popup.js は modules ではないので、手動で同様の制限をかける必要がある。
+  }
+
   const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
 
@@ -318,7 +553,114 @@ async function loadSettings() {
   if (settingElements.veroEnabled) settingElements.veroEnabled.checked = !!opt.veroEnabled;
   if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!opt.turboListingMode;
   if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = opt.showWorkTimePanel !== false; // デフォルトON
+
+  // プラン制限の強制適用 (非同期で実行)
+  await checkAndStrictlyEnforcePlanLimits(opt);
+
+  // ターボモードの試用カウンター表示
+  updateTurboTrialCounter(opt);
+
+  // Load license key
+  const licData = await chrome.storage.local.get([KEY_LICENSE]);
+  const license = licData?.[KEY_LICENSE] || { plan: 'free', usageCount: 0 };
+  if (settingElements.licenseKey) settingElements.licenseKey.value = license.licenseKey || '';
+
+  // Proトライアル判定（サーバー同期で設定される。未設定なら非トライアル）
+  let trialStartDate = await chrome.storage.local.get(['lfp_pro_trial_start_date']);
+  trialStartDate = trialStartDate.lfp_pro_trial_start_date;
+
+  let isProTrial = false;
+  if (trialStartDate) {
+    const today = new Date().toISOString().split('T')[0];
+    const start = new Date(trialStartDate + 'T00:00:00');
+    const current = new Date(today + 'T00:00:00');
+    const diffMs = current - start;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    isProTrial = (diffDays >= 0 && diffDays < 30);
+  }
+
+  // 管理者モードなら全開放
+  const localData = await chrome.storage.local.get(['lfp_admin_mode', 'lfp_active_email']);
+  const isAdmin = localData.lfp_admin_mode === true;
+  const activeEmail = localData.lfp_active_email;
+
+  // 管理者用ボタンの表示制御
+  const resetBtn = document.getElementById('resetTrialBtn');
+  const startBtn = document.getElementById('startTrialBtn');
+  const disableBtn = document.getElementById('disableAdminBtn');
+  const expireBtn = document.getElementById('expireTrialBtn');
+  const forceFreeBtn = document.getElementById('forceFreeBtn');
+  const forceProBtn = document.getElementById('forceProBtn');
+  const forceProTrialBtn = document.getElementById('forceProTrialBtn');
+  const forcePremiumBtn = document.getElementById('forcePremiumBtn');
+
+  if (resetBtn) resetBtn.style.display = isAdmin ? 'block' : 'none';
+  if (startBtn) startBtn.style.display = isAdmin ? 'block' : 'none';
+  if (disableBtn) disableBtn.style.display = isAdmin ? 'block' : 'none';
+  if (expireBtn) expireBtn.style.display = isAdmin ? 'block' : 'none';
+  if (forceFreeBtn) forceFreeBtn.style.display = isAdmin ? 'block' : 'none';
+  if (forceProBtn) forceProBtn.style.display = isAdmin ? 'block' : 'none';
+  if (forceProTrialBtn) forceProTrialBtn.style.display = isAdmin ? 'block' : 'none';
+  if (forcePremiumBtn) forcePremiumBtn.style.display = isAdmin ? 'block' : 'none';
+
+  const currentPlan = (license.plan || 'free').toLowerCase();
+  const isPremium = isAdmin || currentPlan === 'premium' || currentPlan === 'corporate'; // corporateなども含める
+  // Pro以上 (Pro, Premium, ProTrial, その他Paid)
+  const isProPlus = isAdmin || currentPlan !== 'free' || isProTrial;
+
+  if (opt.showCopyCsvButtons === undefined) {
+    opt.showCopyCsvButtons = isProPlus;
+  }
+  if (settingElements.showCopyCsvButtons) settingElements.showCopyCsvButtons.checked = !!opt.showCopyCsvButtons;
+
+  // スプレッドシート出力ボタンの有効化・無効化
+  const exportBtn = document.getElementById('exportSpreadsheetBtn');
+  if (exportBtn) {
+    exportBtn.disabled = !opt.showCopyCsvButtons;
+    exportBtn.style.opacity = opt.showCopyCsvButtons ? '1' : '0.5';
+    exportBtn.style.cursor = opt.showCopyCsvButtons ? 'pointer' : 'not-allowed';
+  }
+
+  // トライアル中の表示 (lfp-trial-countdown-barで一元化するため、ここは削除)
+
+
+  // Premium限定
+  if (settingElements.turboListingMode) {
+    const isProType = currentPlan === 'pro' || currentPlan === 'pro_trial' || currentPlan === 'pro-trial' || (currentPlan === 'free' && isProTrial);
+
+    // アカウント別の回数を取得
+    const count = (activeEmail && license.turboTrialCounts) ? (license.turboTrialCounts[activeEmail] || 0) : (license.turboTrialCount || 0);
+    const hasReachedLimit = isProType && !isAdmin && count >= 5;
+
+    // ProユーザーもTurboを使えるように条件を緩和
+    let allowTurboSettings = isPremium || isProType;
+    if (hasReachedLimit) {
+      allowTurboSettings = false;
+      // 制限超過時は強制的にOFFをUI反映（表示のみ。保存は別で行われる）
+      settingElements.turboListingMode.checked = false;
+    }
+
+    settingElements.turboListingMode.disabled = !allowTurboSettings;
+    settingElements.turboListingMode.closest('.toggle-item').style.opacity = allowTurboSettings ? '1' : '0.5';
+  }
+
+  // Pro以上限定
+  const proElements = [
+    settingElements.autoMipAfterOptimize,
+    settingElements.autoClickOkAfterMip,
+    settingElements.showCopyCsvButtons
+  ];
+  proElements.forEach(el => {
+    if (el) {
+      el.disabled = !isProPlus;
+      el.closest('.toggle-item').style.opacity = isProPlus ? '1' : '0.5';
+    }
+  });
+
+  // Free 設定はロックしない
 }
+
+
 
 function toggleApiKeyVisibility() {
   const el = settingElements.apiKey;
@@ -340,6 +682,13 @@ async function saveBasicSettings() {
   opt.model = settingElements.model?.value || 'gpt-4o-mini';
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('基本設定を保存しました');
+
+  // ターゲットタブを更新
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
 }
 
 async function saveAutomationSettings() {
@@ -355,8 +704,479 @@ async function saveAutomationSettings() {
   opt.veroEnabled = settingElements.veroEnabled?.checked;
   opt.turboListingMode = settingElements.turboListingMode?.checked;
   opt.showWorkTimePanel = settingElements.showWorkTimePanel?.checked;
+  opt.showCopyCsvButtons = settingElements.showCopyCsvButtons?.checked;
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert('自動化・UI設定を保存しました');
+
+  // ターゲットタブを更新
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+}
+
+// License functions
+function toggleLicenseKeyVisibility() {
+  const el = settingElements.licenseKey;
+  if (!el) return;
+  const btn = document.getElementById('showLicenseBtn');
+  if (el.type === 'password') {
+    el.type = 'text';
+    if (btn) btn.textContent = '隠す';
+  } else {
+    el.type = 'password';
+    if (btn) btn.textContent = '表示';
+  }
+}
+
+async function activateLicense() {
+  const key = settingElements.licenseKey?.value?.trim();
+  if (!key) {
+    alert('ライセンスキーを入力してください');
+    return;
+  }
+
+  // Yaballeのメールアドレスを取得
+  const emailData = await chrome.storage.local.get(['lfp_current_yaballe_email']);
+  const email = emailData.lfp_current_yaballe_email;
+
+  if (!email && !key.toLowerCase().startsWith('test-')) {
+    alert('Yaballeの作業画面を一度開いてから、この認証を行ってください。\n（店舗アカウントの確認が必要です）');
+    return;
+  }
+
+  let btn = document.getElementById('activateLicenseBtn');
+  let originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '認証中...';
+
+  // --- ローカルテストキーのインターセプト処理 ---
+  const lowerKey = key.toLowerCase();
+  const testPlans = {
+    'test-free': 'free',
+    'test-pro': 'pro',
+    'test-pro-trial': 'pro-trial',
+    'test-premium': 'premium'
+  };
+
+  if (testPlans[lowerKey]) {
+    const plan = testPlans[lowerKey];
+
+    const data = await chrome.storage.local.get(["lfp_license_v1"]);
+    const license = data?.["lfp_license_v1"] || { usageCount: 0, lastResetDate: Date.now() };
+
+    license.plan = plan;
+    license.licenseKey = key;
+
+    await chrome.storage.local.set({ ["lfp_license_v1"]: license });
+    await chrome.storage.local.set({ 'lfp_license_plan': plan });
+
+    if (plan !== 'free') {
+      const optionsData = await chrome.storage.sync.get(["lfp_options_v1"]);
+      const options = optionsData?.["lfp_options_v1"] || {};
+      options.autoGetOnPaste = true;
+      options.autoGetOnHistory = true;
+      options.autoMipAfterOptimize = true;
+      options.autoClickOkAfterMip = true;
+      options.quickMipButton = true;
+      options.showCopyCsvButtons = true;
+      options.turboListingMode = true;
+      await chrome.storage.sync.set({ ["lfp_options_v1"]: options });
+    }
+
+    alert(`【テストモード】\nプラン: ${plan.toUpperCase()} をローカルで適用しました。`);
+
+    chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+        chrome.tabs.reload(tabs[0].id);
+      }
+    });
+
+    await loadSettings();
+    loadAndDisplayStats();
+
+    btn.disabled = false;
+    btn.textContent = originalText;
+    return;
+  }
+  // --- ここまで ---
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "LFP_LICENSE_SERVER_REQUEST",
+      payload: {
+        action: "apply_license",
+        email: email,
+        licenseKey: key
+      }
+    });
+
+    if (!response || !response.ok) {
+      throw new Error(response?.error || 'サーバーとの通信に失敗しました');
+    }
+
+    const result = response.data;
+
+    if (result.status === 'success') {
+      const data = await chrome.storage.local.get([KEY_LICENSE]);
+      const license = data?.[KEY_LICENSE] || { usageCount: 0, lastResetDate: Date.now() };
+
+      license.plan = result.plan || 'pro';
+      license.licenseKey = key;
+
+      await chrome.storage.local.set({ [KEY_LICENSE]: license });
+      await chrome.storage.local.set({ 'lfp_license_plan': license.plan });
+
+      // ★ アカウントごとのライセンス辞書にも保存（切り替え時に自動復元するため）
+      const emailData = await chrome.storage.local.get(['lfp_current_yaballe_email']);
+      const currentEmail = emailData.lfp_current_yaballe_email;
+      if (currentEmail) {
+        const dictData = await chrome.storage.local.get(['lfp_licenses_by_account']);
+        const dict = dictData.lfp_licenses_by_account || {};
+        dict[currentEmail] = { licenseKey: key, plan: license.plan };
+        await chrome.storage.local.set({ 'lfp_licenses_by_account': dict });
+        console.log(`[LFP] ${currentEmail} のライセンスを辞書に保存しました`);
+      }
+
+      // ライセンス解放時に全自動化設定を自動でONにする
+      const optionsData = await chrome.storage.sync.get([KEY_OPT]);
+      const options = optionsData?.[KEY_OPT] || {};
+      options.autoGetOnPaste = true;
+      options.autoGetOnHistory = true;
+      options.autoMipAfterOptimize = true;
+      options.autoClickOkAfterMip = true;
+      options.quickMipButton = true;
+      options.showCopyCsvButtons = true;
+      options.turboListingMode = true;
+      await chrome.storage.sync.set({ [KEY_OPT]: options });
+
+      // ★ Premiumになった場合は自動OFFフラグを削除（Turboを確実にONにするため）
+      if (license.plan === 'premium') {
+        await chrome.storage.local.remove(['lfp_turbo_auto_disabled']);
+        // アカウント固有のフラグも削除
+        if (currentEmail) {
+          await chrome.storage.local.remove([`lfp_turbo_auto_disabled_${currentEmail}`]);
+        }
+      }
+
+      alert(`ライセンス認証が完了しました！\nプラン: ${license.plan.toUpperCase()}\n全ての機能が開放されました。`);
+
+      chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+          chrome.tabs.reload(tabs[0].id);
+        }
+      });
+
+      await loadSettings();
+      loadAndDisplayStats();
+    } else {
+      alert(`認証失敗: ${result.message || '無効なキーです'}`);
+    }
+  } catch (err) {
+    console.error('[LFP] activateLicense error:', err);
+    alert('サーバーとの通信に失敗しました。時間をおいて再度お試しください。');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+async function deactivateLicense() {
+  if (!confirm('ライセンス認証を解除しますか？')) return;
+
+  const data = await chrome.storage.local.get([KEY_LICENSE]);
+  const license = data?.[KEY_LICENSE] || {};
+  license.plan = 'free';
+  license.licenseKey = '';
+
+  await chrome.storage.local.set({ [KEY_LICENSE]: license });
+  // 同期用のフラグもリセット
+  await chrome.storage.local.set({ 'lfp_license_plan': 'free' });
+
+  // トライアルも強制終了させて完全に「Free」に戻す
+  const fakeDate = new Date();
+  fakeDate.setDate(fakeDate.getDate() - 100);
+  const oldDateStr = fakeDate.toISOString().split('T')[0];
+  await chrome.storage.local.set({ 'lfp_pro_trial_start_date': oldDateStr });
+  await chrome.storage.sync.set({ 'lfp_pro_trial_start': oldDateStr });
+
+  // 有料プランの初期化実行フラグをクリア
+  await chrome.storage.local.remove([
+    'lfp_auto_enabled_plan_pro',
+    'lfp_auto_enabled_plan_premium',
+    'lfp_auto_enabled_plan_pro-trial',
+    'lfp_auto_enabled_plan_pro_trial'
+  ]);
+
+  if (settingElements.licenseKey) settingElements.licenseKey.value = '';
+
+  alert('解除しました。');
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+
+  // アクティブなタブを更新
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  loadAndDisplayStats();
+  await loadSettings(); // プラン変更に伴い、制限チェックを走らせる
+}
+
+async function forcePlan(plan) {
+  const displayPlanName = plan === 'free' ? 'FREE' : plan.toUpperCase();
+  if (!confirm(`プラン変更: ${displayPlanName} に切り替えますか？`)) return;
+
+  const data = await chrome.storage.local.get([KEY_LICENSE]);
+  const license = data?.[KEY_LICENSE] || {};
+  license.plan = plan;
+  license.licenseKey = plan !== 'free' ? `${plan}-admin-forced` : '';
+
+  await chrome.storage.local.set({ [KEY_LICENSE]: license });
+  await chrome.storage.local.set({ 'lfp_license_plan': plan });
+
+  // もしFREEにするなら、トライアルも終了させて完全にクリーンなFREEにする
+  if (plan === 'free') {
+    const fakeDate = new Date();
+    fakeDate.setDate(fakeDate.getDate() - 100);
+    const oldDateStr = fakeDate.toISOString().split('T')[0];
+    await chrome.storage.local.set({ 'lfp_pro_trial_start_date': oldDateStr });
+    await chrome.storage.sync.set({ 'lfp_pro_trial_start': oldDateStr });
+
+    // 有料プランの初期化実行フラグをクリア
+    await chrome.storage.local.remove([
+      'lfp_auto_enabled_plan_pro',
+      'lfp_auto_enabled_plan_premium',
+      'lfp_auto_enabled_plan_pro-trial',
+      'lfp_auto_enabled_plan_pro_trial'
+    ]);
+  }
+
+  alert(`${displayPlanName} プランに変更しました。`);
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  loadAndDisplayStats();
+  await loadSettings();
+}
+
+async function handleResetTrial() {
+  if (!confirm('試用回数を 0 にリセットしますか？')) return;
+
+  // ストレージキーの両方を更新して確実に同期させる
+  await chrome.storage.local.set({
+    'lfp_usage_count': 0,
+    'lfp_last_used_date': new Date().toISOString().split('T')[0]
+  });
+
+  const data = await chrome.storage.local.get([KEY_LICENSE]);
+  const license = data?.[KEY_LICENSE] || {};
+  license.usageCount = 0;
+  license.lastResetDate = Date.now();
+  license.turboTrialCount = 0; // Turbo試用回数もリセット
+
+  await chrome.storage.local.set({ [KEY_LICENSE]: license });
+
+  alert('試用回数をリセットしました。');
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+
+  // アクティブなタブを更新
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  loadAndDisplayStats();
+}
+
+async function handleExpireTrial() {
+  if (!confirm('Proトライアル期間を強制的に終了させますか？（テスト用）')) return;
+
+  const fakeDate = new Date();
+  fakeDate.setDate(fakeDate.getDate() - 100);
+  const oldDateStr = fakeDate.toISOString().split('T')[0];
+
+  await chrome.storage.local.set({ 'lfp_pro_trial_start_date': oldDateStr });
+  alert('トライアル期間を終了させました。');
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  loadAndDisplayStats();
+  await loadSettings(); // トライアル終了に伴い、制限チェックを走らせる
+}
+
+async function handleStartTrial() {
+  if (!confirm('Proトライアル期間を新しく開始（またはリセット）しますか？（テスト用）')) return;
+
+  const today = new Date().toISOString().split('T')[0];
+  await chrome.storage.local.set({ 'lfp_pro_trial_start_date': today });
+
+  // 試用回数とプランをリセットして基本状態(Trial)にする
+  const data = await chrome.storage.local.get([KEY_LICENSE]);
+  const license = data?.[KEY_LICENSE] || {};
+  license.plan = 'free';
+  license.usageCount = 0;
+  license.lastResetDate = Date.now();
+  license.turboTrialCount = 0;
+  license.licenseKey = '';
+  await chrome.storage.local.set({ [KEY_LICENSE]: license });
+  await chrome.storage.local.set({ 'lfp_license_plan': 'free' });
+
+  alert('Proトライアル期間を開始しました。');
+  chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  loadAndDisplayStats();
+  await loadSettings();
+}
+
+async function enableAdminMode() {
+  await chrome.storage.local.set({ 'lfp_admin_mode': true });
+  alert('管理者モードが有効になりました（全機能を一時開放）');
+
+  // UIを再描画してボタンを表示させる
+  loadAndDisplayStats();
+
+  // ターゲットタブを更新
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  // UIを再読み込み（ロック解除を反映）
+  loadSettings();
+}
+
+async function disableAdminMode() {
+  await chrome.storage.local.set({ 'lfp_admin_mode': false });
+  alert('管理者モードを終了しました');
+
+  // UIを再描画してボタンを隠す
+  loadAndDisplayStats();
+
+  // ターゲットタブを更新
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+
+  // UIを再読み込み（ロック再適用を反映）
+  loadSettings();
+}
+
+/**
+ * 現在の設定がプラン制限に違反している場合に強制的に修正して保存する
+ */
+async function checkAndStrictlyEnforcePlanLimits(opt) {
+  const licData = await chrome.storage.local.get([KEY_LICENSE, 'lfp_admin_mode']);
+  const license = licData?.[KEY_LICENSE] || { plan: 'free', usageCount: 0 };
+  const isAdmin = licData?.lfp_admin_mode === true;
+
+  if (isAdmin) return; // 管理者なら制限チェックをスキップ
+
+  let changed = false;
+
+  // 1. Premium限定 (Turbo)
+  const isTrial = await checkProTrialStatus();
+  const currentPlan = (license.plan || 'free').toLowerCase();
+
+  // Basic以外のすべてのプラン、およびトライアル期間中は制限をクリア
+  const isPaidOrTrial = currentPlan !== 'free' || isTrial;
+
+  if (!isPaidOrTrial) {
+    console.log(`[Popup] Freeプラン制限を適用します (Plan: ${currentPlan}, Trial: ${isTrial})`);
+    // Freeプランの場合のみ制限
+    if (opt.turboListingMode) {
+      opt.turboListingMode = false;
+      changed = true;
+    }
+    ['autoMipAfterOptimize', 'autoClickOkAfterMip', 'showCopyCsvButtons'].forEach(key => {
+      if (opt[key]) {
+        opt[key] = false;
+        changed = true;
+      }
+    });
+  }
+
+
+  if (changed) {
+    await chrome.storage.sync.set({ [KEY_OPT]: opt });
+    console.log('[Popup] プラン制限により設定を自動修正しました');
+    // UIを再読み込み
+    loadSettings();
+    return;
+  }
+
+  // 1.1 Pro/Pro-Trialの5回制限チェック (アカウント別)
+  if (currentPlan === 'pro' || currentPlan === 'pro-trial' || (currentPlan === 'free' && isTrial)) {
+    const activeEmail = (await chrome.storage.local.get(['lfp_active_email'])).lfp_active_email;
+    if (activeEmail) {
+      if (!license.turboTrialCounts) license.turboTrialCounts = {};
+      const count = license.turboTrialCounts[activeEmail] || 0;
+      if (count >= 5 && opt.turboListingMode) {
+        console.log(`[Popup] アカウント(${activeEmail})の試用制限(5/5)によりTurboをOFFにします`);
+        opt.turboListingMode = false;
+        await chrome.storage.sync.set({ [KEY_OPT]: opt });
+        loadSettings();
+      }
+    }
+  }
+}
+
+/**
+ * ターボモードの試用状況をUIに反映
+ */
+async function updateTurboTrialCounter(opt) {
+  const counterLabel = document.getElementById('turboTrialCountLabel');
+  if (!counterLabel) return;
+
+  const licData = await chrome.storage.local.get([KEY_LICENSE, 'lfp_active_email', 'lfp_admin_mode']);
+  const license = licData?.[KEY_LICENSE] || {};
+  const email = licData?.lfp_active_email;
+  const isAdmin = licData?.lfp_admin_mode === true;
+  const plan = (license.plan || 'free').toLowerCase();
+
+  // Premiumまたは管理者は無制限表示なし
+  if (isAdmin || plan === 'premium') {
+    counterLabel.textContent = '';
+    return;
+  }
+
+  const isTrial = await checkProTrialStatus();
+  if (plan === 'pro' || plan === 'pro-trial' || (plan === 'free' && isTrial)) {
+    const count = (email && license.turboTrialCounts) ? (license.turboTrialCounts[email] || 0) : (license.turboTrialCount || 0);
+    counterLabel.textContent = `(試用中: ${count}/5)`;
+    if (count >= 5) {
+      counterLabel.style.color = '#dc3545'; // 赤色
+      counterLabel.textContent = `(試用制限: 5/5)`;
+    } else {
+      counterLabel.style.color = '#e67700'; // オレンジ
+    }
+  } else {
+    counterLabel.textContent = '';
+  }
 }
 
 // History functions
@@ -394,12 +1214,12 @@ async function loadHistoryList() {
     const statusClass = isError ? 'error' : 'completed';
 
     card.innerHTML = `
-      <div class="history-main">
-        <span class="history-asin">${item.asin}</span>
-        <span class="history-status ${statusClass}">${status}</span>
-      </div>
-      <button class="history-delete" data-asin="${item.asin}" title="この履歴を削除">×</button>
-    `;
+        <div class="history-main">
+          <span class="history-asin">${item.asin}</span>
+          <span class="history-status ${statusClass}">${status}</span>
+        </div>
+        <button class="history-delete" data-asin="${item.asin}" title="この履歴を削除">×</button>
+      `;
 
     card.querySelector('.history-delete').addEventListener('click', async () => {
       const asin = card.querySelector('.history-delete').dataset.asin;
@@ -412,6 +1232,26 @@ async function loadHistoryList() {
 
     listEl.appendChild(card);
   });
+}
+
+async function checkProTrialStatus() {
+  let trialStartDate = await chrome.storage.local.get(['lfp_pro_trial_start_date']);
+  trialStartDate = trialStartDate.lfp_pro_trial_start_date;
+
+  // トライアル開始日が未設定 → トライアルなし（サーバー同期で設定されるまで待つ）
+  if (!trialStartDate) {
+    return false;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const startStr = trialStartDate.split('T')[0];
+  const start = new Date(startStr + 'T00:00:00');
+  const current = new Date(today + 'T00:00:00');
+  if (isNaN(start.getTime())) return false;
+
+  const diffMs = current - start;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return (diffDays >= 0 && diffDays < 30);
 }
 
 function exportToSpreadsheet() {
