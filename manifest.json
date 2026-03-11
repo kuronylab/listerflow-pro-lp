@@ -12,7 +12,10 @@
   ],
   "host_permissions": [
     "https://app.yaballe.com/*",
-    "https://api.openai.com/*"
+    "https://api.openai.com/*",
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*",
+    "https://accounts.google.com/*"
   ],
   "background": {
     "service_worker": "src/sw/background.js"
@@ -23,6 +26,17 @@
         "https://app.yaballe.com/*"
       ],
       "js": [
+        "src/content/store.js",
+        "src/content/utils.js",
+        "src/content/license.js",
+        "src/content/history.js",
+        "src/content/history-ui.js",
+        "src/content/dom-helpers.js",
+        "src/content/vero.js",
+        "src/content/openai.js",
+        "src/content/optimize.js",
+        "src/content/observers.js",
+        "src/content/worktime.js",
         "src/content/content.js"
       ],
       "css": [
@@ -49,7 +63,10 @@
       "resources": [
         "src/popup/export.html",
         "src/popup/export.js",
-        "src/popup/export.css"
+        "src/popup/export.css",
+        "src/pages/purchase.html",
+        "src/pages/purchase.css",
+        "src/pages/purchase.js"
       ],
       "matches": [
         "<all_urls>"

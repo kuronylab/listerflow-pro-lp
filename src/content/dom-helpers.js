@@ -1,22 +1,16 @@
-/**
- * dom.js
- * DOM操作関連の関数
- */
+/* ListerFlow Pro – DOM helpers
+   ※ utils.js の normSpace(), readText() に依存
+   ※ content.js より前に読み込まれること
+*/
 
-import { normSpace } from './utils.js';
+/* ---------- DOM helpers ---------- */
 
-/**
- * テキストで要素を検索（ボタンやリンク）
- */
-export function findButtonByText(re) {
+function findButtonByText(re) {
   const btns = Array.from(document.querySelectorAll("button, a"));
   return btns.find(b => re.test(normSpace(b.textContent || ""))) || null;
 }
 
-/**
- * ボタンの近くにある入力欄を検索
- */
-export function findInputNearButton(btn) {
+function findInputNearButton(btn) {
   if (!btn) return null;
   const root = btn.closest("form, .row, .col, .panel, .card, .container, .form-group") || btn.parentElement;
   if (!root) return null;
@@ -26,10 +20,7 @@ export function findInputNearButton(btn) {
   return inputs[0] || null;
 }
 
-/**
- * ASIN入力欄をスマート検索
- */
-export function findAsinInputSmart(btnGet) {
+function findAsinInputSmart(btnGet) {
   const cands = Array.from(document.querySelectorAll("input, textarea"))
     .filter(el => el && el.offsetParent !== null && !el.disabled);
 
@@ -47,10 +38,7 @@ export function findAsinInputSmart(btnGet) {
   return hit || findInputNearButton(btnGet);
 }
 
-/**
- * ラベルから入力欄を検索
- */
-export function findLabelInput(labelRe) {
+function findLabelInput(labelRe) {
   const labels = Array.from(document.querySelectorAll("label, span, div"));
   const lab = labels.find(el => labelRe.test(normSpace(el.textContent || "")));
   if (!lab) return null;
@@ -65,15 +53,12 @@ export function findLabelInput(labelRe) {
   return inp;
 }
 
-/**
- * タイトル入力欄をスマート検索
- */
-export function findTitleFieldSmart() {
+function findTitleFieldSmart(ignoreVisibility = false) {
   let el = findLabelInput(/^(Title|Item Title|タイトル|商品タイトル)$/i);
   if (el) return el;
 
   const cands = Array.from(document.querySelectorAll("input[type='text'], textarea, [contenteditable='true']"))
-    .filter(x => x && x.offsetParent !== null && !x.disabled);
+    .filter(x => x && (ignoreVisibility || x.offsetParent !== null) && !x.disabled);
 
   let best = null;
   let bestScore = -1;
@@ -106,19 +91,13 @@ export function findTitleFieldSmart() {
   return el || null;
 }
 
-/**
- * 要素からテキストを読み取る
- */
-export function readText(el) {
+function readText(el) {
   if (!el) return "";
   if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") return el.value || "";
   return el.innerText || el.textContent || "";
 }
 
-/**
- * ネイティブのvalueセッターを使用して値を設定
- */
-export function setNativeValue(el, v) {
+function setNativeValue(el, v) {
   try {
     const value = v ?? "";
     const proto = el.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
@@ -131,20 +110,17 @@ export function setNativeValue(el, v) {
   }
 }
 
-/**
- * 入力欄に値を設定（イベント発火付き）
- */
-export function setInputValue(el, value) {
+function setInputValue(el, value) {
   if (!el) return;
   const v = value ?? "";
   if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-    el.focus({ preventScroll: true });
+    el.focus({ preventScroll: true });  // スクロールを防止
     setNativeValue(el, v);
     el.dispatchEvent(new Event("input", { bubbles: true }));
     el.dispatchEvent(new Event("change", { bubbles: true }));
     el.blur();
   } else if (el.getAttribute("contenteditable") === "true") {
-    el.focus({ preventScroll: true });
+    el.focus({ preventScroll: true });  // スクロールを防止
     document.execCommand("selectAll", false, null);
     document.execCommand("insertText", false, v);
     el.dispatchEvent(new Event("input", { bubbles: true }));
@@ -153,65 +129,46 @@ export function setInputValue(el, value) {
   }
 }
 
-/**
- * 要素が拡張機能のUI内にあるかチェック
- */
-export function isInsideLfp(node) {
-  if (!node || !node.parentElement) return false;
-  let p = node;
-  while (p) {
-    if (p.id === "lfp-ui-root" || (p.classList && p.classList.contains("lfp-ui-root"))) return true;
-    p = p.parentElement;
+function isInsideLfp(node) {
+  const el = (node && node.nodeType === 1) ? node : (node && node.parentElement) ? node.parentElement : null;
+  if (!el) return false;
+  return !!el.closest("#lfp-root, #lfp-asinbar, #lfp-quick-mip, #lfp-status-box");
+}
+
+/* ---------- Insert below Title ---------- */
+
+function insertBeforeVeroWarnings(statusBox) {
+  // div.asin-actionsを直接探す（Get Itemボタンを含む親コンテナ）
+  const asinActions = document.querySelector('div.asin-actions');
+
+  if (!asinActions) {
+    console.warn('[ListerFlow Pro] div.asin-actions not found, appending to body');
+    document.body.appendChild(statusBox);
+    return;
   }
-  return false;
-}
 
-/**
- * VeRO Warningsテキストブロックを抽出
- */
-export function extractWarningBlockText() {
-  const all = document.body.innerText || "";
-  const m = all.match(/Vero Warnings:[\s\S]*?(?=\n\n|\n[A-Z]|$)/i);
-  return m ? m[0] : "";
-}
+  // asin-actionsの次の兄弟要素を取得
+  const nextSibling = asinActions.nextElementSibling;
 
-/**
- * Protectedテキストを抽出
- */
-export function extractProtectedText() {
-  const all = document.body.innerText || "";
-  const lines = all.split("\n").map(x => x.trim());
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (/protected/i.test(line)) {
-      const context = lines.slice(Math.max(0, i - 2), i + 3).join(" ");
-      if (/item|product|listing|cannot|restricted|prohibited/i.test(context)) {
-        return line;
-      }
-    }
+  if (nextSibling) {
+    // asin-actionsの直後に挿入（Get Itemボタンのすぐ下）
+    asinActions.parentElement.insertBefore(statusBox, nextSibling);
+  } else {
+    // 次の兄弟がない場合はasin-actionsの直後に追加
+    asinActions.parentElement.appendChild(statusBox);
   }
-  
-  const m = all.match(/protected[\s\S]{0,100}/i);
-  return m ? m[0] : "";
 }
 
-/**
- * 重複エラーを抽出
- */
-export function extractDuplicationError() {
-  const all = document.body.innerText || "";
-  const m = all.match(/already\s+listed|duplicate|重複/i);
-  return m ? m[0] : "";
-}
+function insertBelowTitle(titleEl, root) {
+  const container =
+    titleEl.closest(".form-group, .form-row, .row, .field, .form-item, .ng-scope, .col, .card, .panel") ||
+    titleEl.closest("div") ||
+    titleEl.parentElement;
 
-/**
- * 実際のMIPボタンを検索
- */
-export function findRealMipButton() {
-  const btns = Array.from(document.querySelectorAll("button, a"));
-  return btns.find(b => {
-    const text = normSpace(b.textContent || "");
-    return /list\s+item\s+using\s+mip/i.test(text) || /move\s+it\s+to\s+production/i.test(text);
-  }) || null;
+  if (container && container.parentElement) {
+    if (container.nextSibling) container.parentElement.insertBefore(root, container.nextSibling);
+    else container.parentElement.appendChild(root);
+    return;
+  }
+  titleEl.parentElement?.appendChild(root);
 }
