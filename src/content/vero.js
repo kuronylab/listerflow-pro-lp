@@ -86,8 +86,18 @@ function parseVeroTerms(blockText) {
     const m = line.match(/^(title|brand)\s*:\s*(.+)$/i);
     if (m) {
       const kind = lc(m[1]);
-      const term = normSpace(m[2]);
-      if (term) terms.push({ kind, term });
+      const value = normSpace(m[2]);
+      if (value) {
+        if (kind === "title") {
+          // titleの場合のみ、空白で分割して個別の単語として扱う（例: original nes -> ["original", "nes"]）
+          const words = value.split(/\s+/).filter(Boolean);
+          for (const word of words) {
+            terms.push({ kind, term: word });
+          }
+        } else {
+          terms.push({ kind, term: value });
+        }
+      }
     }
   }
   return terms;

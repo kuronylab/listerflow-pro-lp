@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ページを離れるときにタイマーをクリア
-window.addEventListener('beforeunload', () => {
+window.addEventListener('pagehide', () => {
   if (workTimeUpdateInterval) {
     clearInterval(workTimeUpdateInterval);
     workTimeUpdateInterval = null;
@@ -427,26 +427,26 @@ async function loadAndDisplayStats() {
     if (statsElements.currentPlanName) {
       const currentPlan = (license.plan || 'free').toLowerCase();
       if (isAdmin) {
-        statsElements.currentPlanName.textContent = 'ADMIN';
+        statsElements.currentPlanName.textContent = 'Admin';
         statsElements.currentPlanName.className = 'plan-badge plan-admin';
       } else if (currentPlan === 'premium') {
-        statsElements.currentPlanName.textContent = `PREMIUM${cancelLabel}`;
+        statsElements.currentPlanName.textContent = `Premium${cancelLabel}`;
         statsElements.currentPlanName.className = 'plan-badge plan-premium';
       } else if (currentPlan === 'pro' || currentPlan === 'pro-trial') {
         const isTrialMode = (currentPlan === 'pro-trial') || trialStatus.active;
-        statsElements.currentPlanName.textContent = isTrialMode ? `PRO (TRIAL) 残り${trialStatus.daysLeft}日${cancelLabel}` : `PRO${cancelLabel}`;
+        statsElements.currentPlanName.textContent = isTrialMode ? `Pro (Trial) 残り${trialStatus.daysLeft}日${cancelLabel}` : `Pro${cancelLabel}`;
         statsElements.currentPlanName.className = 'plan-badge';
         statsElements.currentPlanName.style.backgroundColor = isTrialMode ? "#198754" : "#1a73e8";
         statsElements.currentPlanName.style.borderRadius = "9px";
         statsElements.currentPlanName.style.color = "#fff";
       } else if (currentPlan !== 'free') {
-        statsElements.currentPlanName.textContent = license.plan.toUpperCase();
+        statsElements.currentPlanName.textContent = license.plan.charAt(0).toUpperCase() + license.plan.slice(1);
         statsElements.currentPlanName.className = 'plan-badge plan-pro';
       } else if (isProTrial) {
-        statsElements.currentPlanName.textContent = 'PRO (TRIAL)';
+        statsElements.currentPlanName.textContent = 'Pro (Trial)';
         statsElements.currentPlanName.className = 'plan-badge plan-pro';
       } else {
-        statsElements.currentPlanName.textContent = 'FREE';
+        statsElements.currentPlanName.textContent = 'Free';
         statsElements.currentPlanName.className = 'plan-badge plan-free';
       }
     }

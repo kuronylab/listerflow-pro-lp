@@ -192,8 +192,9 @@ function handlePotentialSuccessModal(modal) {
       } catch(e) {}
 
       // ★ Turbo Mode の試用カウントを加算する（ターボ動作済の場合のみ）
-      // ※ turboListingModeは5回到達時にfalseになるため条件から外す
-      if (STORE.turboExecuted.optimizeCount > 0 && STORE.turboExecuted.mip) {
+      // 条件を緩和：ターボモードがONで、自動最適化または自動MIPが1回でも走っていればカウント
+      if (STORE.opt.turboListingMode && (STORE.turboExecuted.optimizeCount > 0 || STORE.turboExecuted.mip)) {
+        console.log(`[LFP] Turbo activity detected (Opt:${STORE.turboExecuted.optimizeCount}, MIP:${STORE.turboExecuted.mip}). Incrementing count.`);
         checkAndIncrementTurboCount();
       }
 
@@ -220,6 +221,7 @@ function handlePotentialSuccessModal(modal) {
 
           okButton.click();
           console.log('✅ [Auto OK] OKボタンを直接クリックしました');
+          if (typeof setBusy === 'function') setBusy(false);
 
           // 500ms後にフラグをリセット
           setTimeout(() => { okButtonClicked = false; }, 500);
@@ -246,6 +248,7 @@ function handlePotentialSuccessModal(modal) {
                 okButtonClicked = true;
                 currentOk.click();
                 console.log(`✅ [Auto OK] 監視によりOKボタンを自動クリックしました（${checkCount * 100}ms後）`);
+                if (typeof setBusy === 'function') setBusy(false);
                 setTimeout(() => { okButtonClicked = false; }, 500);
               }
             } else if (checkCount >= 30) {

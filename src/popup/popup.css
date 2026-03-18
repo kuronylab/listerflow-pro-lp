@@ -236,7 +236,6 @@ body {
   font-weight: 700;
   margin-left: 4px;
   vertical-align: middle;
-  text-transform: uppercase;
 }
 
 .badge-free {
@@ -256,7 +255,6 @@ body {
   border-radius: 9px;
   font-size: 12px;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 

@@ -44,9 +44,6 @@ async function refreshListingCountUI() {
   if (!UI.listingCountLabel || !UI.listingCountLabel.isConnected) return;
   if (!isExtensionContextValid()) return;
 
-  // ライセンス情報を再読み込み（同期用）
-  await loadLicenseData();
-
   try {
     const stats = await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
     if (!stats) return;
@@ -153,10 +150,23 @@ async function refreshListingCountUI() {
       <span class="lfp-time-val" style="margin-left: 15px; color: #111; font-weight: bold; display: ${panelDisplay};">本日の作業時間: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: ${flexDisplay}; align-items: center;"></span>
       <span class="lfp-rank-badge" style="margin-left: 10px; display: ${rankDisplay}; color: ${color}; background-color: ${bgColor}; border: 1px solid ${color}44; padding: 1px 10px; border-radius: 12px; font-size: 0.85em;">${rankContent}</span>
-      <span class="lfp-plan-badge-inline" style="margin-left: 8px; display: ${planBadgeDisplay}; padding: 2px 6px; border-radius: 9px; color: #fff; background-color: ${planBadgeBg}; font-size: 11px; font-weight: bold;">${planBadgeText}</span>
+      <span class="lfp-plan-badge-inline" title="プラン詳細・変更はこちら" style="margin-left: 8px; display: ${planBadgeDisplay}; padding: 2px 6px; border-radius: 9px; color: #fff; background-color: ${planBadgeBg}; font-size: 11px; font-weight: bold; cursor: pointer;">${planBadgeText}</span>
       <span class="lfp-trial-val" style="display: none; margin-left: 12px; font-weight: bold; font-size: 11px; padding: 2px 6px; border: 1px solid transparent; border-radius: 4px;"></span>
       <span class="lfp-admin-val" style="display: none; margin-left: 8px; font-weight: bold; font-size: 11px; padding: 2px 6px; border: 1px solid transparent; border-radius: 4px;"></span>
     `;
+
+    // バッジクリックで購読ページへ（委譲リスナー）
+    if (!UI.listingCountLabel.dataset.lfpLinked) {
+      UI.listingCountLabel.dataset.lfpLinked = "1";
+      UI.listingCountLabel.addEventListener('click', (e) => {
+        const badge = e.target.closest('.lfp-plan-badge-inline');
+        if (badge) {
+          console.log('[LFP] Plan badge clicked. Opening purchase page...');
+          chrome.runtime.sendMessage({ type: "LFP_OPEN_PAGE", path: "src/pages/purchase.html" });
+        }
+      });
+    }
+
       await createPauseResumeButton();
     } else {
       // 部分更新
@@ -175,6 +185,14 @@ async function refreshListingCountUI() {
         timeSpan.style.color = "#111";
         timeSpan.style.fontWeight = "bold";
         timeSpan.style.display = panelDisplay;
+      }
+
+      if (planSpan) {
+        planSpan.textContent = planBadgeText;
+        planSpan.style.backgroundColor = planBadgeBg;
+        planSpan.style.display = planBadgeDisplay;
+        planSpan.style.cursor = "pointer";
+        planSpan.title = "プラン詳細・変更はこちら";
       }
 
       // ボタンのコンテナも制御

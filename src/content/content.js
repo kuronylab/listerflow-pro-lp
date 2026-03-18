@@ -153,7 +153,8 @@ function setBadge(text) {
   UI.badge.textContent = text || "";
 }
 
-function resetUIState() {
+function resetAllFlags() {
+  uiUnlocked = false; // 明示的にロック状態に戻す
   setBadge("");
   if (UI.btnOpt) {
     UI.btnOpt.disabled = false;
@@ -173,8 +174,7 @@ function resetUIState() {
   // MIPボタンの点滅防止フラグをリセット（次のASINで正しく再判定）
   if (UI.quickMipBtn) UI.quickMipBtn._wasEnabled = false;
 
-  // 出品成功判定フラグはここではなくhandleGetItemClickでASIN変更時にリセット
-  // okButtonClicked = false; // 削除: 二重表示防止のため
+  okButtonClicked = false; 
   listingCounted = false;
   STORE.turboExecuted.mip = false;
   STORE.turboExecuted.optimizeCount = 0;
@@ -252,7 +252,7 @@ function lockUI() {
   uiUnlocked = false;
   // UIを完全に消去して、次のタイトル出現まで待機する
   destroyMainUI();
-  // MIPボタンは削除せず、常時グレーアウト表示を維持（resetUIStateで無効化済み）
+  // MIPボタンは削除せず、常時グレーアウト表示を維持（resetAllFlagsで無効化済み）
 }
 
 function unlockUI(titleEl) {
@@ -354,15 +354,19 @@ async function handleTurboListing(titleEl, btnGet) {
   // ★ 「出品：OK」（「（最適化後）」なし）= 最適化済み → MIPボタンを押す
   else if (statusText.includes("出品：OK") && !statusText.includes("（最適化後）")) {
     if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
-      // 最適化実行中（API待ち）ならスキップ
-      if (optimizeRunning) return;
+      // 最適化実行中（API待ち）ならスキップ（連打防止）
+      if (typeof optimizeRunning !== 'undefined' && optimizeRunning) return;
 
       console.log("[LFP] Turbo: 自動MIPボタンをクリック");
       STORE.turboExecuted.mip = true; // 実行済みフラグを先に立てる
 
-      // 少し待機してから実行
+      // 少し待機してから実行（DOMの安定待ち）
       setTimeout(() => {
-        clickRealMipButton();
+        const success = clickRealMipButton();
+        if (!success) {
+          // クリックに失敗した場合はフラグを戻して再試行を可能にする
+          STORE.turboExecuted.mip = false;
+        }
       }, 250);
     }
   }
@@ -378,6 +382,12 @@ async function checkAndIncrementTurboCount() {
   
   if (currentPlan !== 'pro' && currentPlan !== 'pro-trial') {
     console.log(`[LFP] Turbo count increment skipped for plan: ${currentPlan}`);
+    return;
+  }
+
+  // メモリ上で既に制限到達（5回）が確認されている場合は、無駄なストレージアクセスをスキップ
+  if (STORE.turboTrialAlertShown) {
+    console.log(`[LFP] Turbo limit already reached today in memory. Skipping storage check.`);
     return;
   }
 
@@ -401,6 +411,8 @@ async function checkAndIncrementTurboCount() {
     const currentCount = email ? license.turboTrialCounts[email] : license.turboTrialCount;
 
     if (currentCount >= 5) {
+      console.log(`[LFP] Turbo limit reached (Count: ${currentCount}). Disabling Turbo Mode.`);
+      
       STORE.opt.turboListingMode = false;
       const optionsData = await chrome.storage.sync.get(['lfp_options_v1']);
       const opt = optionsData?.lfp_options_v1 || {};
@@ -408,12 +420,21 @@ async function checkAndIncrementTurboCount() {
       await chrome.storage.sync.set({ 'lfp_options_v1': opt });
       
       const disableKey = email ? `lfp_turbo_auto_disabled_${email}` : 'lfp_turbo_auto_disabled';
-      await chrome.storage.local.set({ [disableKey]: true, 'lfp_turbo_auto_disabled': true });
+      const alertKey = email ? `lfp_turbo_pending_alert_${email}` : 'lfp_turbo_pending_alert';
+      
+      // 永続フラグをセット（ページリフレッシュ対策）
+      await chrome.storage.local.set({ 
+        [disableKey]: true, 
+        'lfp_turbo_auto_disabled': true,
+        [alertKey]: true,
+        'lfp_turbo_pending_alert': true 
+      });
       
       STORE.turboTrialAlertShown = true;
-      // OKボタンクリックを邪魔しないように少し遅延させてからアラート表示
+      console.log("[LFP] Turbo limit reached. Alert pending.");
+      // 即座に表示も試みる（ページがリロードされない場合のため）
       setTimeout(() => {
-        showLfpAlert("本日のTurbo Mode試用制限（5回）に達しました。\n次回以降は自動でOFFになります。\nPremiumプランにアップグレードすると無制限に利用可能です。", "Premium限定機能");
+        showTurboLimitAlert();
       }, 1500);
     }
   } catch (err) {
@@ -421,34 +442,55 @@ async function checkAndIncrementTurboCount() {
   }
 }
 
+// アラートの二重表示防止フラグ
+let turboAlertShowing = false;
+
+/**
+ * Turbo Mode制限のアラートを表示する共通関数
+ */
+async function showTurboLimitAlert() {
+  if (turboAlertShowing) return;
+  turboAlertShowing = true;
+
+  const email = getYaballeCurrentEmail();
+  const alertKey = email ? `lfp_turbo_pending_alert_${email}` : 'lfp_turbo_pending_alert';
+  
+  // フラグをクリアしてから表示（二重表示防止）
+  await chrome.storage.local.remove([alertKey, 'lfp_turbo_pending_alert']);
+  
+  await showLfpAlert("本日のTurbo Mode試用制限（5回）に達しました。\n自動MIP機能（Turbo Mode）は自動でOFFになりました。\n\nPremiumプランにアップグレードすると無制限に利用可能です。", "Premium限定機能");
+  
+  // 表示が終わったらメモリフラグを完全リセット
+  resetAllFlags();
+  turboAlertShowing = false;
+}
+
 let initRunning = false;
 
 async function init() {
   if (initRunning) return;
 
-  // エクステンションコンテキストの有効性をチェック
-  if (!isExtensionContextValid()) {
-    console.log("[LFP] エクステンションコンテキストが無効です。初期化をスキップします。");
-    return;
-  }
-
-  // チラつき防止：成功/エラーモーダルが表示されている間は、現在のUIの状態を維持したまま処理を抜ける
-  // これにより、モーダル出現時にタイトル要素が一時的に隠れてUIが消去されるのを防ぐ
-  // offsetParentのチェックを外すことで、レンダリング直前のモーダルも早期に捉える
-  const modal = document.querySelector('.modal, [role="dialog"]');
-  if (modal && !modal.dataset.lfpModal) {
-    return;
-  }
-
   initRunning = true;
+  console.log('🔄 [LFP] init starting...');
 
   try {
+    // 頻繁なストレージ読み込みを抑制
     await loadOptions();
-    if (!isListerRoute()) { lockUI(); return; }
+
+    if (!isListerRoute()) { 
+      console.log('[LFP] Not a lister route. Skipping UI init.');
+      lockUI(); 
+      return; 
+    }
 
     const btnGet = findButtonByText(/^Get Item$/i);
     const asinInput = findAsinInputSmart(btnGet);
-    // 存在確認は非表示（モーダルによる隠蔽など）でもOKとする
+    
+    if (!asinInput) {
+      console.log('[LFP] ASIN input not found yet. Skipping UI init.');
+      return;
+    }
+
     const titleEl = findTitleFieldSmart(true);
 
     if (STORE.opt.historyEnabled && asinInput && (!UI.asinBar || !UI.asinBar.isConnected)) {
@@ -591,7 +633,7 @@ async function init() {
 
         // クリップボードにコピー（フォーカス喪失時のフォールバック付き）
         copyToClipboard(finalCopyText).then(() => {
-          copyBtn.textContent = "✅ コピー完了！";
+          copyBtn.textContent = "✅完了";
           setTimeout(() => {
             copyBtn.textContent = "📋コピー";
           }, 2000);
@@ -733,7 +775,7 @@ async function init() {
             refreshHistorySelect();
           }
         } else if (message.type === 'RESET_UI') {
-          resetUIState();
+          resetAllFlags();
           // ASIN入力欄もクリア
           const asinInput = findAsinInputSmart();
           if (asinInput) setInputValue(asinInput, "");
@@ -745,10 +787,11 @@ async function init() {
     }
 
   } catch (err) {
-    console.error('[LFP] init error:', err);
-    // Extension context invalidatedの場合はリカバリーを試行
-    if (err.message && err.message.includes('Extension context invalidated')) {
-      attemptRecovery();
+    if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(err)) {
+      console.error('[LFP] Extension context invalidated detected in init');
+      if (typeof attemptRecovery === 'function') attemptRecovery();
+    } else {
+      console.error('[LFP] init error:', err);
     }
   } finally {
     initRunning = false;
@@ -941,8 +984,7 @@ window.addEventListener('focus', async () => {
 
     // エクステンションコンテキストの有効性をチェック
     if (!isExtensionContextValid()) {
-      console.log('⚠️ [Focus Recovery] エクステンションコンテキストが無効です。リカバリーを試行します。');
-      await attemptRecovery();
+      console.log('[LFP] フォーカス検知によりコンテキスト無効化を確認（更新済み）。自動リカバリーをスキップします。');
       return;
     }
 
@@ -1002,8 +1044,11 @@ function startHealthCheck() {
 
       // エクステンションコンテキストの有効性をチェック
       if (!isExtensionContextValid()) {
-        console.log('⚠️ [Health Check] エクステンションコンテキストが無効です');
-        await attemptRecovery();
+        console.log('[LFP] ヘルスチェックによりコンテキスト無効化を検知（拡張機能が更新されました）。監視を停止します。');
+        if (healthCheckInterval) {
+          clearInterval(healthCheckInterval);
+          healthCheckInterval = null;
+        }
         return;
       }
 
@@ -1129,17 +1174,46 @@ function setupGlobalEventListeners() {
   document.addEventListener("paste", async (e) => {
     const asinInput = findAsinInputSmart();
     if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
+      console.log("📝 [LFP] Paste detected. Triggering automation.");
       // ペースト後の値を取得するため少しまつ
       if (!STORE.opt.autoGetOnPaste) return;
       const t = now();
-      if (t - lastPasteAt < 800) return;
+      if (t - lastPasteAt < 800) {
+        console.log("⚠️ [LFP] Paste debounced.");
+        return;
+      }
       lastPasteAt = t;
 
-      await onAsinInput();
+      // フラグを強制リセット
+      okButtonClicked = false;
+      listingCounted = false;
+      STORE.turboExecuted.optimizeCount = 0;
+      STORE.turboExecuted.mip = false;
+      STORE.optimizeState.lastOutputs = [];
+      
+      const newAsin = normSpace(asinInput.value || "");
+      if (newAsin) STORE.lastRequestedAsin = newAsin;
+
+      // オートメーションを阻害しないよう、非ブロッキングで実行
+      onAsinInput().catch(e => console.error('[LFP] onAsinInput error:', e));
       lockUI();
+      
       await sleep(100); // 貼り付け完了を待つ
+      
       const btnGet = findButtonByText(/^Get Item$/i);
-      btnGet?.click();
+      console.log("🚀 [LFP] Clicking Get Item automatically.");
+      
+      // 文字数計算等の重い処理を待たずに即座にクリック
+      handleGetItemClick().then(() => {
+        if (btnGet && btnGet.isConnected) {
+          console.log("🎯 [LFP] Triggering click on Get Item.");
+          btnGet.click();
+        }
+      }).catch(e => {
+        console.error('[LFP] handleGetItemClick error:', e);
+        // 万が一エラーになってもクリックだけは試みる
+        btnGet?.click();
+      });
     }
   }, true);
 
@@ -1159,14 +1233,29 @@ function setupGlobalEventListeners() {
 
       // デバウンス: 500ms待って入力が安定してから判定
       if (asinInputDebounceTimer) clearTimeout(asinInputDebounceTimer);
-      asinInputDebounceTimer = setTimeout(() => {
+      asinInputDebounceTimer = setTimeout(async () => {
         const val = normSpace(asinInput.value || "");
         // B0で始まる10桁の英数字かチェック
         if (/^B0[A-Z0-9]{8}$/i.test(val)) {
           console.log(`🚀 [LFP] ASIN形式検出、自動Get Itemを実行: ${val}`);
           lockUI();
-          const btnGet = findButtonByText(/^Get Item$/i);
-          btnGet?.click();
+          
+          STORE.turboExecuted.optimizeCount = 0;
+          STORE.turboExecuted.mip = false;
+          STORE.optimizeState.lastOutputs = [];
+          STORE.lastRequestedAsin = val;
+          
+          // 非ブロッキング実行
+          handleGetItemClick().then(() => {
+            const btnGet = findButtonByText(/^Get Item$/i);
+            if (btnGet && btnGet.isConnected) {
+              console.log("🎯 [LFP] Triggering click on Get Item (from input listener).");
+              btnGet.click();
+            }
+          }).catch(e => {
+             console.error('[LFP] handleGetItemClick (input) error:', e);
+             findButtonByText(/^Get Item$/i)?.click();
+          });
         }
       }, 500);
     }
@@ -1185,7 +1274,7 @@ async function handleGetItemClick() {
   const asinInput = findAsinInputSmart(btnGet);
 
   // 前回の判定結果が残らないように毎回リセット
-  resetUIState();
+  resetAllFlags();
 
   // 前回のタイトルを記録（画面更新検出用）
   let t = findTitleFieldSmart();
@@ -1193,11 +1282,13 @@ async function handleGetItemClick() {
     STORE.lastTitle = normSpace(readText(t));
   }
 
-  // 最後にリクエストしたASINを記録
+// 最後にリクエストしたASINを記録
   const asin = normSpace(asinInput?.value || "");
   if (asin) {
+    console.log(`🚀 [LFP] handleGetItemClick for ASIN: ${asin}`);
     // ASINが新しくなった場合のみ、ボタンクリック履歴をリセット（同一ASIN内での二重動作を防止）
     if (STORE.lastRequestedAsin !== asin) {
+      console.log("🔄 [LFP] New ASIN detected. Resetting automation flags.");
       okButtonClicked = false;
       listingCounted = false;
     }
@@ -1219,3 +1310,21 @@ async function handleGetItemClick() {
 
 
 /* ========== 作業時間計測 / 統計ポップアップは worktime.js に分離済み ========== */
+
+/**
+ * 起動時に一度だけ保留中のTurbo警告をチェックする
+ */
+async function checkPendingTurboAlert() {
+  try {
+    const email = getYaballeCurrentEmail();
+    const alertKey = email ? `lfp_turbo_pending_alert_${email}` : 'lfp_turbo_pending_alert';
+    const pendingData = await chrome.storage.local.get([alertKey, 'lfp_turbo_pending_alert']);
+    if (pendingData[alertKey] || pendingData['lfp_turbo_pending_alert']) {
+      console.log("⚠️ [LFP] Pending Turbo alert found at startup.");
+      setTimeout(() => {
+        showTurboLimitAlert();
+      }, 2000); 
+    }
+  } catch (e) {}
+}
+checkPendingTurboAlert();

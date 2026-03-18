@@ -187,7 +187,7 @@
   padding: 8px 12px;
   background: #fff;
   border-bottom: 1px solid #e9ecef;
-  height: 48px;
+  height: 42px;
   flex-shrink: 0;
 }
 
@@ -203,10 +203,20 @@
 }
 
 .lfp-stats-popup .title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #212529;
   flex: 1;
+}
+
+.lfp-stats-popup .plan-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
 }
 
 /* サイドメニュー (scoped) */
@@ -284,7 +294,7 @@
 .lfp-stats-popup .content {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 8px;
 }
 
 .lfp-stats-popup .page {
@@ -300,8 +310,8 @@
 .lfp-stats-popup .setting-section {
   background: #fff;
   border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 8px;
+  margin-bottom: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -309,7 +319,8 @@
 .lfp-stats-popup .setting-section h2 {
   font-size: 13px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 4px;
   color: #495057;
 }
 
@@ -325,7 +336,7 @@
 
 .lfp-stats-popup .stat-item {
   text-align: center;
-  padding: 8px 4px;
+  padding: 6px 4px;
   background: #f8f9fa;
   border-radius: 6px;
   border: 1px solid #e9ecef;
@@ -338,10 +349,53 @@
 }
 
 .lfp-stats-popup .stat-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #007bff;
   line-height: 1.2;
+}
+
+/* ランクバッジとエラー率バッジのサイズを統一 (popup.cssから移植) */
+.lfp-stats-popup .rank-badge,
+.lfp-stats-popup #errorRateBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+  border: 1px solid transparent;
+  margin-left: 6px;
+}
+
+.lfp-stats-popup .rank-fastest {
+  color: #6f42c1;
+  background-color: #f3e5f5;
+  border-color: rgba(111, 66, 193, 0.2);
+}
+
+.lfp-stats-popup .rank-fast {
+  color: #007bff;
+  background-color: #e7f3ff;
+  border-color: rgba(0, 123, 255, 0.2);
+}
+
+.lfp-stats-popup .rank-normal {
+  color: #28a745;
+  background-color: #e8f5e9;
+  border-color: rgba(40, 167, 69, 0.2);
+}
+
+.lfp-stats-popup .rank-slow {
+  color: #ffc107;
+  background-color: #fffde7;
+  border-color: rgba(255, 193, 7, 0.2);
+}
+
+.lfp-stats-popup .rank-very-slow {
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border-color: rgba(108, 117, 125, 0.2);
 }
 
 /* トグルスイッチ (scoped) */
@@ -431,11 +485,11 @@
   background: none;
   border: none;
   color: #6c757d;
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: underline;
   cursor: pointer;
   display: block;
-  margin: 8px auto;
+  margin: 0 auto;
 }
 
 /* アニメーション */

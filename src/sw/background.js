@@ -459,7 +459,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
             response = await fetch(LFP_LICENSE_API_URL, {
               method: "POST",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              headers: { "Content-Type": "text/plain" },
               body: JSON.stringify(payload),
               redirect: "follow",
               credentials: "omit",
@@ -486,7 +486,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             message: fetchErr.message,
             stack: fetchErr.stack,
             type: fetchErr instanceof TypeError ? 'Network/CORS/Permission Error' : 'Other Error',
-            url: LFP_LICENSE_API_URL
+            url: LFP_LICENSE_API_URL,
+            online: navigator.onLine,
+            timestamp: new Date().toISOString()
           };
           console.error('[LFP-SW] サーバー通信致命的エラー詳細:', JSON.stringify(errorInfo, null, 2));
           throw fetchErr;
@@ -535,6 +537,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ ok: false, error: err.message });
       }
     })();
+    return true;
+  }
+
+  // 拡張機能内ページを開く（購入ページなど）
+  if (msg.type === "LFP_OPEN_PAGE") {
+    const url = chrome.runtime.getURL(msg.path);
+    chrome.tabs.create({ url });
+    sendResponse({ ok: true });
     return true;
   }
 });

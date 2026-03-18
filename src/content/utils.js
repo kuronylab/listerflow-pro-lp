@@ -270,12 +270,13 @@ function showLfpAlert(message, title = 'お知らせ') {
 
 // エクステンションコンテキストの有効性チェック
 function isExtensionContextValid() {
-  try {
-    // chrome.runtime.idが存在し、chrome.storageにアクセスできるかチェック
-    return !!(chrome && chrome.runtime && chrome.runtime.id && chrome.storage && chrome.storage.sync);
-  } catch (e) {
-    return false;
-  }
+  return !!chrome.runtime && !!chrome.runtime.id;
+}
+
+// エラーがエクステンションコンテキスト無効によるものか判定
+function isContextInvalidatedError(err) {
+  const msg = (err && err.message) || (err && err.toString()) || "";
+  return msg.includes('Extension context invalidated') || msg.includes('context_invalidated');
 }
 
 // エクステンションコンテキスト無効時のリカバリー処理
@@ -284,12 +285,14 @@ const MAX_RECOVERY_ATTEMPTS = 3;
 
 async function attemptRecovery() {
   if (recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
-    console.log("[LFP] リカバリー試行回数上限に達しました。ページをリロードしてください。");
+    console.warn("[LFP] リカバリー試行回数上限に達しました。ページをリロードします。");
+    alert("拡張機能が更新されました。最新の状態を反映するため、ページを再読み込みしてください。");
+    window.location.reload();
     return false;
   }
 
   recoveryAttempts++;
-  console.log(`[LFP] リカバリー試行 ${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS}`);
+  console.log(`[LFP] 拡張機能が更新された可能性があるためリカバリーを試行中 (${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS})`);
 
   // 全てのフラグをリセット
   resetAllFlags();
@@ -317,6 +320,7 @@ function resetAllFlags() {
   optimizeRunning = false;
   historyLock = false;
   // okButtonClicked = false; // ASIN変更時以外はリセットしない（二重表示防止）
+  uiUnlocked = false; 
 
   // setIntervalをクリア
   if (okButtonCheckInterval) {

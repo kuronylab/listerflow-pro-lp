@@ -42,51 +42,56 @@ async function evaluateAndRender({ titleEl, btnGet }) {
 
   // title: のチェック（案7）
   let hasTitleVeroWarning = false;
-  const fullText = block || "";
-  const veroTitleMatch = fullText.match(/Vero Warnings:[\s\S]*?title:\s*(.+?)(?:\n|$)/i);
-  if (veroTitleMatch) {
-    const veroWords = veroTitleMatch[1].trim().split(/\s+/);
-    const currentTitle = (title || "").toLowerCase();
+  if (titleTerms.length > 0) {
+    const currentTitleLower = (title || "").toLowerCase();
+    const veroWords = titleTerms.map(t => t.term.toLowerCase());
 
-    // title: 内の単語がタイトルに含まれている数をカウント（表示用）
-    const titleVeroCount = veroWords.filter(word => {
-      const esc = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const re = new RegExp(`\\b${esc}\\b`, "i");
-      return re.test(currentTitle);
-    }).length;
+    // ハイリスク・キーワードの定義（単体で残っているだけで警戒が必要なもの）
+    const highRiskKeywords = ["nintendo", "playstation", "sony", "microsoft", "apple", "disney", "grinch", "pokemon", "lego"];
 
-    veroCountForDisplay += titleVeroCount;  // 表示用のみ加算
+    // 判定用：一つでもハイリスク語が含まれているか
+    const containsHighRisk = veroWords.some(word => highRiskKeywords.includes(word));
 
     // すべてのVero単語がタイトルに「単語として」含まれているかチェック（判定用）
     const allVeroWordsPresent = veroWords.every(word => {
       const esc = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const re = new RegExp(`\\b${esc}\\b`, "i");
-      return re.test(currentTitle);
+      return re.test(currentTitleLower);
+    });
+
+    // 一部のVero単語が残っているかチェック
+    const someVeroWordsPresent = veroWords.some(word => {
+      const esc = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(`\\b${esc}\\b`, "i");
+      return re.test(currentTitleLower);
     });
 
     // Yaballe公式ルール：「FOR」「COMPATIBLE WITH」「FITS」があれば許容
-    const hasCompatibilityPhrase = /\b(for|compatible\s+with|fits)\b/i.test(currentTitle);
+    const hasCompatibilityPhrase = /\b(for|compatible\s+with|fits)\b/i.test(currentTitleLower);
 
-    if (allVeroWordsPresent) {
-      // すべての単語が残っている場合
-      if (hasCompatibilityPhrase) {
-        // 互換性を示す言い回しがあればOK
-        hasTitleVeroWarning = false;
-        console.log(`✅ [Vero Title] 互換性表現あり。VeRO単語: ${veroWords.join(', ')}`);
-      } else {
-        // 互換性表現がなければNG
+    if (containsHighRisk) {
+      // ハイリスク語が含まれる場合：一つでも残っていればNG
+      if (someVeroWordsPresent) {
         hasTitleVeroWarning = true;
-        console.log(`⚠️ [Vero Title] すべてのVero単語が残っており、互換性表現なし: ${veroWords.join(', ')}`);
+        console.log(`⚠️ [Vero Title] ハイリスク語が残っています: ${veroWords.join(', ')}`);
+      } else {
+        hasTitleVeroWarning = false;
+        console.log(`✅ [Vero Title] ハイリスク語がすべて削除されました。`);
       }
     } else {
-      // 一部でも削除されていればOK
-      const remainingWords = veroWords.filter(word => {
-        const esc = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const re = new RegExp(`\\b${esc}\\b`, "i");
-        return re.test(currentTitle);
-      });
-      hasTitleVeroWarning = false;
-      console.log(`✅ [Vero Title] 最適化済み。残っている単語: ${remainingWords.join(', ')}`);
+      // 通常のキーワードの場合
+      if (allVeroWordsPresent) {
+        if (hasCompatibilityPhrase) {
+          hasTitleVeroWarning = false;
+          console.log(`✅ [Vero Title] 互換性表現あり。VeRO単語: ${veroWords.join(', ')}`);
+        } else {
+          hasTitleVeroWarning = true;
+          console.log(`⚠️ [Vero Title] すべてのVero単語が残っており、互換性表現なし: ${veroWords.join(', ')}`);
+        }
+      } else {
+        hasTitleVeroWarning = false;
+        console.log(`✅ [Vero Title] 一部またはすべてのVero単語が削除されました。`);
+      }
     }
   }
 
@@ -129,7 +134,7 @@ async function evaluateAndRender({ titleEl, btnGet }) {
     if (UI.quickMipBtn) {
       const shouldEnable = (reasons.length === 0 && len >= 70 && len <= 80 && veroCountForCheck === 0 && !hasTitleVeroWarning);
 
-      // 点滅防止: 一度有効になったボタンを無効に戻さない（新しいASIN取得時にresetUIStateでリセット済み）
+      // 点滅防止: 一度有効になったボタンを無効に戻さない（新しいASIN取得時にresetAllFlagsでリセット済み）
       if (shouldEnable || !UI.quickMipBtn._wasEnabled) {
         UI.quickMipBtn.disabled = !shouldEnable;
         if (shouldEnable) UI.quickMipBtn._wasEnabled = true;
@@ -180,23 +185,33 @@ async function evaluateAndRender({ titleEl, btnGet }) {
 let optimizeRunning = false;
 
 async function onOptimizeClick({ titleEl }) {
-  // 1. 利用制限チェック（Basicプランは1日2回に増加）
-  const canExecute = await checkUsageLimit();
-  if (!canExecute) return;
-
-  // すでに出品中（MIP後）なら一切動作させない
-  if (STORE.turboExecuted.mip) return;
-
-  // 連打防止（APIリクエスト中のみ）
   if (optimizeRunning) return;
   optimizeRunning = true;
 
   try {
-    await loadOptions();
+    // 1. 利用制限チェック（Basicプランは1日2回に増加）
+    const canExecute = await checkUsageLimit();
+    if (!canExecute) return;
+
+    // すでに出品中（MIP後）なら一切動作させない
+    if (STORE.turboExecuted.mip) return;
+
+    try {
+      await loadOptions();
+    } catch(e) {
+      if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(e)) {
+        throw e; // Throw to the top-level catch
+      }
+      // Other loadOptions errors can be handled here if needed, or rethrown
+      console.error('[LFP] Error loading options:', e);
+      setBadge("設定の読み込みに失敗しました。");
+      return;
+    }
 
     if (!STORE.opt.apiKey) {
       setBadge("API key未設定");
       ensureUIBelowTitle(titleEl);
+      return; // Exit if no API key
     }
 
     const currentTitle = normSpace(readText(titleEl));
@@ -281,13 +296,11 @@ async function onOptimizeClick({ titleEl }) {
         console.error('[LFP] OpenAI API Error:', e);
 
         // Extension context invalidated エラーのハンドリング
-        if (e.message && (e.message.includes('Extension context invalidated') || e.message.includes('context_invalidated'))) {
-          alert('拡張機能が更新されました。正常に動作させるためにページを再読み込みしてください。');
+        if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(e)) {
+          setBadge("拡張機能が更新されました。再読み込みしてください。");
+          throw e; // Top-level catchへ
         }
-
-        setBusy(false);
-        optimizeRunning = false;
-        return;
+        return; // Exit the function
       }
     }
 
@@ -378,6 +391,11 @@ async function onOptimizeClick({ titleEl }) {
             }
           } catch (e) {
             console.error('[LFP] Veroリトライ中のAPIエラー:', e);
+            if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(e)) {
+              throw e; // Throw to the top-level catch
+            }
+            // Other API errors during retry should break the retry loop
+            setBadge("Veroリトライ中にAPIエラーが発生しました。");
             break;
           }
         }
@@ -409,6 +427,14 @@ async function onOptimizeClick({ titleEl }) {
       }
     }
 
+  } catch (err) {
+    if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(err)) {
+      console.log('[LFP] 拡張機能の更新によりコンテキストが無効化されました (onOptimizeClick)');
+      setBadge("拡張機能が更新されました。リロードしてください。");
+      if (typeof attemptRecovery === 'function') attemptRecovery();
+    } else {
+      console.error('[LFP] onOptimizeClick error:', err);
+    }
   } finally {
     // 成功・失敗・中断に関わらず、必ずフラグと表示をリセットする
     optimizeRunning = false;

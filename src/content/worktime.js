@@ -8,12 +8,18 @@
 /* ========== 作業時間計測ロジック（ASIN入力起点） ========== */
 
 // workTimeUpdateInterval は store.js で宣言済み
+let statsPopupUpdateInterval = null;
 
 /**
  * 統計情報の読み込み（バックグラウンドから取得）
  */
 async function loadStatistics() {
-  return await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
+  if (!isExtensionContextValid()) return null;
+  try {
+    return await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
+  } catch (err) {
+    return null;
+  }
 }
 
 /**
@@ -29,9 +35,14 @@ async function saveStatistics(stats) {
  * 作業時間計測の開始（ASIN入力時）
  */
 async function startWorkTimeSession() {
-  // SW側のタイマーを開始させる
-  await chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
-  console.log('[LFP] 作業時間計測セッション開始');
+  if (!isExtensionContextValid()) return;
+  try {
+    // SW側のタイマーを開始させる
+    await chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
+    console.log('[LFP] 作業時間計測セッション開始');
+  } catch (err) {
+    // ignore invalidated context
+  }
 }
 
 /**
@@ -78,14 +89,18 @@ async function togglePauseResume() {
       stats.currentSessionElapsedMs = 0;
     }
     // バックグラウンドタイマー停止通知
-    chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "stop" });
+    if (isExtensionContextValid()) {
+      chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "stop" }).catch(() => {});
+    }
   } else {
     console.log('[LFP] カウンター再開');
     stats.currentSessionStartTime = now;
     stats.currentSessionElapsedMs = 0;
     stats.lastAsinInputTime = now;
     // バックグラウンドタイマー開始通知
-    chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
+    if (isExtensionContextValid()) {
+      chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" }).catch(() => {});
+    }
     startRealtimeCounter();
   }
 
@@ -204,7 +219,7 @@ function stopWorkTimeUpdateTimer() {
 }
 
 // エクステンションコンテキストが無効化された際のクリーンアップ
-window.addEventListener('unload', () => {
+window.addEventListener('pagehide', () => {
   stopWorkTimeUpdateTimer();
   if (observersInitialized) {
     // MutationObserverの停止などは必要に応じて追加
@@ -220,15 +235,8 @@ setInterval(() => {
 
 /* ---------- 統計ポップアップ ---------- */
 
-/**
- * 拡張機能のコンテキストが有効かチェック
- */
-function isExtensionValid() {
-  return typeof chrome !== 'undefined' && chrome.runtime && !!chrome.runtime.id;
-}
-
 async function toggleStatsPopup() {
-  if (!isExtensionValid()) {
+  if (!isExtensionContextValid()) {
     alert("拡張機能が更新されました。ページをリロードして再度お試しください。");
     return;
   }
@@ -237,6 +245,10 @@ async function toggleStatsPopup() {
 
   if (popup && popup.classList.contains('show')) {
     popup.classList.remove('show');
+    if (statsPopupUpdateInterval) {
+      clearInterval(statsPopupUpdateInterval);
+      statsPopupUpdateInterval = null;
+    }
     return;
   }
 
@@ -258,17 +270,72 @@ async function toggleStatsPopup() {
 
   popup.classList.add('show');
   await renderStatsOnlyPopup(popup);
+
+  // 動的更新タイマー開始
+  if (statsPopupUpdateInterval) clearInterval(statsPopupUpdateInterval);
+  statsPopupUpdateInterval = setInterval(async () => {
+    if (popup.classList.contains('show')) {
+      await renderStatsOnlyPopup(popup, true); // true = 部分更新
+    } else {
+      clearInterval(statsPopupUpdateInterval);
+      statsPopupUpdateInterval = null;
+    }
+  }, 1000);
 }
 
 /**
  * 統計情報のみを表示するシンプルなポップアップをレンダリング (方針転換)
+ * @param {HTMLElement} popup - ポップアップ要素
+ * @param {boolean} isPartialUpdate - true の場合は作業効率セクションのみを更新
  */
-async function renderStatsOnlyPopup(popup) {
+async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
   try {
-    if (!isExtensionValid()) throw new Error("Context invalidated");
+    if (!isExtensionContextValid()) throw new Error("Context invalidated");
 
-    const stats = await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
+    const stats = await loadStatistics(); // メッセージ送信を関数化
     if (!stats) return;
+
+    // 時間フォーマット
+    const totalMs = stats.totalWorkTimeToday || 0;
+    const totalSec = Math.floor(totalMs / 1000);
+    const hoursPart = Math.floor(totalSec / 3600);
+    const minsPart = Math.floor((totalSec % 3600) / 60);
+    const secsPart = totalSec % 60;
+    const timeStr = `${hoursPart}時間${String(minsPart).padStart(2, '0')}分${String(secsPart).padStart(2, '0')}秒`;
+
+    // popup.js と同じ計算ロジック（toFixed(2)を挟まない）
+    const count = stats.todayListings || 0;
+    const hoursVal = totalMs / 3600000;
+    const speedVal = hoursVal > 0 ? (count / hoursVal) : 0;
+    const speed = speedVal.toFixed(1);
+
+    let feedback = "ゆったり 🐢";
+    let rankClass = "rank-very-slow";
+    if (speedVal >= 120) { feedback = "爆速 🚀"; rankClass = "rank-fastest"; }
+    else if (speedVal >= 60) { feedback = "高速 🏎️"; rankClass = "rank-fast"; }
+    else if (speedVal >= 30) { feedback = "着実 💪"; rankClass = "rank-normal"; }
+    else if (speedVal >= 10) { feedback = "のんびり 🚲"; rankClass = "rank-slow"; }
+
+    // トロフィー判定 (popup.js と同期)
+    const maxSpeed = stats.todayMaxSpeed || 0;
+    if (speedVal > 0 && speedVal >= (maxSpeed - 2)) {
+      feedback += " 🏆";
+    }
+
+    // 部分更新の場合
+    if (isPartialUpdate) {
+      const timeEl = popup.querySelector('#lfp-stat-worktime');
+      const speedEl = popup.querySelector('#lfp-stat-speed');
+      const rankEl = popup.querySelector('#lfp-stat-rank');
+
+      if (timeEl) timeEl.textContent = timeStr;
+      if (speedEl) speedEl.textContent = `${speed}品/時`;
+      if (rankEl) {
+        rankEl.textContent = feedback;
+        rankEl.className = `rank-badge ${rankClass}`;
+      }
+      return;
+    }
 
     // 履歴からフラグを集計
     const histData = await chrome.storage.local.get(["lfp_asin_history_v1"]);
@@ -289,40 +356,32 @@ async function renderStatsOnlyPopup(popup) {
     const errorRate = totalProcessed > 0 ? Math.round((totalErrorCount / totalProcessed) * 100) : 0;
     const errorEmoji = errorRate === 0 ? '✨' : errorRate < 10 ? '👍' : errorRate < 30 ? '⚠️' : '🔴';
 
-    // 時間フォーマット
-    const totalMs = stats.totalWorkTimeToday || 0;
-    const totalSec = Math.floor(totalMs / 1000);
-    const hours = Math.floor(totalSec / 3600);
-    const mins = Math.floor((totalSec % 3600) / 60);
-    const secs = totalSec % 60;
-    const timeStr = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
-
-    const hVal = (totalMs / 3600000).toFixed(2);
-    const speed = hVal > 0 ? (stats.todayListings / hVal).toFixed(1) : 0;
-
-    let feedback = "ゆったり🐢";
-    let rankClass = "rank-very-slow";
-    if (speed >= 120) { feedback = "爆速🚀"; rankClass = "rank-fastest"; }
-    else if (speed >= 60) { feedback = "高速🏎️"; rankClass = "rank-fast"; }
-    else if (speed >= 30) { feedback = "着実💪"; rankClass = "rank-normal"; }
-    else if (speed >= 10) { feedback = "のんびり🚲"; rankClass = "rank-slow"; }
-
     // プランバッジ (作業画面の表示ロジックと合わせる)
     const currentPlan = (STORE.license.plan || "free").toLowerCase();
+    const cancelAt = STORE.license.cancelAt || null;
+    let cancelLabel = '';
+    if (cancelAt) {
+      const cd = new Date(cancelAt);
+      cancelLabel = ` (${cd.getMonth() + 1}/${cd.getDate()}解約予定)`;
+    }
+
     let planBadgeText = "Free";
     let planBadgeBg = "#6c757d";
 
     if (currentPlan === 'premium') {
-      planBadgeText = "Premium";
+      planBadgeText = `Premium${cancelLabel}`;
       planBadgeBg = "#d63384";
     } else if (currentPlan === 'pro' && STORE.license.isProTrial) {
-      planBadgeText = "Pro (Trial)";
+      const daysLeft = STORE.license.proTrialDaysLeft ?? 30;
+      planBadgeText = `Pro (Trial) 残り${daysLeft}日${cancelLabel}`;
       planBadgeBg = "#198754";
+      if (cancelAt) planBadgeBg = '#6b7280';
     } else if (currentPlan === 'pro') {
-      planBadgeText = "Pro";
+      planBadgeText = `Pro${cancelLabel}`;
       planBadgeBg = "#1a73e8";
     } else if (STORE.license.isProTrial) {
-      planBadgeText = "Pro (Trial)";
+      const daysLeft = STORE.license.proTrialDaysLeft ?? 30;
+      planBadgeText = `Pro (Trial) 残り${daysLeft}日${cancelLabel}`;
       planBadgeBg = "#198754";
     }
 
@@ -336,7 +395,7 @@ async function renderStatsOnlyPopup(popup) {
     popup.innerHTML = `
     <div class="header">
       <h1 class="title">統計情報</h1>
-      <span style="padding: 2px 8px; border-radius: 9px; color: #fff; background-color: ${planBadgeBg}; font-size: 11px; font-weight: bold;">${planBadgeText}</span>
+      <span class="plan-badge" style="background-color: ${planBadgeBg};">${planBadgeText}</span>
     </div>
     <div class="content">
       <div class="stats-section">
@@ -351,15 +410,18 @@ async function renderStatsOnlyPopup(popup) {
       <div class="stats-section">
         <h2>🚀 作業効率</h2>
         <div class="stats-grid">
-          <div class="stat-item"><div class="stat-label">本日の作業時間</div><div class="stat-value">${timeStr}</div></div>
+          <div class="stat-item"><div class="stat-label">本日の作業時間</div><div class="stat-value" id="lfp-stat-worktime">${timeStr}</div></div>
           <div class="stat-item">
             <div class="stat-label">出品速度</div>
-            <div class="stat-value">${speed}品/時 <span class="rank-badge ${rankClass}">${feedback}</span></div>
+            <div class="stat-value">
+              <span id="lfp-stat-speed">${speed}品/時</span>
+              <span id="lfp-stat-rank" class="rank-badge ${rankClass}">${feedback}</span>
+            </div>
           </div>
         </div>
       </div>
-      <div class="stats-section">
-        <h2>📋 ASIN履歴 <span style="font-size:11px; margin-left:8px; padding:2px 8px; background:#fff3e0; color:#fd7e14; border-radius:12px; font-weight:bold;">エラー率: ${errorRate}% ${errorEmoji}</span></h2>
+      <div class="stats-section" style="margin-top: 2px;">
+        <h2>📋 ASIN履歴 <span id="errorRateBadge">エラー率: ${errorRate}% ${errorEmoji}</span></h2>
         <div class="stats-grid tri">
           <div class="stat-item"><div class="stat-label">出品完了</div><div class="stat-value">${completedCount}</div></div>
           <div class="stat-item"><div class="stat-label">⚠️Prot.</div><div class="stat-value">${protectedCount}</div></div>
@@ -369,14 +431,14 @@ async function renderStatsOnlyPopup(popup) {
           <div class="stat-item"><div class="stat-label">🔄Already</div><div class="stat-value">${alreadyListedCount}</div></div>
         </div>
       </div>
-      <div style="padding: 10px 0 20px 0; text-align: center;">
-        <button class="btn-secondary" id="lfp-popup-reset-stats" style="width: 100%; padding: 8px;">統計をリセット</button>
+      <div style="padding: 5px 0 5px 0; text-align: center;">
+        <button class="btn-secondary" id="lfp-popup-reset-stats">統計をリセット</button>
       </div>
     </div>
   `;
 
     popup.querySelector('#lfp-popup-reset-stats').onclick = async () => {
-      if (!isExtensionValid()) {
+      if (!isExtensionContextValid()) {
         alert("拡張機能が更新されました。ページをリロードしてください。");
         return;
       }

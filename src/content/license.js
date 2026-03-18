@@ -265,7 +265,13 @@ async function syncTrialStatusWithServer(email) {
     if (msg.includes("message channel closed") || msg.includes("Extension context invalidated")) {
       // ログを出さずに終了
     } else {
-      console.error('[LFP] syncTrialStatusWithServer error:', err);
+      console.error('[LFP] syncTrialStatusWithServer error:', {
+        message: err.message,
+        email: email,
+        url: window.location.href,
+        timestamp: new Date().toISOString(),
+        error: err
+      });
     }
   } finally {
     isSyncingWithServer = false;
@@ -325,7 +331,7 @@ async function loadOptions() {
     // エラーメッセージのチェックをより堅牢に
     const errMsg = err.message || "";
     if (errMsg.includes("Extension context invalidated") || errMsg.includes("context_invalidated")) {
-      console.log("[LFP] Extension context invalidated 検出。リカバリーを試行します。");
+      console.log("[LFP] 拡張機能の更新を検知。リカバリーを試行します。");
       attemptRecovery();
     } else {
       console.error("[LFP] loadOptions error:", err);
@@ -335,8 +341,16 @@ async function loadOptions() {
 
 /**
  * ライセンス・利用状況データをストレージから読み込む
+ * パフォーマンス向上のため、2秒以内の連続呼び出しはキャッシュを返す
  */
-async function loadLicenseData() {
+let lastLicenseLoadTime = 0;
+async function loadLicenseData(force = false) {
+  const nowTs = Date.now();
+  if (!force && nowTs - lastLicenseLoadTime < 2000) {
+    return; // キャッシュを使用
+  }
+  lastLicenseLoadTime = nowTs;
+
   try {
     const localData = await chrome.storage.local.get(['lfp_license_v1', 'lfp_license_plan', 'lfp_usage_count', 'lfp_last_used_date', 'lfp_admin_mode', 'lfp_pro_trial_start_date', 'lfp_cancel_at', 'lfp_next_billing_date', 'lfp_next_billing_amount']);
 
@@ -472,9 +486,13 @@ async function loadLicenseData() {
       STORE.license.isProTrial = false;
       if (STORE.license.plan === 'pro-trial') STORE.license.plan = 'free';
     }
-
   } catch (err) {
-    console.error('[LFP] loadLicenseData error:', err);
+    if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(err)) {
+      console.log('[LFP] 拡張機能の更新によりコンテキストが無効化されました (loadLicenseData)');
+      if (typeof attemptRecovery === 'function') attemptRecovery();
+    } else {
+      console.error('[LFP] loadLicenseData error:', err);
+    }
   }
 }
 
@@ -500,7 +518,8 @@ if (isExtensionContextValid()) {
     // ライセンス情報やトライアル情報の変更を即座に検知してUIを更新
     if (namespace === 'local' && (changes['lfp_license_v1'] || changes['lfp_pro_trial_start_date'])) {
       console.log('[LFP] ライセンス/トライアル情報がローカルストレージで更新されました');
-      loadLicenseData().then(() => {
+      // ストレージ変更を検知した場合は強制的に再読み込みしてメモリと同期
+      loadLicenseData(true).then(() => {
         refreshListingCountUI().catch(() => { });
       });
     }
@@ -631,3 +650,35 @@ async function updateUIBasedOnSettings() {
 
   // 他のUI要素も必要に応じて更新
 }
+
+/* ---------- Storage Change Listener ---------- */
+
+/**
+ * ストレージの変更を監視し、設定やライセンス情報が変わったらUIに反映させる
+ * これによりポップアップでのプラン変更や設定変更が即座にタブに反映される
+ */
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'sync' && areaName !== 'local') return;
+  
+  // エクステンションコンテキストの有効性をチェック
+  if (!isExtensionContextValid()) return;
+
+  console.log('[LFP] Storage change detected:', Object.keys(changes));
+
+  const needsOptionReload = changes[KEY_OPT] || changes['lfp_options_v1'];
+  const needsLicenseReload = changes['lfp_license_v1'] || changes['lfp_active_email'];
+
+  if (needsOptionReload || needsLicenseReload) {
+    console.log('[LFP] Reloading options/license due to storage change...');
+    loadOptions().then(() => {
+      if (typeof refreshListingCountUI === 'function') refreshListingCountUI();
+      if (typeof refreshHistorySelect === 'function') refreshHistorySelect();
+      // UIの状態も最新の設定に合わせて再調整
+      if (STORE.opt.highlightOptimize && UI.btnOpt) {
+        UI.btnOpt.classList.add("highlight");
+      }
+    }).catch(err => {
+      console.warn('[LFP] Error reloading options after storage change:', err);
+    });
+  }
+});
