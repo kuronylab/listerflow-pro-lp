@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ListerFlow Pro for Yaballe",
-  "version": "1.1.14",
-  "version_name": "1.1.14 (2026/03/24)",
+  "version": "1.1.15",
+  "version_name": "1.1.15 (2026/03/24)",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1ExNOFRwTQoSR7PJP8Zr8jxGrdsFyHwQN5JrncR88i3uTLj21qESw+iz9u15fET/OMr+b8CP0kPE+uQUZ+UTl1qKVDRkC0O9EZ7W1AedW9/Fi+KL3T0cfQ6iS2SiZ0D1T8rXvmi3X57g2eZys8NtCcsZG2QzFRWBA8DLD0eEXXRA8/ULVQUfID3JrPt8HlzDYXYuimExMbGWgsCrR60PBFLHrZmAD+pwPQvKIn67sZ4igPlKh6wWAQOFhjuUw27YozSlgvtxDE8wu/brXjpYia4YkheDDyzk1kN59OVxTYqtR295KBsVS10EmKvC9cbkbXwajWql+WQguU4kHn1OgwIDAQAB",
   "description": "Yaballe Listerで、タイトル最適化とMIP出品フローを高速化する拡張機能。",
   "author": "KURONYLAB",

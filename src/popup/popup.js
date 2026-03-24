@@ -145,10 +145,21 @@ function setupEventListeners() {
   // 最速出品モードの連動処理
   settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
+      // 自動化設定
       settingElements.autoGetOnPaste.checked = true;
       settingElements.autoGetOnHistory.checked = true;
       settingElements.autoMipAfterOptimize.checked = true;
       settingElements.autoClickOkAfterMip.checked = true;
+
+      // UI設定
+      settingElements.quickMipButton.checked = true;
+      settingElements.highlightOptimize.checked = true;
+      settingElements.showWorkTimePanel.checked = true;
+      settingElements.showCopyCsvButtons.checked = true;
+
+      // その他設定
+      settingElements.historyEnabled.checked = true;
+      settingElements.veroEnabled.checked = true;
     }
   });
 
