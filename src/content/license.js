@@ -325,6 +325,12 @@ async function loadOptions() {
     const saved = data?.[KEY_OPT];
     if (saved && typeof saved === "object") STORE.opt = { ...STORE.opt, ...saved };
 
+    // v1.2.0: 核となる機能は強制的に有効化（標準機能化）
+    STORE.opt.quickMipButton = true;
+    STORE.opt.highlightOptimize = true;
+    STORE.opt.historyEnabled = true;
+    STORE.opt.veroEnabled = true;
+
     // ライセンス情報をローカルストレージから読み込み
     await loadLicenseData();
   } catch (err) {

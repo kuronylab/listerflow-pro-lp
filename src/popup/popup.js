@@ -61,10 +61,6 @@ function initializeElements() {
     autoGetOnHistory: document.getElementById('autoGetOnHistory'),
     autoMipAfterOptimize: document.getElementById('autoMipAfterOptimize'),
     autoClickOkAfterMip: document.getElementById('autoClickOkAfterMip'),
-    quickMipButton: document.getElementById('quickMipButton'),
-    highlightOptimize: document.getElementById('highlightOptimize'),
-    historyEnabled: document.getElementById('historyEnabled'),
-    veroEnabled: document.getElementById('veroEnabled'),
     turboListingMode: document.getElementById('turboListingMode'),
     showWorkTimePanel: document.getElementById('showWorkTimePanel'),
     showCopyCsvButtons: document.getElementById('showCopyCsvButtons')
@@ -142,21 +138,14 @@ function setupEventListeners() {
     }
   });
 
-  // 共通の推奨設定（自動化・UI・履歴）をONにする関数
+  // 共通の推奨設定（自動化・UI）をONにする関数
   const applyRecommendedSupportSettings = () => {
     // 基本自動化項目
     if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = true;
     if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = true;
 
     // UI設定項目
-    if (settingElements.quickMipButton) settingElements.quickMipButton.checked = true;
-    if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = true;
     if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = true;
-    if (settingElements.showCopyCsvButtons) settingElements.showCopyCsvButtons.checked = true;
-
-    // その他設定項目
-    if (settingElements.historyEnabled) settingElements.historyEnabled.checked = true;
-    if (settingElements.veroEnabled) settingElements.veroEnabled.checked = true;
   };
 
   // 最速出品モードの連動処理
@@ -581,10 +570,6 @@ async function loadSettings() {
   if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
   if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = !!opt.autoMipAfterOptimize;
   if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!opt.autoClickOkAfterMip;
-  if (settingElements.quickMipButton) settingElements.quickMipButton.checked = !!opt.quickMipButton;
-  if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = !!opt.highlightOptimize;
-  if (settingElements.historyEnabled) settingElements.historyEnabled.checked = !!opt.historyEnabled;
-  if (settingElements.veroEnabled) settingElements.veroEnabled.checked = !!opt.veroEnabled;
   if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!opt.turboListingMode;
   if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = opt.showWorkTimePanel !== false; // デフォルトON
 
@@ -732,10 +717,6 @@ async function saveAutomationSettings() {
   opt.autoGetOnHistory = settingElements.autoGetOnHistory?.checked;
   opt.autoMipAfterOptimize = settingElements.autoMipAfterOptimize?.checked;
   opt.autoClickOkAfterMip = settingElements.autoClickOkAfterMip?.checked;
-  opt.quickMipButton = settingElements.quickMipButton?.checked;
-  opt.highlightOptimize = settingElements.highlightOptimize?.checked;
-  opt.historyEnabled = settingElements.historyEnabled?.checked;
-  opt.veroEnabled = settingElements.veroEnabled?.checked;
   opt.turboListingMode = settingElements.turboListingMode?.checked;
   opt.showWorkTimePanel = settingElements.showWorkTimePanel?.checked;
   opt.showCopyCsvButtons = settingElements.showCopyCsvButtons?.checked;
