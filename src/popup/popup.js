@@ -146,6 +146,7 @@ function setupEventListeners() {
   settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
       settingElements.autoGetOnPaste.checked = true;
+      settingElements.autoGetOnHistory.checked = true;
       settingElements.autoMipAfterOptimize.checked = true;
       settingElements.autoClickOkAfterMip.checked = true;
     }
