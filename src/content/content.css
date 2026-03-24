@@ -61,6 +61,13 @@
 .lfp-btn-disabled {
   opacity: .55 !important;
   cursor: not-allowed !important;
+  background-image: none !important;
+  background-color: #444 !important;
+  color: #ccc !important;
+  box-shadow: none !important;
+  transform: none !important;
+  animation: none !important;
+  filter: grayscale(1) !important;
 }
 
 .lfp-btn.highlight {

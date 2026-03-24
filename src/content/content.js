@@ -123,9 +123,13 @@ function setBusy(isBusy) {
     if (UI.spin) UI.spin.style.display = "none";
   }
 
-  // ハイライト管理：常に設定に基づいて不整合を防ぐ
+  // ハイライト管理：ボタンが有効かつ設定がONの場合のみ適用
   if (STORE.opt.highlightOptimize) {
-    UI.btnOpt.classList.add("highlight");
+    if (UI.btnOpt.disabled) {
+      UI.btnOpt.classList.remove("highlight");
+    } else {
+      UI.btnOpt.classList.add("highlight");
+    }
     // インラインスタイルを残さないようにして、CSSを優先させる
     UI.btnOpt.style.background = "";
     UI.btnOpt.style.color = "";
