@@ -153,8 +153,11 @@ function setBadge(text) {
   UI.badge.textContent = text || "";
 }
 
-function resetAllFlags() {
-  uiUnlocked = false; // 明示的にロック状態に戻す
+/**
+ * UI要素だけをリセット（フラグは維持）。
+ * 新しいASINの取得前に呼ばれ、前回の出品結果の表示をクリアする。
+ */
+function resetUIState() {
   setBadge("");
   if (UI.btnOpt) {
     UI.btnOpt.disabled = false;
@@ -174,7 +177,6 @@ function resetAllFlags() {
   // MIPボタンの点滅防止フラグをリセット（次のASINで正しく再判定）
   if (UI.quickMipBtn) UI.quickMipBtn._wasEnabled = false;
 
-  okButtonClicked = false; 
   listingCounted = false;
   STORE.turboExecuted.mip = false;
   STORE.turboExecuted.optimizeCount = 0;
@@ -245,18 +247,17 @@ function removeQuickMipButton() {
 
 /* ---------- State control: show UI only after Get Item populated Title ---------- */
 
-let uiUnlocked = false;
-let lastPasteAt = 0;
+// uiUnlocked, lastPasteAt は STORE.state に移行
 
 function lockUI() {
-  uiUnlocked = false;
+  STORE.state.uiUnlocked = false;
   // UIを完全に消去して、次のタイトル出現まで待機する
   destroyMainUI();
   // MIPボタンは削除せず、常時グレーアウト表示を維持（resetAllFlagsで無効化済み）
 }
 
 function unlockUI(titleEl) {
-  uiUnlocked = true;
+  STORE.state.uiUnlocked = true;
   ensureUIBelowTitle(titleEl);
   wireOptimizeButton(titleEl);
 
@@ -281,14 +282,24 @@ function wireOptimizeButton(titleEl) {
 /* ---------- History UI は history-ui.js に分離済み ---------- */
 /* ---------- MutationObserver (debounced) ---------- */
 
+// evalTimer, evalRunning は STORE.state 関連へ
 let evalTimer = null;
-let evalRunning = false;
 
 function scheduleEvaluate(fn, delay = 300) {
   if (evalTimer) clearTimeout(evalTimer);
   evalTimer = setTimeout(async () => {
-    if (evalRunning) return;
-    evalRunning = true;
+    // デッドロック防止: evalRunningが10秒以上trueのままなら強制リセット
+    if (STORE.state.evalRunning) {
+      const elapsed = Date.now() - (STORE.state._evalStartedAt || 0);
+      if (elapsed > 10000) {
+        console.warn('[LFP] evalRunning が10秒以上ロック状態。強制リセットします。');
+        STORE.state.evalRunning = false;
+      } else {
+        return; // 正常にロック中
+      }
+    }
+    STORE.state.evalRunning = true;
+    STORE.state._evalStartedAt = Date.now();
     try {
       await fn();
 
@@ -300,19 +311,19 @@ function scheduleEvaluate(fn, delay = 300) {
       }
     } catch (err) {
       if (err.message && err.message.includes('Extension context invalidated')) {
-        attemptRecovery();
+        attemptRecovery(true);
       } else {
         console.error('[LFP] scheduleEvaluate error:', err);
       }
     } finally {
-      evalRunning = false;
+      STORE.state.evalRunning = false;
     }
   }, delay);
 }
 
 /**
  * 最速出品モード（ターボモード）の実行判定
- * ステータスが「OK」または「OK（最適化後）」になった瞬間にボタンを代理クリックする。
+ * ステータスが「OK」または「OK（最適化後）」になった瞬間にボタンを代理クリックする。(v1.1.1-fix)
  * ロック処理は行わず、既存のボタンの状態に従う。
  */
 async function handleTurboListing(titleEl, btnGet) {
@@ -344,7 +355,7 @@ async function handleTurboListing(titleEl, btnGet) {
     // タイトルが空（取得中や完了後など）の場合は最適化を自動実行しない
     if (!titleVal) return;
 
-    if (UI.btnOpt && !UI.btnOpt.disabled && !optimizeRunning && STORE.turboExecuted.optimizeCount < 3) {
+    if (UI.btnOpt && !UI.btnOpt.disabled && !STORE.state.optimizeRunning && STORE.turboExecuted.optimizeCount < 3) {
       console.log(`[LFP] Turbo: 自動最適化ボタンをクリック (${STORE.turboExecuted.optimizeCount + 1}/3)`);
       STORE.turboExecuted.optimizeCount++;
       UI.btnOpt.click();
@@ -355,7 +366,7 @@ async function handleTurboListing(titleEl, btnGet) {
   else if (statusText.includes("出品：OK") && !statusText.includes("（最適化後）")) {
     if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
       // 最適化実行中（API待ち）ならスキップ（連打防止）
-      if (typeof optimizeRunning !== 'undefined' && optimizeRunning) return;
+      if (STORE.state.optimizeRunning) return;
 
       console.log("[LFP] Turbo: 自動MIPボタンをクリック");
       STORE.turboExecuted.mip = true; // 実行済みフラグを先に立てる
@@ -465,12 +476,21 @@ async function showTurboLimitAlert() {
   turboAlertShowing = false;
 }
 
-let initRunning = false;
 
 async function init() {
-  if (initRunning) return;
+  // デッドロック防止: initRunningが15秒以上trueのままなら強制リセット
+  if (STORE.state.initRunning) {
+    const elapsed = Date.now() - (STORE.state._initStartedAt || 0);
+    if (elapsed > 15000) {
+      console.warn('[LFP] initRunning が15秒以上ロック状態。強制リセットします。');
+      STORE.state.initRunning = false;
+    } else {
+      return;
+    }
+  }
 
-  initRunning = true;
+  STORE.state.initRunning = true;
+  STORE.state._initStartedAt = Date.now();
   console.log('🔄 [LFP] init starting...');
 
   try {
@@ -711,7 +731,7 @@ async function init() {
 
     const titleNow = normSpace(readText(titleEl));
 
-    if (uiUnlocked) {
+    if (STORE.state.uiUnlocked) {
       ensureUIBelowTitle(titleEl);
       // MIPボタンを常時表示（初期状態はグレーアウト）
       if (STORE.opt.quickMipButton && btnGet) ensureQuickMipButton(btnGet);
@@ -760,7 +780,7 @@ async function init() {
     }
 
     // 各種Observerの初期化（初回のみ）
-    if (!observersInitialized) {
+    if (!STORE.state.observersInitialized) {
       setupNoListingsObserver();
       setupListingSuccessObserver();
       setupGlobalEventListeners(); // 委譲リスナーをセットアップ
@@ -783,18 +803,18 @@ async function init() {
         }
         return true;
       });
-      observersInitialized = true;
+      STORE.state.observersInitialized = true;
     }
 
   } catch (err) {
     if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(err)) {
       console.error('[LFP] Extension context invalidated detected in init');
-      if (typeof attemptRecovery === 'function') attemptRecovery();
+      if (typeof attemptRecovery === 'function') attemptRecovery(true);
     } else {
       console.error('[LFP] init error:', err);
     }
   } finally {
-    initRunning = false;
+    STORE.state.initRunning = false;
   }
 }
 
@@ -822,8 +842,12 @@ function scheduleInit(delay = 250) {
   }, delay);
 }
 
+// URLハッシュの変更を監視（SPAの画面遷移対策）
 window.addEventListener("hashchange", () => {
-  console.log('[LFP] hashchange detected:', location.hash);
+  // 既にコンテキストが無効な場合は何もしない
+  if (!isExtensionContextValid()) return;
+
+  console.log(`🔗 [LFP] Hash changed: ${window.location.hash}`);
 
   // UIを完全にクリーンアップ
   if (UI.asinBar && UI.asinBar.isConnected) {
@@ -878,38 +902,7 @@ function lfpApplyMipCompactLabel() {
 }
 /* LFP MIP COMPACT PATCH END */
 
-/* ---------- SPA Navigation Detection ---------- */ // ASIN入力欄の変更監視（リカバリー用：再ペースト時に状態をクリア）
-const asinInput = findAsinInputSmart();
-if (asinInput) {
-  asinInput.addEventListener('input', () => {
-    const currentVal = asinInput.value.trim();
-    if (currentVal !== STORE.lastRequestedAsin) {
-      console.log('[LFP] ASIN change detected. Resetting state for recovery.');
-      STORE.lastRequestedAsin = currentVal;
-
-      // 内部状態のリセット
-      STORE.optimizeState.needsRetry = false;
-      STORE.turboExecuted.optimizeCount = 0;
-      STORE.turboExecuted.mip = false;
-      okButtonClicked = false;
-      listingCounted = false;
-
-      // UI表示の初期化
-      STORE.shipStatus = "取得中...";
-      if (UI.badge) {
-        UI.badge.textContent = "";
-        UI.badge.style.display = "none";
-      }
-      if (UI.btnOpt) {
-        UI.btnOpt.disabled = false;
-        if (UI.btnLabel) UI.btnLabel.textContent = "最適化";
-      }
-
-      // 掃討モードが走っていたら停止
-      stopAggressiveCleaner();
-    }
-  });
-}
+// 重複する直接リスナーは廃止し、setupGlobalEventListeners の委譲リスナーに一本化しました。
 
 // URLハッシュ変更を検知してSPA遷移時に拡張機能を再初期化
 let lastHash = location.hash;
@@ -999,7 +992,7 @@ window.addEventListener('focus', async () => {
       // UIが消えている場合は再初期化
       console.log('⚠️ [Focus Recovery] UIが消えています。再初期化します。');
       resetAllFlags();
-      observersInitialized = false;
+      STORE.state.observersInitialized = false;
       scheduleInit();
     } else if (uiExists) {
       // UIは存在するが、オプションを再読み込みして状態を同期
@@ -1012,21 +1005,37 @@ window.addEventListener('focus', async () => {
   }
 });
 
-// ページの可視性が変わった時の処理
-document.addEventListener('visibilitychange', async () => {
-  if (document.visibilityState === 'visible') {
-    console.log('🔄 [Visibility] ページが可視状態になりました');
+// ページの可視性やフォーカスが変わった時の処理（ウィンドウ切り替え・分割画面対応）
+async function syncExtensionState() {
+  // タブ切り替えやウィンドウフォーカス直後の不安定な状態を避けるため、わずかに待機
+  await new Promise(r => setTimeout(r, 300));
 
-    // エクステンションコンテキストの有効性をチェック
-    if (!isExtensionContextValid()) {
-      console.log('⚠️ [Visibility] エクステンションコンテキストが無効です。リカバリーを試行します。');
-      await attemptRecovery();
-      return;
-    }
-
-    // オプションを再読み込み
-    await loadOptions();
+  // エクステンションコンテキストの有効性をチェック
+  if (!isExtensionContextValid()) {
+    console.log('⚠️ [Sync] エクステンションコンテキストが無効です。リカバリーを試行します。');
+    await attemptRecovery(true);
+    return;
   }
+
+  // オプションを再読み込み（スプレッドシート側で設定を変えた場合などの同期）
+  await loadOptions();
+
+  // UIが消えていないかチェック（Listerページの場合のみ）
+  if (isListerRoute()) {
+    const uiExists = document.querySelector('.lfp-asinbar');
+    if (!uiExists && findAsinInputSmart()) {
+      console.log('⚠️ [Sync] UIが消失しています。再初期化します。');
+      scheduleInit(100);
+    }
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') syncExtensionState();
+});
+
+window.addEventListener('focus', () => {
+  syncExtensionState();
 });
 
 /* ---------- Health Check ---------- */
@@ -1060,7 +1069,7 @@ function startHealthCheck() {
         // UIが消えている場合は再初期化
         console.log('⚠️ [Health Check] UIが消えています。再初期化します。');
         resetAllFlags();
-        observersInitialized = false;
+        STORE.state.observersInitialized = false;
         scheduleInit();
       }
     } catch (err) {
@@ -1126,7 +1135,7 @@ function checkListerPageAppeared() {
   // ASIN入力欄があるのにUIがない → 再初期化が必要
   console.log('🔄 [LFP] Listerページが検出されましたがUIがありません。再初期化します。');
   resetAllFlags();
-  observersInitialized = false;
+  STORE.state.observersInitialized = false;
   scheduleInit(100); // 即座に近いタイミングで初期化
 }
 
@@ -1144,10 +1153,26 @@ function setupGlobalEventListeners() {
 
   // キャプチャリングフェーズで監視することで、他スクリプトの stopPropagation による影響を最小限に抑える
   document.addEventListener("click", async (e) => {
+    // 既にコンテキストが無効な場合は何もしない
+    if (!isExtensionContextValid()) return;
+
     // 1. Get Itemボタンのクリック監視
+    // Yaballeのボタン構造変更（span等）に強固にするため closest() 制限を撤廃
     const btnGet = findButtonByText(/^Get Item$/i);
-    if (e.target.closest("button, a") && btnGet && (e.target === btnGet || btnGet.contains(e.target))) {
+    if (btnGet && (e.target === btnGet || btnGet.contains(e.target) || e.target.closest('button, [role="button"]') === btnGet)) {
+      console.log('👆 [LFP] Manual Get Item click detected. Triggering recovery and automation.');
+      
+      // 手動クリック時に、input入力遅延による自動クリックタイマーが走っていればキャンセルする（二重API通信防止）
+      if (typeof asinInputDebounceTimer !== 'undefined' && asinInputDebounceTimer) {
+        clearTimeout(asinInputDebounceTimer);
+        asinInputDebounceTimer = null;
+      }
+
       handleGetItemClick();
+      
+      // ボタン手動クリック時は強力なUI復旧をかける（Observerに依存しない）
+      scheduleInit(500);
+      setTimeout(() => scheduleInit(1500), 1000); // 念のための追加キック
       return;
     }
 
@@ -1162,6 +1187,9 @@ function setupGlobalEventListeners() {
   }, true);
 
   document.addEventListener("focusin", (e) => {
+    // 既にコンテキストが無効な場合は何もしない
+    if (!isExtensionContextValid()) return;
+
     const asinInput = findAsinInputSmart();
     if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
       if (!UI.asinBar || !UI.asinBar.isConnected) {
@@ -1171,18 +1199,24 @@ function setupGlobalEventListeners() {
     }
   }, true);
 
+  // ASIN貼り付けイベントの監視
   document.addEventListener("paste", async (e) => {
-    const asinInput = findAsinInputSmart();
+    // 既にコンテキストが無効な場合は何もしない
+    if (!isExtensionContextValid()) return;
+
+    const btnGet = findButtonByText(/^Get Item$/i);
+    const asinInput = findAsinInputSmart(btnGet);
+    // 元のinput要素またはその子要素で発生したペーストイベントかチェック
     if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
-      console.log("📝 [LFP] Paste detected. Triggering automation.");
+      console.log("📝 [LFP] Paste detected on ASIN field. Triggering automation.");
       // ペースト後の値を取得するため少しまつ
       if (!STORE.opt.autoGetOnPaste) return;
       const t = now();
-      if (t - lastPasteAt < 800) {
+      if (t - STORE.state.lastPasteAt < 800) {
         console.log("⚠️ [LFP] Paste debounced.");
         return;
       }
-      lastPasteAt = t;
+      STORE.state.lastPasteAt = t;
 
       // フラグを強制リセット
       okButtonClicked = false;
@@ -1221,6 +1255,9 @@ function setupGlobalEventListeners() {
   let asinInputDebounceTimer = null;
 
   document.addEventListener("input", async (e) => {
+    // 既にコンテキストが無効な場合は何もしない
+    if (!isExtensionContextValid()) return;
+
     const asinInput = findAsinInputSmart();
     if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
       await onAsinInput();
@@ -1229,7 +1266,7 @@ function setupGlobalEventListeners() {
       if (!STORE.opt.autoGetOnPaste) return;
 
       // ペーストイベントと重複しないようにガード（ペースト直後800ms以内はスキップ）
-      if (now() - lastPasteAt < 800) return;
+      if (now() - STORE.state.lastPasteAt < 800) return;
 
       // デバウンス: 500ms待って入力が安定してから判定
       if (asinInputDebounceTimer) clearTimeout(asinInputDebounceTimer);

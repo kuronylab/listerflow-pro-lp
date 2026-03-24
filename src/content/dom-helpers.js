@@ -21,8 +21,20 @@ function findInputNearButton(btn) {
 }
 
 function findAsinInputSmart(btnGet) {
+  // すべての入力・テキストエリアを取得し、非表示（display:none）でないものをフィルタ
   const cands = Array.from(document.querySelectorAll("input, textarea"))
-    .filter(el => el && el.offsetParent !== null && !el.disabled);
+    .filter(el => {
+      if (!el || el.disabled) return false;
+      // offsetParent !== null は基本だが、一部のCSS構成でnullになる場合があるため
+      // getComputedStyle によるチェックをフォールバックとして追加
+      if (el.offsetParent !== null) return true;
+      try {
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+      } catch (e) {
+        return false;
+      }
+    });
 
   const hit = cands.find(el => {
     const attrs = [

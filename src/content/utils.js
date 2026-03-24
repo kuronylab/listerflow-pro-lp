@@ -19,7 +19,8 @@ function lc(s) { return (s || "").toLowerCase(); }
 function now() { return Date.now(); }
 function isListerRoute() {
   const hash = (location.hash || "").toLowerCase();
-  return hash.includes("autolister") || hash.includes("add-items");
+  // 'lister' が含まれていればリスター関連ページとみなす（より広範にカバー）
+  return hash.includes("lister") || hash.includes("autolister") || hash.includes("add-items");
 }
 
 /* ---------- DOM コンテナ検出 ---------- */
@@ -270,7 +271,13 @@ function showLfpAlert(message, title = 'お知らせ') {
 
 // エクステンションコンテキストの有効性チェック
 function isExtensionContextValid() {
-  return !!chrome.runtime && !!chrome.runtime.id;
+  try {
+    // chrome.runtime.id だけでは不十分な場合があるため、
+    // 実際にAPI（getURL等）を呼び出して例外が起きないか確認する
+    return !!(chrome.runtime && chrome.runtime.id && chrome.runtime.getURL(''));
+  } catch (e) {
+    return false;
+  }
 }
 
 // エラーがエクステンションコンテキスト無効によるものか判定
@@ -282,23 +289,34 @@ function isContextInvalidatedError(err) {
 // エクステンションコンテキスト無効時のリカバリー処理
 let recoveryAttempts = 0;
 const MAX_RECOVERY_ATTEMPTS = 3;
+let isReloadingPending = false;
 
-async function attemptRecovery() {
-  if (recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
-    console.warn("[LFP] リカバリー試行回数上限に達しました。ページをリロードします。");
-    alert("拡張機能が更新されました。最新の状態を反映するため、ページを再読み込みしてください。");
+async function attemptRecovery(forceReload = false) {
+  if (isReloadingPending) return false;
+
+  // コンテキストが無効化された場合は復旧不可能なので即座にリロード
+  if (forceReload || !isExtensionContextValid() || recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
+    isReloadingPending = true;
+    console.log("[LFP] 拡張機能の更新を確認しました。最新バージョンを適用するための準備をします。");
+    // 確認なしで強制リロードするとユーザーが入力中のデータを失うため、alertで通知する
+    const msg = "拡張機能の最新バージョンが読み込まれました。\n\n" +
+                "動作を安定させるため、OKを押して画面を再読み込みしてください。\n" +
+                "(※複数のタブを開いている場合は、それぞれのタブで再読み込みが必要です)";
+    alert(msg);
     window.location.reload();
     return false;
   }
 
   recoveryAttempts++;
-  console.log(`[LFP] 拡張機能が更新された可能性があるためリカバリーを試行中 (${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS})`);
+  console.log(`[LFP] リカバリーを試行中 (${recoveryAttempts}/${MAX_RECOVERY_ATTEMPTS})`);
 
   // 全てのフラグをリセット
   resetAllFlags();
 
   // Observerを再初期化
-  observersInitialized = false;
+  if (typeof STORE !== 'undefined') {
+    STORE.state.observersInitialized = false;
+  }
 
   // 少し待ってから再初期化
   await sleep(500);
@@ -306,21 +324,50 @@ async function attemptRecovery() {
   if (isExtensionContextValid()) {
     console.log("[LFP] エクステンションコンテキストが復活しました");
     recoveryAttempts = 0;
-    scheduleInit();
+    if (typeof scheduleInit === 'function') scheduleInit();
     return true;
   }
 
   return false;
 }
 
-// 全ての実行フラグをリセット
+// 全ての実行フラグをリセット（ページ遷移・ヘルスチェック用の完全リセット）
 function resetAllFlags() {
-  evalRunning = false;
-  initRunning = false;
-  optimizeRunning = false;
   historyLock = false;
-  // okButtonClicked = false; // ASIN変更時以外はリセットしない（二重表示防止）
-  uiUnlocked = false; 
+
+  if (typeof STORE !== 'undefined') {
+    // 実行状態フラグをリセット
+    STORE.state.evalRunning = false;
+    STORE.state.initRunning = false;
+    STORE.state.optimizeRunning = false;
+    STORE.state.uiUnlocked = false;
+
+    // オートメーション状態をリセット
+    STORE.turboExecuted.mip = false;
+    STORE.turboExecuted.optimizeCount = 0;
+    STORE.optimizeState.needsRetry = false;
+    STORE.optimizeState.lastOutputs = [];
+    // 注意: STORE.lastRequestedAsin はリセットしない
+    // ペーストハンドラーで先にセットされた後に呼ばれるため、クリアすると競合する
+  }
+
+  // 自動クリック中フラグをリセット
+  okButtonClicked = false; 
+  listingCounted = false;
+
+  // UI要素もリセット（resetUIStateと同等のUI初期化）
+  if (typeof UI !== 'undefined') {
+    if (typeof setBadge === 'function') setBadge("");
+    if (UI.btnOpt) {
+      UI.btnOpt.disabled = false;
+      if (UI.btnLabel) UI.btnLabel.textContent = "最適化";
+      if (UI.spin) UI.spin.style.display = "none";
+    }
+    if (UI.status) {
+      UI.status.textContent = "文字数：- / Vero：- / 出品：-";
+    }
+    if (UI.quickMipBtn) UI.quickMipBtn._wasEnabled = false;
+  }
 
   // setIntervalをクリア
   if (okButtonCheckInterval) {
@@ -329,7 +376,9 @@ function resetAllFlags() {
   }
 
   // 掃討モード終了
-  stopAggressiveCleaner();
+  if (typeof stopAggressiveCleaner === 'function') {
+    stopAggressiveCleaner();
+  }
 
-  console.log("[LFP] 内部フラグをリセットしました（オートメーション記憶は維持）");
+  console.log("[LFP] 全ての内部フラグとオートメーション状態を完全にリセットしました");
 }

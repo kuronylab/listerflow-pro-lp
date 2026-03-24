@@ -41,36 +41,31 @@ function handlePotentialErrorModal(modal) {
     }
 
     // 3. 自動クローズ処理
-    // ターボリストモード、または自動Get Item設定（貼り付け/履歴）がONの場合は自動で閉じる
+    // 全ての設定（手動/自動に関わらず）、エラーモーダルは1.5秒後に自動で閉じる
+    // 現在のASINと時刻を確認
+    const currentAsin = STORE.lastRequestedAsin;
+    const now = Date.now();
+    const isRecurrent = (currentAsin === STORE.errorHandling.lastAsin) &&
+      (now - STORE.errorHandling.timestamp < 5000); // 5秒以内の再発は同一とみなす
 
-    const isAutoMode = STORE.opt.turboListingMode || STORE.opt.autoGetOnPaste || STORE.opt.autoGetOnHistory;
+    if (isRecurrent) {
+      console.log('🔥 [LFP] エラー再発（ゾンビ）を検知: 待機なしで即座に焼却します');
+      // 待機なしで即座に閉じる試行
+      attemptCloseErrorModal(modal);
+    } else {
+      console.log('✅ [LFP] 初回エラー検知: 1.5秒後にオートクローズします');
 
-    if (isAutoMode) {
-      // 現在のASINと時刻を確認
-      const currentAsin = STORE.lastRequestedAsin;
-      const now = Date.now();
-      const isRecurrent = (currentAsin === STORE.errorHandling.lastAsin) &&
-        (now - STORE.errorHandling.timestamp < 5000); // 5秒以内の再発は同一とみなす（短縮して精度向上）
+      // 状態を更新
+      STORE.errorHandling.lastAsin = currentAsin;
+      STORE.errorHandling.timestamp = now;
 
-      if (isRecurrent) {
-        console.log('🔥 [LFP] エラー再発（ゾンビ）を検知: 待機なしで即座に焼却します');
-        // 待機なしで即座に閉じる試行
+      // 1.5秒後に実行
+      setTimeout(() => {
+        // ボタンを探してクリック
         attemptCloseErrorModal(modal);
-      } else {
-        console.log('✅ [LFP] 初回エラー検知: 1秒後に処理を開始します');
-
-        // 状態を更新
-        STORE.errorHandling.lastAsin = currentAsin;
-        STORE.errorHandling.timestamp = now;
-
-        // 1.5秒後に実行
-        setTimeout(() => {
-          // ボタンを探してクリック
-          attemptCloseErrorModal(modal);
-          // 以降、5秒間は掃討モード（定期監視）に入り、復活するモーダルを潰し続ける
-          startAggressiveCleaner();
-        }, 1500);
-      }
+        // 以降、5秒間は掃討モード（定期監視）に入り、復活するモーダルを潰し続ける
+        startAggressiveCleaner();
+      }, 1500);
     }
     return true;
   }
@@ -84,10 +79,13 @@ function attemptCloseErrorModal(modalOrDocument) {
   // モーダル自体が渡されていない場合はdocumentから探す
   const root = modalOrDocument || document;
 
-  const closeBtn = Array.from(root.querySelectorAll('.modal button, [role="dialog"] button, .cdk-overlay-pane button, button[class*="close"], [role="button"]')).find(btn => {
-    // 保護ロジック: 出現から1.5秒経っていないモーダル内のボタンは（掃討モードからは）無視する
+  const closeBtn = Array.from(root.querySelectorAll('button, [role="button"]')).find(btn => {
+    // ボタンがエラーモーダル内にあるか確認（documentから検索した場合の保護）
     const modalParent = btn.closest('.modal, [role="dialog"], .cdk-overlay-pane');
-    if (modalParent && modalParent.dataset.lfpCreatedAt) {
+    if (!modalParent) return false;
+
+    // 保護ロジック: 出現から1.5秒経っていないモーダル内のボタンは（掃討モードからは）無視する
+    if (modalParent.dataset.lfpCreatedAt) {
       const age = Date.now() - parseInt(modalParent.dataset.lfpCreatedAt);
       if (age < 1400) return false; // 1.4秒の安全マージン
     }
@@ -138,7 +136,7 @@ function stopAggressiveCleaner() {
 /* ---------- No Listings Observer ---------- */
 
 function setupNoListingsObserver() {
-  if (noListingsObserver) return; // 既に初期化済み
+  if (STORE.state.observersInitialized) return; // 既に初期化済み
   noListingsObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.addedNodes.length === 0) continue;
@@ -223,8 +221,14 @@ function handlePotentialSuccessModal(modal) {
           console.log('✅ [Auto OK] OKボタンを直接クリックしました');
           if (typeof setBusy === 'function') setBusy(false);
 
-          // 500ms後にフラグをリセット
-          setTimeout(() => { okButtonClicked = false; }, 500);
+          // OKクリック後、次のASINに備えてUI状態をリセット
+          setTimeout(() => {
+            okButtonClicked = false;
+            if (typeof resetUIState === 'function') {
+              resetUIState();
+              console.log('🔄 [LFP] 出品成功後のUIリセット完了。次のASINを受け付けます。');
+            }
+          }, 500);
         } else if (!okButtonCheckInterval) {
           // 見つからない場合は既存のインターバル監視にフォールバック（最大3秒）
           let checkCount = 0;
@@ -249,7 +253,14 @@ function handlePotentialSuccessModal(modal) {
                 currentOk.click();
                 console.log(`✅ [Auto OK] 監視によりOKボタンを自動クリックしました（${checkCount * 100}ms後）`);
                 if (typeof setBusy === 'function') setBusy(false);
-                setTimeout(() => { okButtonClicked = false; }, 500);
+                // OKクリック後、次のASINに備えてリセット
+                setTimeout(() => {
+                  okButtonClicked = false;
+                  if (typeof resetUIState === 'function') {
+                    resetUIState();
+                    console.log('🔄 [LFP] 出品成功後のUIリセット完了（監視経由）。');
+                  }
+                }, 500);
               }
             } else if (checkCount >= 30) {
               clearInterval(okButtonCheckInterval);
@@ -266,7 +277,7 @@ function handlePotentialSuccessModal(modal) {
 }
 
 function setupListingSuccessObserver() {
-  if (listingSuccessObserver) return; // 既に初期化済み
+  if (STORE.state.observersInitialized) return; // 既に初期化済み
   listingSuccessObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.addedNodes.length === 0) continue;

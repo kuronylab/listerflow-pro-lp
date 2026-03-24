@@ -182,11 +182,11 @@ async function evaluateAndRender({ titleEl, btnGet }) {
   }
 }
 
-let optimizeRunning = false;
+// optimizeRunning は STORE.state に移行
 
 async function onOptimizeClick({ titleEl }) {
-  if (optimizeRunning) return;
-  optimizeRunning = true;
+  if (STORE.state.optimizeRunning) return;
+  STORE.state.optimizeRunning = true;
 
   try {
     // 1. 利用制限チェック（Basicプランは1日2回に増加）
@@ -429,15 +429,14 @@ async function onOptimizeClick({ titleEl }) {
 
   } catch (err) {
     if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(err)) {
-      console.log('[LFP] 拡張機能の更新によりコンテキストが無効化されました (onOptimizeClick)');
-      setBadge("拡張機能が更新されました。リロードしてください。");
-      if (typeof attemptRecovery === 'function') attemptRecovery();
+      console.log('[LFP] 拡張機能の更新を確認。リカバリーを開始します。 (onOptimizeClick)');
+      if (typeof attemptRecovery === 'function') attemptRecovery(true);
     } else {
       console.error('[LFP] onOptimizeClick error:', err);
     }
   } finally {
     // 成功・失敗・中断に関わらず、必ずフラグと表示をリセットする
-    optimizeRunning = false;
+    STORE.state.optimizeRunning = false;
     setBusy(false);
   }
 }

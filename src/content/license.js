@@ -332,7 +332,7 @@ async function loadOptions() {
     const errMsg = err.message || "";
     if (errMsg.includes("Extension context invalidated") || errMsg.includes("context_invalidated")) {
       console.log("[LFP] 拡張機能の更新を検知。リカバリーを試行します。");
-      attemptRecovery();
+      attemptRecovery(true);
     } else {
       console.error("[LFP] loadOptions error:", err);
     }
@@ -489,7 +489,7 @@ async function loadLicenseData(force = false) {
   } catch (err) {
     if (typeof isContextInvalidatedError === 'function' && isContextInvalidatedError(err)) {
       console.log('[LFP] 拡張機能の更新によりコンテキストが無効化されました (loadLicenseData)');
-      if (typeof attemptRecovery === 'function') attemptRecovery();
+      if (typeof attemptRecovery === 'function') attemptRecovery(true);
     } else {
       console.error('[LFP] loadLicenseData error:', err);
     }
@@ -499,6 +499,9 @@ async function loadLicenseData(force = false) {
 // 設定変更をリッスンしてUIを更新
 if (isExtensionContextValid()) {
   chrome.storage.onChanged.addListener((changes, namespace) => {
+    // 既にコンテキストが無効な場合は何もしない（エラー出力を防ぐ）
+    if (!isExtensionContextValid()) return;
+
     if (namespace === 'sync' && changes[KEY_OPT]) {
       const newOptions = changes[KEY_OPT].newValue;
       if (newOptions) {
@@ -529,6 +532,9 @@ if (isExtensionContextValid()) {
 // バックグラウンドからのメッセージを処理
 if (isExtensionContextValid()) {
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    // 既にコンテキストが無効な場合は何もしない（エラー出力を防ぐ）
+    if (!isExtensionContextValid()) return;
+
     if (msg.type === 'LFP_RESET_UI') {
       console.log('[LFP] UIリセット指示を受信');
       loadLicenseData().then(() => {
@@ -658,10 +664,10 @@ async function updateUIBasedOnSettings() {
  * これによりポップアップでのプラン変更や設定変更が即座にタブに反映される
  */
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== 'sync' && areaName !== 'local') return;
-  
-  // エクステンションコンテキストの有効性をチェック
+  // エクステンションコンテキストの有効性をチェック（リロード時のエラー抑制）
   if (!isExtensionContextValid()) return;
+
+  if (areaName !== 'sync' && areaName !== 'local') return;
 
   console.log('[LFP] Storage change detected:', Object.keys(changes));
 

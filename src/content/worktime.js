@@ -221,7 +221,7 @@ function stopWorkTimeUpdateTimer() {
 // エクステンションコンテキストが無効化された際のクリーンアップ
 window.addEventListener('pagehide', () => {
   stopWorkTimeUpdateTimer();
-  if (observersInitialized) {
+  if (STORE.state.observersInitialized) {
     // MutationObserverの停止などは必要に応じて追加
   }
 });

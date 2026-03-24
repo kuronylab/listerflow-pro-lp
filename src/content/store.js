@@ -11,41 +11,54 @@ const STORE = {
     autoGetOnPaste: true,
     autoGetOnHistory: true,
     autoMipAfterOptimize: false,
-    quickMipButton: true,  // デフォルトをtrueに変更（options.jsと同期）
+    quickMipButton: true,
     highlightOptimize: true,
     historyEnabled: true,
-    // MIP後にOKボタン自動クリック
     autoClickOkAfterMip: true,
     turboListingMode: false,
     showCopyCsvButtons: true
   },
+  // 実行状態・フラグ管理
+  state: {
+    evalRunning: false,
+    initRunning: false,
+    optimizeRunning: false,
+    uiUnlocked: false,
+    observersInitialized: false,
+    lastPasteAt: 0
+  },
   // 最適化状態の追跡
   optimizeState: {
-    needsRetry: false,  // trueの時「再実行」表示
-    lastOutputs: [],     // 過去の最適化出力を記憶（同一タイトル生成防止用、最大5件）
-    isListable: true    // 出品NG（reasonsあり）の場合はfalse
+    needsRetry: false,
+    lastOutputs: [],
+    isListable: true
   },
-  // 最後にリクエストしたASIN（No listingsモーダル検出用）
+  // 最後にリクエストしたASIN
   lastRequestedAsin: "",
   // ターボモードの実行済みフラグ
   turboExecuted: {
-    optimizeCount: 0,  // 最適化実行回数（最大3回まで自動リトライ）
+    optimizeCount: 0,
     mip: false
   },
-  // エラーハンドリング（掃討モード用）
+  // エラーハンドリング
   errorHandling: {
     timestamp: 0,
-    cleanerInterval: null
+    cleanerInterval: null,
+    lastAsin: ""
   },
-  // サブスクリプション・ライセンス管理
+  // 最後に表示したタイトル（変更検知用）
+  lastTitle: "",
+  // 出品ステータス表示用
+  shipStatus: "",
+  // ライセンス・プラン
   license: {
-    plan: "free",    // "free", "pro", "premium" 等
-    dailyLimit: 2,    // freeプランの1日の上限（タイトル最適化）
+    plan: "free",
+    dailyLimit: 2,
     usageCount: 0,
-    lastUsedDate: "", // "YYYY-MM-DD" 形式
-    proTrialStartDate: "" // "YYYY-MM-DD" 形式
+    lastUsedDate: "",
+    proTrialStartDate: ""
   },
-  yaballeEmail: null, // 現在Yaballeを操作している作業者のメールアドレス（店舗アドレス）
+  yaballeEmail: null,
   stats: {
     todayListings: 0,
     weekListings: 0,
@@ -63,15 +76,15 @@ let noListingsObserver = null;
 let listingSuccessObserver = null;
 let urlChangeObserver = null;
 let listerPageObserver = null;
-let observersInitialized = false;
+// observersInitialized は STORE.state に移行
 
-// イベントリスナー管理用（メモリリーク防止）
+// イベントリスナー管理用
 let dropdownClickHandler = null;
 let dropdownMousedownHandler = null;
 
-// setInterval管理用（クリーンアップ用）
+// setInterval管理用
 let okButtonCheckInterval = null;
 let workTimeUpdateInterval = null;
 
-// 履歴操作のロック（競合状況防止）
+// 履歴操作のロック
 let historyLock = false;

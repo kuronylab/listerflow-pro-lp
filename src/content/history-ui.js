@@ -488,7 +488,9 @@ async function selectHistoryAsin(asin) {
   const asinInput = findAsinInputSmart(btnGet);
   if (asinInput) {
     // inputイベントリスナー側の重複実行を防止するためタイムスタンプを更新
-    lastPasteAt = Date.now();
+    if (typeof STORE !== 'undefined') {
+      STORE.state.lastPasteAt = Date.now();
+    }
     setInputValue(asinInput, asin);
 
     // UI.histSelの表示をリセット（プレースホルダーに戻す）
