@@ -142,24 +142,47 @@ function setupEventListeners() {
     }
   });
 
+  // オートメーション連動処理の共通関数
+  const applyFullAutomationLinkage = (includeTurbo = false) => {
+    // 自動化項目
+    if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = true;
+    if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = true;
+    if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = true;
+    if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = true;
+
+    // UI設定項目
+    if (settingElements.quickMipButton) settingElements.quickMipButton.checked = true;
+    if (settingElements.highlightOptimize) settingElements.highlightOptimize.checked = true;
+    if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = true;
+    if (settingElements.showCopyCsvButtons) settingElements.showCopyCsvButtons.checked = true;
+
+    // その他設定項目
+    if (settingElements.historyEnabled) settingElements.historyEnabled.checked = true;
+    if (settingElements.veroEnabled) settingElements.veroEnabled.checked = true;
+
+    if (includeTurbo && settingElements.turboListingMode) {
+      settingElements.turboListingMode.checked = true;
+    }
+  };
+
   // 最速出品モードの連動処理
   settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
-      // 自動化設定
-      settingElements.autoGetOnPaste.checked = true;
-      settingElements.autoGetOnHistory.checked = true;
-      settingElements.autoMipAfterOptimize.checked = true;
-      settingElements.autoClickOkAfterMip.checked = true;
+      applyFullAutomationLinkage(true);
+    }
+  });
 
-      // UI設定
-      settingElements.quickMipButton.checked = true;
-      settingElements.highlightOptimize.checked = true;
-      settingElements.showWorkTimePanel.checked = true;
-      settingElements.showCopyCsvButtons.checked = true;
+  // 最適化後MIP自動クリックの連動処理
+  settingElements.autoMipAfterOptimize?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      applyFullAutomationLinkage(false);
+    }
+  });
 
-      // その他設定
-      settingElements.historyEnabled.checked = true;
-      settingElements.veroEnabled.checked = true;
+  // MIP後にOKボタン自動クリックの連動処理
+  settingElements.autoClickOkAfterMip?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      applyFullAutomationLinkage(false);
     }
   });
 
