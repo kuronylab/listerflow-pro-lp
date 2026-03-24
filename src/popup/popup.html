@@ -12,7 +12,7 @@
   <!-- ヘッダー -->
   <div class="header">
     <button class="menu-btn" id="menuBtn">☰</button>
-    <h1 class="title" id="pageTitle" style="display: inline-block; margin-right: 8px;">統計情報</h1>
+    <h1 class="title" id="pageTitle" style="display: inline-block; margin-right: 8px;"><span data-i18n="popupTitle">ListerFlow Pro</span></h1>
     <span id="statsPlanBadge" style="display: none;"></span>
   </div>
 
@@ -25,31 +25,31 @@
     <nav class="side-menu-nav">
       <a href="#" class="menu-item active" data-page="stats">
         <span class="menu-icon">📊</span>
-        <span class="menu-text">統計情報</span>
+        <span class="menu-text" data-i18n="navStats">統計情報</span>
       </a>
       <a href="#" class="menu-item" data-page="history">
         <span class="menu-icon">📋</span>
-        <span class="menu-text">ASIN履歴管理</span>
+        <span class="menu-text" data-i18n="navHistory">ASIN履歴管理</span>
       </a>
       <a href="#" class="menu-item" data-page="automation">
         <span class="menu-icon">🤖</span>
-        <span class="menu-text">自動化設定</span>
+        <span class="menu-text" data-i18n="navAutomation">自動化設定</span>
       </a>
       <a href="#" class="menu-item" data-page="basic">
         <span class="menu-icon">⚙️</span>
-        <span class="menu-text">基本設定</span>
+        <span class="menu-text" data-i18n="navBasic">基本設定</span>
       </a>
       <a href="#" class="menu-item" data-page="license">
         <span class="menu-icon">🔑</span>
-        <span class="menu-text">ライセンス設定</span>
+        <span class="menu-text" data-i18n="navLicense">ライセンス設定</span>
       </a>
       <a href="#" class="menu-item" data-page="version">
         <span class="menu-icon">ℹ️</span>
-        <span class="menu-text">バージョン情報</span>
+        <span class="menu-text" data-i18n="navVersion">バージョン情報</span>
       </a>
       <a href="#" class="menu-item" data-page="links">
         <span class="menu-icon">🔗</span>
-        <span class="menu-text">各種リンク</span>
+        <span class="menu-text" data-i18n="navLinks">各種リンク</span>
       </a>
     </nav>
   </div>
@@ -152,11 +152,11 @@
     <!-- 自動化設定ページ -->
     <div class="page" id="automationPage">
       <div class="setting-section">
-        <h2>自動実行設定</h2>
+        <h2 data-i18n="settingAutomation">自動実行設定</h2>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">ASINペースト時にGet Item自動実行 <span class="badge badge-free">Free</span></div>
-            <div class="toggle-desc">ASINをペーストした時に自動的にGet Itemボタンをクリック</div>
+            <div class="toggle-title"><span data-i18n="settingAutoGet">ASINペースト時にGet Item自動実行</span> <span class="badge badge-free">Free</span></div>
+            <div class="toggle-desc" data-i18n="settingAutoGetDesc">ASINをペーストした時に自動的にGet Itemボタンをクリック</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="autoGetOnPaste">
@@ -165,8 +165,8 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">ASIN履歴選択時にGet Item自動実行 <span class="badge badge-free">Free</span></div>
-            <div class="toggle-desc">ASIN履歴から選択した時に自動的にGet Itemボタンをクリック</div>
+            <div class="toggle-title"><span data-i18n="settingAutoGetHistory">ASIN履歴選択時にGet Item自動実行</span> <span class="badge badge-free">Free</span></div>
+            <div class="toggle-desc" data-i18n="settingAutoGetHistoryDesc">ASIN履歴から選択した時に自動的にGet Itemボタンをクリック</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="autoGetOnHistory">
@@ -175,8 +175,8 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">最適化後MIP自動クリック <span class="badge badge-pro">Pro</span></div>
-            <div class="toggle-desc">最適化が完了したら自動的にMIPボタンをクリック</div>
+            <div class="toggle-title"><span data-i18n="settingAutoMip">最適化後MIP自動クリック</span> <span class="badge badge-pro">Pro</span></div>
+            <div class="toggle-desc" data-i18n="settingAutoMipDesc">最適化が完了したら自動的にMIPボタンをクリック</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="autoMipAfterOptimize">
@@ -185,8 +185,8 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">MIP後にOKボタン自動クリック <span class="badge badge-pro">Pro</span></div>
-            <div class="toggle-desc">MIP完了後に表示されるOKボタンを自動的にクリック</div>
+            <div class="toggle-title"><span data-i18n="settingAutoOk">MIP後にOKボタン自動クリック</span> <span class="badge badge-pro">Pro</span></div>
+            <div class="toggle-desc" data-i18n="settingAutoOkDesc">MIP完了後に表示されるOKボタンを自動的にクリック</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="autoClickOkAfterMip">
@@ -195,10 +195,10 @@
         </div>
         <div class="toggle-item turbo-item-box">
           <div class="toggle-label">
-            <div class="toggle-title">最速出品モード (Turbo Mode) <span class="badge badge-premium">Premium</span></div>
+            <div class="toggle-title"><span data-i18n="settingTurbo">最速出品モード (Turbo Mode)</span> <span class="badge badge-premium">Premium</span></div>
             <div id="turboTrialCountLabel" style="font-size: 10px; color: #e67700; font-weight: bold; margin-top: 2px;">
             </div>
-            <div class="toggle-desc">ASINペースト後、出品完了まで全自動で実行します。</div>
+            <div class="toggle-desc" data-i18n="settingTurboDesc">ASINペースト後、出品完了まで全自動で実行します。</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="turboListingMode">
@@ -208,11 +208,11 @@
       </div>
 
       <div class="setting-section">
-        <h2>UI設定</h2>
+        <h2 data-i18n="settingUi">UI設定</h2>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">コピー・CSVボタン表示 <span class="badge badge-pro">Pro</span></div>
-            <div class="toggle-desc">作業画面にコピー・CSV出力ボタンを表示</div>
+            <div class="toggle-title"><span data-i18n="settingCopyCsv">コピー・CSVボタン表示</span> <span class="badge badge-pro">Pro</span></div>
+            <div class="toggle-desc" data-i18n="settingCopyCsvDesc">作業画面にコピー・CSV出力ボタンを表示</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="showCopyCsvButtons">
@@ -221,8 +221,8 @@
         </div>
         <div class="toggle-item">
           <div class="toggle-label">
-            <div class="toggle-title">作業時間パネルの表示 <span class="badge badge-pro">Pro</span></div>
-            <div class="toggle-desc">作業時間、一時停止ボタン、速度バッジを表示</div>
+            <div class="toggle-title"><span data-i18n="settingWorkTime">作業時間パネルの表示</span> <span class="badge badge-pro">Pro</span></div>
+            <div class="toggle-desc" data-i18n="settingWorkTimeDesc">作業時間、一時停止ボタン、速度バッジを表示</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="showWorkTimePanel">
@@ -231,52 +231,52 @@
         </div>
       </div>
 
-      <button class="btn-primary" id="saveAutomationBtn">設定を保存</button>
+      <button class="btn-primary" id="saveAutomationBtn" data-i18n="btnSave">設定を保存</button>
     </div>
 
     <!-- 基本設定ページ -->
     <div class="page" id="basicPage">
       <div class="setting-section">
-        <h2>OpenAI API設定</h2>
+        <h2 data-i18n="settingApi">OpenAI API設定</h2>
         <div class="form-group">
-          <label for="apiKey">API Key</label>
-          <input type="password" id="apiKey" placeholder="sk-...">
-          <button class="btn-show-key" id="showKeyBtn">表示</button>
+          <label for="apiKey" data-i18n="settingApiKey">API Key</label>
+          <input type="password" id="apiKey" placeholder="sk-..." data-i18n="licenseAuthPlaceholder">
+          <button class="btn-show-key" id="showKeyBtn" data-i18n="btnShow">表示</button>
         </div>
         <div class="form-group">
-          <label for="model">モデル</label>
+          <label for="model" data-i18n="settingModel">モデル</label>
           <select id="model">
             <option value="gpt-4o-mini">gpt-4o-mini</option>
           </select>
         </div>
-        <button class="btn-primary" id="saveBasicBtn">設定を保存</button>
+        <button class="btn-primary" id="saveBasicBtn" data-i18n="btnSave">設定を保存</button>
       </div>
     </div>
 
     <!-- ライセンス設定ページ -->
     <div class="page" id="licensePage">
       <div class="setting-section">
-        <h2>🔑 ライセンス管理</h2>
+        <h2 data-i18n="licenseManagement">🔑 ライセンス管理</h2>
         <div class="current-plan-card">
           <div class="plan-info">
-            <span class="plan-label">現在のプラン:</span>
-            <span class="plan-value" id="currentPlanName">Free</span>
+            <span class="plan-label" data-i18n="currentPlan">現在のプラン:</span>
+            <span class="plan-value" id="currentPlanName" data-i18n="planFree">Free</span>
           </div>
           <div class="plan-info">
-            <span class="plan-label">本日の使用状況:</span>
-            <span class="plan-value" id="todayUsageStatus">0 / 1回</span>
+            <span class="plan-label" id="todayUsageStatusLabel" data-i18n="currentPlanLimit">本日の最適化ボタン上限: </span>
+            <span class="plan-value" id="todayUsageStatus">0 / 2回</span>
           </div>
         </div>
 
         <div class="form-group" style="margin-top: 20px;">
-          <label for="licenseKey">ライセンスキー</label>
-          <input type="password" id="licenseKey" placeholder="LFP-...">
-          <button class="btn-show-key" id="showLicenseBtn">表示</button>
+          <label for="licenseKey" data-i18n="licenseAuthLabel">ライセンスキー</label>
+          <input type="password" id="licenseKey" placeholder="sk_live_... / Trial_..." data-i18n="licenseAuthPlaceholder">
+          <button class="btn-show-key" id="showLicenseBtn" data-i18n="btnShow">表示</button>
         </div>
 
         <div class="license-actions">
-          <button class="btn-primary" id="activateLicenseBtn">ライセンスを認証</button>
-          <button class="btn-secondary" id="deactivateLicenseBtn" style="display: none;">認証を解除</button>
+          <button class="btn-primary" id="activateLicenseBtn" data-i18n="btnAuth">認証</button>
+          <button class="btn-secondary" id="deactivateLicenseBtn" style="display: none;" data-i18n="btnDeauth">認証を解除</button>
           <!-- 管理者モード用 -->
           <button class="btn-primary" id="forceFreeBtn"
             style="display: none; margin-top: 10px; background: #6c757d; border-color: #6c757d;">Freeに切り替え</button>
@@ -296,7 +296,8 @@
         </div>
 
         <div class="license-support">
-          <p>ライセンスをお持ちでない方は<a href="../pages/purchase.html" target="_blank">こちらから購入</a>できます。</p>
+          <p><a href="https://listerflow.pro#pricing" target="_blank" data-i18n="linkUpgrade">プランをアップグレード</a></p>
+          <p><a href="https://billing.stripe.com/p/login/bIYeWubAEb8S6g8288" target="_blank" id="manageSubLink" data-i18n="linkCustomerPortal" style="display: none;">契約内容の確認・解約（カスタマーポータル）</a></p>
         </div>
       </div>
     </div>

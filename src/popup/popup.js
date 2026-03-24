@@ -13,12 +13,26 @@ let workTimeUpdateInterval = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+  applyI18n();
   initializeElements();
   setupEventListeners();
   await loadAndDisplayStats();
   await loadSettings();
   startWorkTimeCounter();
 });
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const msg = chrome.i18n.getMessage(el.getAttribute('data-i18n'));
+    if (msg) {
+      if (el.tagName === 'INPUT' && el.type === 'placeholder') {
+        el.placeholder = msg;
+      } else {
+        el.textContent = msg;
+      }
+    }
+  });
+}
 
 // ページを離れるときにタイマーをクリア
 window.addEventListener('pagehide', () => {
@@ -220,17 +234,17 @@ async function switchPage(page) {
 
   // Update title
   const titles = {
-    stats: '統計情報',
-    history: 'ASIN履歴管理',
-    automation: '自動化設定',
-    basic: '基本設定',
-    version: 'バージョン情報',
-    links: '各種リンク',
-    license: 'ライセンス設定'
+    stats: chrome.i18n.getMessage("navStats"),
+    history: chrome.i18n.getMessage("navHistory"),
+    automation: chrome.i18n.getMessage("navAutomation"),
+    basic: chrome.i18n.getMessage("navBasic"),
+    version: chrome.i18n.getMessage("navVersion"),
+    links: chrome.i18n.getMessage("navLinks"),
+    license: chrome.i18n.getMessage("navLicense")
   };
 
   if (pageTitle) {
-    pageTitle.textContent = titles[page] || 'ListerFlow Pro';
+    pageTitle.textContent = titles[page] || chrome.i18n.getMessage("popupTitle") || 'ListerFlow Pro';
   }
 
   // 常にバッジ情報を最新にするため、どのページに切り替えても実行
@@ -257,7 +271,10 @@ function updateWorkTimeDisplay(stats) {
     const hours = Math.floor(totalSec / 3600);
     const minutes = Math.floor((totalSec % 3600) / 60);
     const seconds = totalSec % 60;
-    statsElements.todayWorkingHours.textContent = `${hours}時間${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
+    const unitHr = chrome.i18n.getMessage("unitHr");
+    const unitMin = chrome.i18n.getMessage("unitMin");
+    const unitSec = chrome.i18n.getMessage("unitSec");
+    statsElements.todayWorkingHours.textContent = `${hours}${unitHr}${String(minutes).padStart(2, '0')}${unitMin}${String(seconds).padStart(2, '0')}${unitSec}`;
   }
 
   if (statsElements.listingSpeed) {
@@ -267,21 +284,19 @@ function updateWorkTimeDisplay(stats) {
     const speedDisplay = speedVal.toFixed(1);
 
     let rank = "rank-very-slow";
-    let rankText = "ゆったり 🐢";
+    let rankText = chrome.i18n.getMessage("rankVerySlow");
     if (speedVal >= 120) {
       rank = "rank-fastest";
-      rankText = "爆速 🚀";
+      rankText = chrome.i18n.getMessage("rankFastest");
     } else if (speedVal >= 60) {
       rank = "rank-fast";
-      rankText = "高速 🏎️";
+      rankText = chrome.i18n.getMessage("rankFast");
     } else if (speedVal >= 30) {
       rank = "rank-normal";
-      rankText = "着実 💪";
+      rankText = chrome.i18n.getMessage("rankNormal");
     } else if (speedVal >= 10) {
       rank = "rank-slow";
-      rankText = "のんびり 🚲";
-    } else {
-      rankText = "ゆったり 🐢";
+      rankText = chrome.i18n.getMessage("rankSlow");
     }
 
     // トロフィー判定に遊び（バッファ）を持たせる（点滅防止）
@@ -289,8 +304,9 @@ function updateWorkTimeDisplay(stats) {
     const hasTrophy = speedVal > 0 && speedVal >= (maxSpeed - 2);
     if (hasTrophy) rankText += " 🏆";
 
+    const unitSpeed = chrome.i18n.getMessage("unitSpeed");
     statsElements.listingSpeed.innerHTML = `
-      <span>${speedDisplay}品/時</span>
+      <span>${speedDisplay}${unitSpeed}</span>
       <span class="rank-badge ${rank}">${rankText}</span>
     `;
   }
@@ -301,9 +317,10 @@ async function loadAndDisplayStats() {
     const stats = await chrome.runtime.sendMessage({ type: "LFP_GET_STATS" });
     const history = await loadHistory();
 
-    if (statsElements.todayListings) statsElements.todayListings.textContent = `${stats.todayListings || 0}件`;
-    if (statsElements.weekListings) statsElements.weekListings.textContent = `${stats.weekListings || 0}件`;
-    if (statsElements.totalListings) statsElements.totalListings.textContent = `${stats.totalListings || 0}件`;
+    const unitItems = chrome.i18n.getMessage("unitItems");
+    if (statsElements.todayListings) statsElements.todayListings.textContent = `${stats.todayListings || 0}${unitItems}`;
+    if (statsElements.weekListings) statsElements.weekListings.textContent = `${stats.weekListings || 0}${unitItems}`;
+    if (statsElements.totalListings) statsElements.totalListings.textContent = `${stats.totalListings || 0}${unitItems}`;
 
     if (statsElements.lastListing) {
       if (stats.lastListingDate) {
@@ -328,19 +345,20 @@ async function loadAndDisplayStats() {
     const alreadyListedCount = history.filter(h => h.flags?.already_listed === true).length;
     const noItemCount = history.filter(h => h.flags?.no_item === true).length;
 
-    if (statsElements.completedListingsCount) statsElements.completedListingsCount.textContent = `${completedCount}件`;
-    if (statsElements.protectedCount) statsElements.protectedCount.textContent = `${protectedCount}件`;
-    if (statsElements.brandCount) statsElements.brandCount.textContent = `${brandCount}件`;
-    if (statsElements.noListingsCount) statsElements.noListingsCount.textContent = `${noListingsCount}件`;
-    if (statsElements.alreadyListedCount) statsElements.alreadyListedCount.textContent = `${alreadyListedCount}件`;
-    if (statsElements.noItemCount) statsElements.noItemCount.textContent = `${noItemCount}件`;
+    if (statsElements.completedListingsCount) statsElements.completedListingsCount.textContent = `${completedCount}${unitItems}`;
+    if (statsElements.protectedCount) statsElements.protectedCount.textContent = `${protectedCount}${unitItems}`;
+    if (statsElements.brandCount) statsElements.brandCount.textContent = `${brandCount}${unitItems}`;
+    if (statsElements.noListingsCount) statsElements.noListingsCount.textContent = `${noListingsCount}${unitItems}`;
+    if (statsElements.alreadyListedCount) statsElements.alreadyListedCount.textContent = `${alreadyListedCount}${unitItems}`;
+    if (statsElements.noItemCount) statsElements.noItemCount.textContent = `${noItemCount}${unitItems}`;
 
     if (statsElements.errorRateLabel) {
       const totalErrorCount = protectedCount + brandCount + noListingsCount + alreadyListedCount + noItemCount;
       const totalProcessed = completedCount + totalErrorCount;
       const errorRate = totalProcessed > 0 ? Math.round((totalErrorCount / totalProcessed) * 100) : 0;
       const emoji = errorRate === 0 ? '✨' : errorRate < 10 ? '👍' : errorRate < 30 ? '⚠️' : '🔴';
-      statsElements.errorRateLabel.textContent = `エラー率: ${errorRate}% ${emoji}`;
+      const errorRateText = chrome.i18n.getMessage("errorRateText");
+      statsElements.errorRateLabel.textContent = `${errorRateText} ${errorRate}% ${emoji}`;
     }
 
     // License info
@@ -375,7 +393,8 @@ async function loadAndDisplayStats() {
     let cancelLabel = '';
     if (cancelAt) {
       const cd = new Date(cancelAt);
-      cancelLabel = ` (${cd.getMonth() + 1}/${cd.getDate()}解約予定)`;
+      const dateStr = `${cd.getMonth() + 1}/${cd.getDate()}`;
+      cancelLabel = chrome.i18n.getMessage("planCancelScheduled", [dateStr]);
     }
 
     // ヘッダータイトルの右横のバッジ
@@ -396,8 +415,9 @@ async function loadAndDisplayStats() {
         planBadge.style.color = "";
       } else if (currentPlan === 'pro' || currentPlan === 'pro-trial') {
         const isTrialMode = (currentPlan === 'pro-trial') || trialStatus.active;
-        planBadge.textContent = isTrialMode ? `Pro (Trial) 残り${trialStatus.daysLeft}日${cancelLabel}` : `Pro${cancelLabel}`;
-        planBadge.className = "badge";
+        const trialText = chrome.i18n.getMessage("planTrialLeft", [trialStatus.daysLeft]);
+        planBadge.textContent = isTrialMode ? `Pro (Trial) ${trialText}${cancelLabel}` : `Pro${cancelLabel}`;
+        planBadge.className = isTrialMode ? 'badge badge-trial' : 'badge badge-pro';
         planBadge.style.backgroundColor = isTrialMode ? "#198754" : "#1a73e8"; // トライアルなら緑、通常Proなら青
         planBadge.style.borderRadius = "9px";
         planBadge.style.color = "#fff";
@@ -407,8 +427,9 @@ async function loadAndDisplayStats() {
         planBadge.style.backgroundColor = "#0d6efd";
         planBadge.style.color = "#fff";
       } else if (trialStatus.active) {
-        planBadge.textContent = `Pro (Trial) 残り${trialStatus.daysLeft}日`;
-        planBadge.className = "badge";
+        const trialText = chrome.i18n.getMessage("planTrialLeft", [trialStatus.daysLeft]);
+        planBadge.textContent = `Pro (Trial) ${trialText}`;
+        planBadge.className = 'badge badge-trial';
         planBadge.style.backgroundColor = "#20c997";
         planBadge.style.color = "#fff";
       } else {
@@ -432,8 +453,8 @@ async function loadAndDisplayStats() {
         const percent = Math.round((trialStatus.daysLeft / 30) * 100);
         trialBar.innerHTML = `
           <div style="flex-shrink: 0; display: flex; align-items: center;">
-            <span style="margin-right: 6px;">Pro機能をフル体験中 🎁</span>
-            <a href="../pages/purchase.html" target="_blank" class="lfp-upgrade-link">アップグレード</a>
+            <span style="margin-right: 6px;">${chrome.i18n.getMessage("msgProTrialBanner")}</span>
+            <a href="../pages/purchase.html" target="_blank" class="lfp-upgrade-link">${chrome.i18n.getMessage("msgUpgrade")}</a>
           </div>
           <div style="flex: 1; height: 6px; background: #e9ecef; border-radius: 3px; position: relative; overflow: hidden; max-width: 120px;">
             <div class="lfp-shimmer-bar" style="width: ${percent}%; height: 100%; border-radius: 3px;"></div>
@@ -457,8 +478,9 @@ async function loadAndDisplayStats() {
         statsElements.currentPlanName.className = 'plan-badge plan-premium';
       } else if (currentPlan === 'pro' || currentPlan === 'pro-trial') {
         const isTrialMode = (currentPlan === 'pro-trial') || trialStatus.active;
-        statsElements.currentPlanName.textContent = isTrialMode ? `Pro (Trial) 残り${trialStatus.daysLeft}日${cancelLabel}` : `Pro${cancelLabel}`;
-        statsElements.currentPlanName.className = 'plan-badge';
+        const trialText = chrome.i18n.getMessage("planTrialLeft", [trialStatus.daysLeft]);
+        statsElements.currentPlanName.textContent = isTrialMode ? `Pro (Trial) ${trialText}${cancelLabel}` : `Pro${cancelLabel}`;
+        statsElements.currentPlanName.className = isTrialMode ? 'plan-value plan-trial' : 'plan-value plan-pro';
         statsElements.currentPlanName.style.backgroundColor = isTrialMode ? "#198754" : "#1a73e8";
         statsElements.currentPlanName.style.borderRadius = "9px";
         statsElements.currentPlanName.style.color = "#fff";
@@ -479,7 +501,7 @@ async function loadAndDisplayStats() {
         const limit = license.dailyLimit || 2;
         statsElements.todayUsageStatus.textContent = `${license.usageCount} / ${limit}`;
       } else {
-        statsElements.todayUsageStatus.textContent = `無制限`;
+        statsElements.todayUsageStatus.textContent = chrome.i18n.getMessage("planUnlimited");
       }
     }
 
@@ -491,9 +513,14 @@ async function loadAndDisplayStats() {
 
     if (billingData.lfp_next_billing_date && currentPlanForBilling !== 'free' && !isAdmin) {
       const bd = new Date(billingData.lfp_next_billing_date);
-      const billingDateStr = `${bd.getFullYear()}/${bd.getMonth() + 1}/${bd.getDate()}`;
+      const dateStr = `${bd.getFullYear()}/${bd.getMonth() + 1}/${bd.getDate()}`;
+      let billingText = chrome.i18n.getMessage("planNextBilling", [dateStr]);
       const amount = billingData.lfp_next_billing_amount;
       const amountStr = amount ? `¥${Number(amount).toLocaleString()}` : '';
+
+      if (amountStr) {
+        billingText += ` (${amountStr})`;
+      }
 
       if (!billingInfoEl) {
         billingInfoEl = document.createElement('div');
@@ -505,12 +532,11 @@ async function loadAndDisplayStats() {
           planBadgeParent.insertAdjacentElement('afterend', billingInfoEl);
         }
       }
-      let billingText = `次回請求: ${billingDateStr}`;
-      if (amountStr) billingText += ` ${amountStr}`;
 
       if (cancelAtFromStorage) {
         const cd = new Date(cancelAtFromStorage);
-        billingText = `${cd.getMonth() + 1}/${cd.getDate()} に解約予定`;
+        const cancelDateStr = `${cd.getMonth() + 1}/${cd.getDate()}`;
+        billingText = chrome.i18n.getMessage("planCancelScheduledBilling", [cancelDateStr]);
         billingInfoEl.style.color = '#ef4444'; // 赤色で強調
       } else {
         billingInfoEl.style.color = '#6b7280';
@@ -535,7 +561,7 @@ async function loadAndDisplayStats() {
 
 
 async function resetStats() {
-  if (!confirm('統計情報をリセットしますか？（ASIN履歴は維持されます）')) return;
+  if (!confirm(chrome.i18n.getMessage("msgResetStatsConfirm"))) return;
 
   // 統計リセットをSWに依頼
   chrome.runtime.sendMessage({ type: 'RESET_STATS' }, async (response) => {
@@ -701,7 +727,7 @@ async function saveBasicSettings() {
   opt.apiKey = settingElements.apiKey?.value || '';
   opt.model = settingElements.model?.value || 'gpt-4o-mini';
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
-  alert('基本設定を保存しました');
+  alert(chrome.i18n.getMessage("msgBasicSettingsSaved"));
 
   // ターゲットタブを更新
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -722,7 +748,7 @@ async function saveAutomationSettings() {
   opt.showWorkTimePanel = settingElements.showWorkTimePanel?.checked;
   opt.showCopyCsvButtons = settingElements.showCopyCsvButtons?.checked;
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
-  alert('自動化・UI設定を保存しました');
+  alert(chrome.i18n.getMessage("msgAutoSettingsSaved"));
 
   // ターゲットタブを更新
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -749,7 +775,7 @@ function toggleLicenseKeyVisibility() {
 async function activateLicense() {
   const key = settingElements.licenseKey?.value?.trim();
   if (!key) {
-    alert('ライセンスキーを入力してください');
+    alert(chrome.i18n.getMessage("msgRequireLicenseKey"));
     return;
   }
 
@@ -758,7 +784,7 @@ async function activateLicense() {
   const email = emailData.lfp_current_yaballe_email;
 
   if (!email && !key.toLowerCase().startsWith('test-')) {
-    alert('Yaballeの作業画面を一度開いてから、この認証を行ってください。\n（店舗アカウントの確認が必要です）');
+    alert(chrome.i18n.getMessage("msgRequireYaballeTab"));
     return;
   }
 
@@ -877,7 +903,7 @@ async function activateLicense() {
         }
       }
 
-      alert(`ライセンス認証が完了しました！\nプラン: ${license.plan.toUpperCase()}\n全ての機能が開放されました。`);
+      alert(chrome.i18n.getMessage("msgAuthSuccess", [license.plan.toUpperCase()]));
 
       chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -889,11 +915,11 @@ async function activateLicense() {
       await loadSettings();
       loadAndDisplayStats();
     } else {
-      alert(`認証失敗: ${result.message || '無効なキーです'}`);
+      alert(chrome.i18n.getMessage("msgAuthFailed", [result.message || 'Invalid key']));
     }
   } catch (err) {
     console.error('[LFP] activateLicense error:', err);
-    alert('サーバーとの通信に失敗しました。時間をおいて再度お試しください。');
+    alert(chrome.i18n.getMessage("msgAuthNetworkError"));
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
@@ -901,7 +927,7 @@ async function activateLicense() {
 }
 
 async function deactivateLicense() {
-  if (!confirm('ライセンス認証を解除しますか？')) return;
+  if (!confirm(chrome.i18n.getMessage("msgCancelConfirm"))) return;
 
   const data = await chrome.storage.local.get([KEY_LICENSE]);
   const license = data?.[KEY_LICENSE] || {};
@@ -929,7 +955,7 @@ async function deactivateLicense() {
 
   if (settingElements.licenseKey) settingElements.licenseKey.value = '';
 
-  alert('解除しました。');
+  alert(chrome.i18n.getMessage("msgLicenseDeactivated"));
   chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
 
   // アクティブなタブを更新
@@ -1275,7 +1301,7 @@ function exportToSpreadsheet() {
 }
 
 async function clearHistory() {
-  if (!confirm('すべての履歴を削除しますか？')) return;
+  if (!confirm(chrome.i18n.getMessage("msgClearConfirm"))) return;
   chrome.runtime.sendMessage({ type: 'CLEAR_HISTORY' }, () => {
     loadHistoryList();
   });
