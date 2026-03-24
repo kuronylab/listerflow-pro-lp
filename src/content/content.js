@@ -1188,15 +1188,19 @@ function setupGlobalEventListeners() {
 
       handleGetItemClick();
       
-      // ボタン手動クリック時は強力なUI強制再起動をかける（古い残骸を一度消す）
-      console.log('♻️ [LFP] Manual click recovery: Forcing fresh UI initialization.');
-      destroyMainUI();
-      if (UI.asinBar && UI.asinBar.isConnected) UI.asinBar.remove();
-      UI.asinBar = null;
-      STORE.state.observersInitialized = false;
-      STORE.state.initRunning = false;
-      
-      scheduleInit(50);
+      // ボタン手動クリック（isTrusted=true）時のみ強力なUI強制再起動をかける（自動化時はチラつき防止のためスキップ）
+      if (e.isTrusted) {
+        console.log('♻️ [LFP] Manual click recovery: Forcing fresh UI initialization.');
+        destroyMainUI();
+        if (UI.asinBar && UI.asinBar.isConnected) UI.asinBar.remove();
+        UI.asinBar = null;
+        STORE.state.observersInitialized = false;
+        STORE.state.initRunning = false;
+        scheduleInit(50);
+      } else {
+        // 自動クリック時は既存UIを維持したまま初期化のみ試みる（ヘルスチェック）
+        scheduleInit(100);
+      }
       return;
     }
 
