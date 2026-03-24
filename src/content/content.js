@@ -478,11 +478,11 @@ async function showTurboLimitAlert() {
 
 
 async function init() {
-  // デッドロック防止: initRunningが15秒以上trueのままなら強制リセット
+  // デッドロック防止: initRunningが5秒以上trueのままなら強制リセット（高速化）
   if (STORE.state.initRunning) {
     const elapsed = Date.now() - (STORE.state._initStartedAt || 0);
-    if (elapsed > 15000) {
-      console.warn('[LFP] initRunning が15秒以上ロック状態。強制リセットします。');
+    if (elapsed > 5000) {
+      console.warn('[LFP] initRunning が5秒以上ロック状態。強制リセットします。');
       STORE.state.initRunning = false;
     } else {
       return;
@@ -952,6 +952,24 @@ function setupSPANavigationDetection() {
 // SPA遷移検知を開始
 setupSPANavigationDetection();
 
+/**
+ * 定期的なヘルスチェック（ウォッチドッグ）
+ * 10秒に一度、UIが消えていないか・リスターページから外れていないかを監視
+ */
+setInterval(async () => {
+  if (!isExtensionContextValid()) return;
+  if (!isListerRoute()) return;
+
+  const uiExists = document.getElementById("lfp-status-box");
+  const titleField = findTitleFieldSmart();
+  
+  // Listerページでタイトル入力欄があるのにUIがない場合は、何らかの理由で止まっている
+  if (!uiExists && titleField && !STORE.state.initRunning) {
+    console.log('🐕 [LFP] Watchdog: UI missing in lister route. Triggering auto-recovery...');
+    scheduleInit(100);
+  }
+}, 10000);
+
 
 /* ---------- Window Focus Recovery ---------- */
 
@@ -1170,9 +1188,15 @@ function setupGlobalEventListeners() {
 
       handleGetItemClick();
       
-      // ボタン手動クリック時は強力なUI復旧をかける（Observerに依存しない）
-      scheduleInit(500);
-      setTimeout(() => scheduleInit(1500), 1000); // 念のための追加キック
+      // ボタン手動クリック時は強力なUI強制再起動をかける（古い残骸を一度消す）
+      console.log('♻️ [LFP] Manual click recovery: Forcing fresh UI initialization.');
+      destroyMainUI();
+      if (UI.asinBar && UI.asinBar.isConnected) UI.asinBar.remove();
+      UI.asinBar = null;
+      STORE.state.observersInitialized = false;
+      STORE.state.initRunning = false;
+      
+      scheduleInit(50);
       return;
     }
 
