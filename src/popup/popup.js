@@ -667,7 +667,8 @@ async function loadSettings() {
   const proElements = [
     settingElements.autoMipAfterOptimize,
     settingElements.autoClickOkAfterMip,
-    settingElements.showCopyCsvButtons
+    settingElements.showCopyCsvButtons,
+    settingElements.showWorkTimePanel
   ];
   proElements.forEach(el => {
     if (el) {

@@ -112,6 +112,11 @@ async function togglePauseResume() {
  * ASIN入力時の処理（セッション開始）
  */
 async function onAsinInput() {
+  // v1.2.1: 作業時間計測はPro以上限定
+  const currentPlan = (STORE.license?.plan || "free").toLowerCase();
+  const isProTrial = !!STORE.license?.isProTrial;
+  if (currentPlan === "free" && !isProTrial) return;
+
   try {
     // 即座にUIを ⏸️ 表示に更新（ラグを視覚的にゼロにする）
     if (UI.pauseResumeBtn) {
@@ -132,6 +137,11 @@ async function onAsinInput() {
  * 再生/一時停止トグルボタンを作成
  */
 async function createPauseResumeButton() {
+  // v1.2.1: 作業時間計測はPro以上限定
+  const currentPlan = (STORE.license?.plan || "free").toLowerCase();
+  const isProTrial = !!STORE.license?.isProTrial;
+  if (currentPlan === "free" && !isProTrial) return;
+
   const placeholder = document.getElementById('lfp-pause-resume-btn-placeholder');
   if (!placeholder || placeholder.querySelector('.lfp-pause-resume-btn')) {
     return; // 既に作成済み
