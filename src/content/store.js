@@ -16,7 +16,8 @@ const STORE = {
     historyEnabled: true,
     autoClickOkAfterMip: true,
     turboListingMode: false,
-    showCopyCsvButtons: true
+    showCopyCsvButtons: true,
+    showWorkTimePanel: true
   },
   // 実行状態・フラグ管理
   state: {
