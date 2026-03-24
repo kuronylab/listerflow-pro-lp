@@ -142,13 +142,11 @@ function setupEventListeners() {
     }
   });
 
-  // オートメーション連動処理の共通関数
-  const applyFullAutomationLinkage = (includeTurbo = false) => {
-    // 自動化項目
+  // 共通の推奨設定（自動化・UI・履歴）をONにする関数
+  const applyRecommendedSupportSettings = () => {
+    // 基本自動化項目
     if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = true;
     if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = true;
-    if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = true;
-    if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = true;
 
     // UI設定項目
     if (settingElements.quickMipButton) settingElements.quickMipButton.checked = true;
@@ -159,30 +157,31 @@ function setupEventListeners() {
     // その他設定項目
     if (settingElements.historyEnabled) settingElements.historyEnabled.checked = true;
     if (settingElements.veroEnabled) settingElements.veroEnabled.checked = true;
-
-    if (includeTurbo && settingElements.turboListingMode) {
-      settingElements.turboListingMode.checked = true;
-    }
   };
 
   // 最速出品モードの連動処理
   settingElements.turboListingMode?.addEventListener('change', (e) => {
     if (e.target.checked) {
-      applyFullAutomationLinkage(true);
+      applyRecommendedSupportSettings();
+      // ターボモードは全自動のため、MIPとOKも強制的にON
+      if (settingElements.autoMipAfterOptimize) settingElements.autoMipAfterOptimize.checked = true;
+      if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = true;
     }
   });
 
   // 最適化後MIP自動クリックの連動処理
   settingElements.autoMipAfterOptimize?.addEventListener('change', (e) => {
     if (e.target.checked) {
-      applyFullAutomationLinkage(false);
+      // 基本設定とUIを最新にするが、OKボタンの自動化とは独立させる
+      applyRecommendedSupportSettings();
     }
   });
 
   // MIP後にOKボタン自動クリックの連動処理
   settingElements.autoClickOkAfterMip?.addEventListener('change', (e) => {
     if (e.target.checked) {
-      applyFullAutomationLinkage(false);
+      // 基本設定とUIを最新にするが、MIPの自動化とは独立させる
+      applyRecommendedSupportSettings();
     }
   });
 
