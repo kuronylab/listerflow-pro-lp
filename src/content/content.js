@@ -30,7 +30,6 @@ const UI = {
 
 function destroyMainUI() {
   if (UI.root && UI.root.isConnected) {
-    console.log('🗑️ [LFP] main UI removed');
     UI.root.remove();
   }
   UI.root = null;
@@ -495,8 +494,6 @@ async function init() {
 
   STORE.state.initRunning = true;
   STORE.state._initStartedAt = Date.now();
-  console.log('🔄 [LFP] init starting...');
-
   try {
     // 頻繁なストレージ読み込みを抑制
     await loadOptions();
@@ -851,8 +848,6 @@ window.addEventListener("hashchange", () => {
   // 既にコンテキストが無効な場合は何もしない
   if (!isExtensionContextValid()) return;
 
-  console.log(`🔗 [LFP] Hash changed: ${window.location.hash}`);
-
   // UIを完全にクリーンアップ
   if (UI.asinBar && UI.asinBar.isConnected) {
     UI.asinBar.remove();
@@ -917,12 +912,10 @@ function setupSPANavigationDetection() {
 
     // ハッシュが変更された場合
     if (currentHash !== lastHash) {
-      console.log(`🔄 [SPA Navigation] ${lastHash} → ${currentHash}`);
       lastHash = currentHash;
 
       // Listerページに遷移した場合、拡張機能を再初期化
       if (isListerRoute()) {
-        console.log('✅ [SPA Navigation] Listerページに遷移しました。拡張機能を再初期化します。');
 
         // 少し待ってから初期化（DOMが更新されるのを待つ）
         await sleep(300);
@@ -949,7 +942,6 @@ function setupSPANavigationDetection() {
     });
   }
 
-  console.log('🔍 [SPA Navigation] URLハッシュ変更の監視を開始しました');
 }
 
 
@@ -969,7 +961,6 @@ setInterval(async () => {
   
   // Listerページでタイトル入力欄があるのにUIがない場合は、何らかの理由で止まっている
   if (!uiExists && titleField && !STORE.state.initRunning) {
-    console.log('🐕 [LFP] Watchdog: UI missing in lister route. Triggering auto-recovery...');
     scheduleInit(100);
   }
 }, 10000);
@@ -1182,7 +1173,6 @@ function setupGlobalEventListeners() {
     // Yaballeのボタン構造変更（span等）に強固にするため closest() 制限を撤廃
     const btnGet = findButtonByText(/^Get Item$/i);
     if (btnGet && (e.target === btnGet || btnGet.contains(e.target) || e.target.closest('button, [role="button"]') === btnGet)) {
-      console.log('👆 [LFP] Manual Get Item click detected. Triggering recovery and automation.');
       
       // 手動クリック時に、input入力遅延による自動クリックタイマーが走っていればキャンセルする（二重API通信防止）
       if (typeof asinInputDebounceTimer !== 'undefined' && asinInputDebounceTimer) {
@@ -1240,12 +1230,10 @@ function setupGlobalEventListeners() {
     const asinInput = findAsinInputSmart(btnGet);
     // 元のinput要素またはその子要素で発生したペーストイベントかチェック
     if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
-      console.log("📝 [LFP] Paste detected on ASIN field. Triggering automation.");
       // ペースト後の値を取得するため少しまつ
       if (!STORE.opt.autoGetOnPaste) return;
       const t = now();
       if (t - STORE.state.lastPasteAt < 800) {
-        console.log("⚠️ [LFP] Paste debounced.");
         return;
       }
       STORE.state.lastPasteAt = t;
@@ -1267,12 +1255,10 @@ function setupGlobalEventListeners() {
       await sleep(100); // 貼り付け完了を待つ
       
       const btnGet = findButtonByText(/^Get Item$/i);
-      console.log("🚀 [LFP] Clicking Get Item automatically.");
       
       // 文字数計算等の重い処理を待たずに即座にクリック
       handleGetItemClick().then(() => {
         if (btnGet && btnGet.isConnected) {
-          console.log("🎯 [LFP] Triggering click on Get Item.");
           btnGet.click();
         }
       }).catch(e => {
@@ -1306,7 +1292,6 @@ function setupGlobalEventListeners() {
         const val = normSpace(asinInput.value || "");
         // B0で始まる10桁の英数字かチェック
         if (/^B0[A-Z0-9]{8}$/i.test(val)) {
-          console.log(`🚀 [LFP] ASIN形式検出、自動Get Itemを実行: ${val}`);
           lockUI();
           
           STORE.turboExecuted.optimizeCount = 0;
@@ -1318,7 +1303,6 @@ function setupGlobalEventListeners() {
           handleGetItemClick().then(() => {
             const btnGet = findButtonByText(/^Get Item$/i);
             if (btnGet && btnGet.isConnected) {
-              console.log("🎯 [LFP] Triggering click on Get Item (from input listener).");
               btnGet.click();
             }
           }).catch(e => {

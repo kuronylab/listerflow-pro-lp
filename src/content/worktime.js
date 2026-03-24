@@ -39,7 +39,7 @@ async function startWorkTimeSession() {
   try {
     // SW側のタイマーを開始させる
     await chrome.runtime.sendMessage({ type: "LFP_TIMER_CONTROL", action: "start" });
-    console.log('[LFP] 作業時間計測セッション開始');
+    return true;
   } catch (err) {
     // ignore invalidated context
   }
@@ -65,8 +65,13 @@ async function updateWorkTimeDisplay() {
  * 作業時間の確定（出品完了時）
  */
 async function confirmWorkTime() {
-  // 本来は出品成功時に呼ぶが、現在はバックグラウンドのタイマーで完結
-  console.log('[LFP] confirmWorkTime はバックグラウンドで処理されます');
+  if (!isExtensionContextValid()) return;
+  try {
+    // 本来は出品成功時に呼ぶが、現在はバックグラウンドのタイマーで完結
+    // console.log('[LFP] confirmWorkTime はバックグラウンドで処理されます');
+  } catch (err) {
+    // ignore invalidated context
+  }
 }
 
 /**
