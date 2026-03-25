@@ -126,6 +126,8 @@
             inset: 0;
             background: radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 20%, rgba(100, 170, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .hero-badge {
@@ -138,6 +140,8 @@
             font-weight: 600;
             margin-bottom: 20px;
             backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 10;
         }
 
         .hero h1 {
@@ -146,6 +150,8 @@
             font-weight: 800;
             line-height: 1.15;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
         }
 
         .hero h1 span {
@@ -157,6 +163,8 @@
             color: rgba(255, 255, 255, 0.82);
             max-width: 560px;
             margin: 0 auto 36px;
+            position: relative;
+            z-index: 10;
         }
 
         .hero-btns {
@@ -164,6 +172,8 @@
             gap: 14px;
             justify-content: center;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
         }
 
         .btn-primary-hero {
@@ -622,7 +632,7 @@
     <!-- ナビゲーション -->
     <nav>
         <a href="#" class="nav-logo">
-            <img src="assets/icons/icon128.png" alt="ListerFlow Pro">
+            <img src="../assets/icons/icon128.png" alt="ListerFlow Pro">
             ListerFlow Pro
         </a>
         <div class="nav-links">
