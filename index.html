@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ListerFlow Pro for Yaballe | 出品時間を最大75%削減するChrome拡張機能</title>
-    <meta name="description"
-        content="YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→15秒を実現するChrome拡張機能。月額2,980円から。">
+    <title data-i18n="page.title">ListerFlow Pro for Yaballe | 出品時間を最大80%削減するChrome拡張機能</title>
+    <meta name="description" data-i18n="page.desc"
+        content="YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→12秒を実現するChrome拡張機能。月額2,980円から。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap"
@@ -60,11 +60,20 @@
         }
 
         .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-family: 'Outfit', sans-serif;
             font-size: 18px;
             font-weight: 800;
             color: var(--primary);
             text-decoration: none;
+        }
+
+        .nav-logo img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
         }
 
         .nav-links {
@@ -610,81 +619,93 @@
 
     <!-- ナビゲーション -->
     <nav>
-        <a href="#" class="nav-logo">🚀 ListerFlow Pro</a>
+        <a href="#" class="nav-logo">
+            <img src="../assets/icons/icon128.png" alt="ListerFlow Pro">
+            ListerFlow Pro
+        </a>
         <div class="nav-links">
-            <a href="#features">機能</a>
-            <a href="#pricing">料金</a>
-            <a href="#flow">購入方法</a>
-            <a href="#tokusho">特商法</a>
+            <a href="#features" data-i18n="nav.features">機能</a>
+            <a href="#pricing" data-i18n="nav.pricing">料金</a>
+            <a href="#testimonials" data-i18n="nav.reviews">レビュー</a>
+            <a href="#flow" data-i18n="nav.flow">購入方法</a>
+            <a href="#faq" data-i18n="nav.faq">よくある質問</a>
+            <a href="#tokusho" data-i18n="nav.tokusho">特商法</a>
         </div>
-        <a href="#pricing" class="nav-cta">プランを見る</a>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <select id="langSwitch" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-family: 'Inter', sans-serif; cursor: pointer; background: white; font-size: 13px;">
+                <option value="ja">日本語</option>
+                <option value="en">English</option>
+            </select>
+            <a href="#pricing" class="nav-cta" data-i18n="nav.cta">プランを見る</a>
+        </div>
     </nav>
 
     <!-- ヒーロー -->
     <div class="hero">
-        <div class="hero-badge">🎁 現在 1ヶ月 無料トライアル実施中</div>
-        <h1>出品時間を<br><span>最大75%削減</span>する<br>Chrome拡張機能</h1>
-        <p>Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。</p>
+        <div class="hero-badge" data-i18n="hero.badge">🎁 現在 1ヶ月 無料トライアル実施中</div>
+        <h1><span data-i18n="hero.title1">出品時間を</span><br><span data-i18n="hero.title2">最大80%削減</span><span data-i18n="hero.title3">する<br>Chrome拡張機能</span></h1>
+        <p data-i18n="hero.desc">Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。</p>
         <div class="hero-btns">
-            <a href="#pricing" class="btn-primary-hero">✨ 無料で試してみる</a>
-            <a href="#features" class="btn-ghost">機能を見る</a>
+            <a href="#pricing" class="btn-primary-hero" data-i18n="hero.btn.free">✨ 無料で試してみる</a>
+            <a href="#features" class="btn-ghost" data-i18n="hero.btn.features">機能を見る</a>
         </div>
     </div>
+
 
     <!-- 数字 -->
     <div class="stats-bar">
         <div class="stat">
-            <div class="stat-num">75%</div>
-            <div class="stat-label">出品時間の削減</div>
+            <div class="stat-num" data-i18n="stat.1.num">80%</div>
+            <div class="stat-label" data-i18n="stat.1.label">出品時間の削減</div>
         </div>
         <div class="stat">
-            <div class="stat-num">15秒</div>
-            <div class="stat-label">1品あたりの目標時間</div>
+            <div class="stat-num" data-i18n="stat.2.num">12秒</div>
+            <div class="stat-label" data-i18n="stat.2.label">1品あたりの目標時間</div>
         </div>
         <div class="stat">
-            <div class="stat-num">70〜80文字</div>
-            <div class="stat-label">AIが最適なタイトル長さに</div>
+            <div class="stat-num" data-i18n="stat.3.num">70〜80文字</div>
+            <div class="stat-label" data-i18n="stat.3.label">AIが最適なタイトル長さに</div>
         </div>
         <div class="stat">
-            <div class="stat-num">1,000件</div>
-            <div class="stat-label">ASIN履歴保持</div>
+            <div class="stat-num" data-i18n="stat.4.num">1,000件</div>
+            <div class="stat-label" data-i18n="stat.4.label">ASIN履歴保持</div>
         </div>
     </div>
 
     <!-- 機能 -->
     <section id="features">
-        <div class="section-title">なぜ ListerFlow Pro なのか</div>
-        <div class="section-sub">出品作業の「無駄」をすべてテクノロジーで解消します</div>
+        <div class="section-title" data-i18n="features.title">なぜ ListerFlow Pro なのか</div>
+        <div class="section-sub" data-i18n="features.sub">出品作業の「無駄」をすべてテクノロジーで解消します</div>
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">🤖</div>
-                <h3>AI タイトル最適化</h3>
-                <p>ChatGPT との画面往復は不要。出品画面から離れることなく、AIが70〜80文字の最適な長さに自動最適化します。</p>
+                <h3 data-i18n="feat.1.title">AI タイトル最適化</h3>
+                <p data-i18n="feat.1.desc">ChatGPT との画面往復は不要。出品画面から離れることなく、AIが70〜80文字の最適な長さに自動最適化します。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
-                <h3>Turbo Mode（全自動）</h3>
-                <p>ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。</p>
+                <h3 data-i18n="feat.2.title">Turbo Mode（全自動）</h3>
+                <p data-i18n="feat.2.desc">ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📋</div>
-                <h3>ASIN履歴管理</h3>
-                <p>「どこまでやったか？」問題を完全解消。重い共有スプレッドシートと決別し、拡張機能内で管理。</p>
+                <h3 data-i18n="feat.3.title">ASIN履歴管理</h3>
+                <p data-i18n="feat.3.desc">「どこまでやったか？」問題を完全解消。重い共有スプレッドシートと決別し、拡張機能内で管理。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🛡️</div>
-                <h3>VeRO自動検出</h3>
-                <p>ブランド警告や出品制限を自動で検知。知らずに出してしまうリスクを事前にブロックします。</p>
+                <h3 data-i18n="feat.4.title">VeRO自動検出</h3>
+                <p data-i18n="feat.4.desc">ブランド警告や出品制限を自動で検知。知らずに出してしまうリスクを事前にブロックします。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">📊</div>
-                <h3>作業統計・速度計測</h3>
-                <p>今日の出品数・作業時間・出品速度をリアルタイム表示。自分のパフォーマンスを「見える化」。</p>
+                <h3 data-i18n="feat.5.title">作業統計・速度計測</h3>
+                <p data-i18n="feat.5.desc">今日の出品数・作業時間・出品速度をリアルタイム表示。自分のパフォーマンスを「見える化」。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">🔝</div>
-                <h3>Quick MIPボタン</h3>
-                <p>画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。</p>
+                <h3 data-i18n="feat.6.title">Quick MIPボタン</h3>
+                <p data-i18n="feat.6.desc">画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。</p>
             </div>
         </div>
     </section>
@@ -692,56 +713,56 @@
     <!-- 料金 -->
     <div class="pricing-section" id="pricing">
         <div class="pricing-inner">
-            <div class="section-title">シンプルな料金プラン</div>
-            <div class="section-sub">すべてのプランに1ヶ月の無料トライアル期間あり</div>
+            <div class="section-title" data-i18n="pricing.title">シンプルな料金プラン</div>
+            <div class="section-sub" data-i18n="pricing.sub">すべてのプランに1ヶ月の無料トライアル期間あり</div>
             <div class="pricing-grid">
 
                 <!-- Free -->
                 <div class="plan-card">
-                    <div class="plan-name">Free</div>
-                    <div class="plan-price">¥0 <span>/ 月</span></div>
-                    <div class="plan-desc">まずは試したい方へ</div>
+                    <div class="plan-name" data-i18n="plan.free.title">Free</div>
+                    <div class="plan-price">¥0 <span data-i18n="plan.month">/ 月</span></div>
+                    <div class="plan-desc" data-i18n="plan.free.desc">まずは試したい方へ</div>
                     <ul class="plan-features">
-                        <li>1日2回 AIタイトル最適化</li>
-                        <li>Quick MIPボタン配置</li>
-                        <li>ASIN履歴保持（最大1,000件）</li>
-                        <li>VeRO自動検出</li>
-                        <li>出品統計・時間計測</li>
+                        <li data-i18n="plan.free.f1">1日2回 AIタイトル最適化</li>
+                        <li data-i18n="plan.free.f2">Quick MIPボタン配置</li>
+                        <li data-i18n="plan.free.f3">ASIN履歴保持（最大1,000件）</li>
+                        <li data-i18n="plan.free.f4">VeRO自動検出</li>
                     </ul>
-                    <a href="https://github.com/kuronylab/listerflow-pro-for-yaballe/releases" target="_blank"
-                        class="btn-plan btn-plan-ghost">無料で使う</a>
+                    <a href="chrome-extension://ggjcpmlmlmigioiabcjabfmngomlfdic/src/pages/purchase.html"
+                        class="btn-plan btn-plan-ghost" data-i18n="plan.free.btn">無料で使う</a>
                 </div>
 
                 <!-- Pro -->
                 <div class="plan-card popular">
-                    <div class="popular-tag">🔥 一番人気</div>
-                    <div class="plan-name">Pro</div>
-                    <div class="plan-price">¥2,980 <span>/ 月</span></div>
-                    <div class="plan-desc">効率を最大化し、出品作業を「快感」に</div>
+                    <div class="popular-tag" data-i18n="plan.pro.tag">🔥 一番人気</div>
+                    <div class="plan-name" data-i18n="plan.pro.title">Pro</div>
+                    <div class="plan-price">¥2,980 <span data-i18n="plan.month">/ 月</span></div>
+                    <div class="plan-desc" data-i18n="plan.pro.desc">効率を最大化し、出品作業を「快感」に</div>
                     <ul class="plan-features">
-                        <li><strong>無制限</strong> AIタイトル最適化</li>
-                        <li>ASIN履歴保持（最大1,000件）</li>
-                        <li>最適化後 MIP自動クリック</li>
-                        <li>OK ボタン自動クリック</li>
-                        <li>CSV出力・一括コピー機能</li>
-                        <li>Turbo Mode（1日5回）</li>
+                        <li data-i18n="plan.pro.f1"><strong>無制限</strong> AIタイトル最適化</li>
+                        <li data-i18n="plan.pro.f2">ASIN履歴保持（最大1,000件）</li>
+                        <li data-i18n="plan.pro.f3">最適化後 MIP自動クリック</li>
+                        <li data-i18n="plan.pro.f4">OK ボタン自動クリック</li>
+                        <li data-i18n="plan.pro.f5">CSV出力・一括コピー機能</li>
+                        <li data-i18n="plan.pro.f6">Turbo Mode（1日5回）</li>
+                        <li data-i18n="plan.pro.f7">出品統計・時間計測</li>
                     </ul>
-                    <a href="#" id="btnPro" class="btn-plan btn-plan-primary">Proにアップグレード</a>
+                    <a href="chrome-extension://ggjcpmlmlmigioiabcjabfmngomlfdic/src/pages/purchase.html" id="btnPro" class="btn-plan btn-plan-primary" data-i18n="plan.pro.btn">Proにアップグレード</a>
                 </div>
 
                 <!-- Premium -->
                 <div class="plan-card">
-                    <div class="plan-name">Premium</div>
-                    <div class="plan-price">¥4,980 <span>/ 月</span></div>
-                    <div class="plan-desc">究極の自動化で「時間を買う」運用へ</div>
+                    <div class="plan-name" data-i18n="plan.premium.title">Premium</div>
+                    <div class="plan-price">¥4,980 <span data-i18n="plan.month">/ 月</span></div>
+                    <div class="plan-desc" data-i18n="plan.premium.desc">究極の自動化で「時間を買う」運用へ</div>
                     <ul class="plan-features">
-                        <li>Proプランの全機能</li>
-                        <li>ASIN履歴保持（最大1,000件）</li>
-                        <li><strong>無制限</strong> Turbo Mode</li>
-                        <li>優先サポート対応</li>
-                        <li>ベータ機能の先行試用</li>
+                        <li data-i18n="plan.prem.f1">Proプランの全機能</li>
+                        <li data-i18n="plan.prem.f2">ASIN履歴保持（最大1,000件）</li>
+                        <li data-i18n="plan.prem.f3"><strong>無制限</strong> Turbo Mode</li>
+                        <li data-i18n="plan.prem.f4">優先サポート対応</li>
+                        <li data-i18n="plan.prem.f5">ベータ機能の先行試用</li>
                     </ul>
-                    <a href="#" id="btnPremium" class="btn-plan btn-plan-premium">Premiumにアップグレード</a>
+                    <a href="chrome-extension://ggjcpmlmlmigioiabcjabfmngomlfdic/src/pages/purchase.html" id="btnPremium" class="btn-plan btn-plan-premium" data-i18n="plan.premium.btn">Premiumにアップグレード</a>
                 </div>
 
             </div>
@@ -750,52 +771,51 @@
 
     <!-- 購入〜利用開始フロー -->
     <section id="flow">
-        <div class="section-title">ご利用開始まで3ステップ</div>
-        <div class="section-sub">決済完了後すぐにライセンスキーが発行されます</div>
+        <div class="section-title" data-i18n="flow.title">ご利用開始まで3ステップ</div>
+        <div class="section-sub" data-i18n="flow.sub">決済完了後すぐにライセンスキーが発行されます</div>
         <div class="flow-steps">
             <div class="flow-step">
                 <div class="step-num">1</div>
-                <h3>プランを選んで決済</h3>
-                <p>上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。</p>
+                <h3 data-i18n="flow.1.title">プランを選んで決済</h3>
+                <p data-i18n="flow.1.desc">上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。<br><span class="feature-note" style="color: #e53e3e;">※必ずYaballeで使用しているメールアドレスで購入してください。</span></p>
             </div>
             <div class="flow-step">
                 <div class="step-num">2</div>
-                <h3>ライセンスキーを受け取る</h3>
-                <p>決済完了直後に画面にキーが表示され、登録メールにも送付されます。コピーして手元に保管してください。</p>
+                <h3 data-i18n="flow.2.title">ライセンスキーを受け取る</h3>
+                <p data-i18n="flow.2.desc">決済完了直後に画面にキーが表示され、登録メールにも送付されます。コピーして手元に保管してください。</p>
             </div>
             <div class="flow-step">
                 <div class="step-num">3</div>
-                <h3>拡張機能で認証する</h3>
-                <p>拡張機能のポップアップ → 「ライセンス設定」タブ → キーを入力して「認証」を押すだけで完了です。</p>
+                <h3 data-i18n="flow.3.title">自動反映</h3>
+                <p data-i18n="flow.3.desc">購入後、同じアカウントでYaballeにログインするだけで、自動的にプロ機能が有効化されます。</p>
             </div>
         </div>
     </section>
 
     <!-- FAQ -->
     <section id="faq" style="padding-top: 0;">
-        <div class="section-title">よくある質問</div>
+        <div class="section-title" data-i18n="faq.title">よくある質問</div>
         <div class="section-sub" style="margin-bottom: 32px;"></div>
         <div class="faq-list">
             <div class="faq-item">
-                <div class="faq-q">無料で試せますか？</div>
-                <div class="faq-a">はい、Freeプランは料金なしでご利用いただけます。またPro・Premiumプランは初月無料のトライアル期間があります（別途ご案内）。</div>
+                <div class="faq-q" data-i18n="faq.1.q">無料で試せますか？</div>
+                <div class="faq-a" data-i18n="faq.1.a">はい、Freeプランは料金なしでご利用いただけます。またPro・Premiumプランは初月無料のトライアル期間があります（別途ご案内）。</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q">いつでもキャンセルできますか？</div>
-                <div class="faq-a">
-                    はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。</div>
+                <div class="faq-q" data-i18n="faq.2.q">いつでもキャンセルできますか？</div>
+                <div class="faq-a" data-i18n="faq.2.a">はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q">ライセンスキーはいつもらえますか？</div>
-                <div class="faq-a">決済完了後、画面に即座に表示されます。またご登録のメールアドレスにも自動送付されます。</div>
+                <div class="faq-q" data-i18n="faq.3.q">ライセンスはどうやって反映させますか？</div>
+                <div class="faq-a" data-i18n="faq.3.a">決済完了後、同じアカウントでYaballeにログインすると自動的に反映されます。手動入力の必要はありません。<br><br>※ライセンスキーはメールでも送信されますので、念のため大切に保管してください。<br><span class="feature-note" style="color: #e53e3e;">※必ずYaballeで使用しているメールアドレスで購入を完了させてください。</span></div>
             </div>
             <div class="faq-item">
-                <div class="faq-q">Yaballeの仕様変更に対応していますか？</div>
-                <div class="faq-a">Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能を更新対応しています。</div>
+                <div class="faq-q" data-i18n="faq.4.q">Yaballeの仕様変更に対応していますか？</div>
+                <div class="faq-a" data-i18n="faq.4.a">Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能を更新対応しています。</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q">動作環境はなんですか？</div>
-                <div class="faq-a">Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。</div>
+                <div class="faq-q" data-i18n="faq.5.q">動作環境はなんですか？</div>
+                <div class="faq-a" data-i18n="faq.5.a">Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。</div>
             </div>
         </div>
     </section>
@@ -803,61 +823,61 @@
     <!-- 特定商取引法 -->
     <section id="tokusho" class="tokusho-section" style="max-width: 100%; padding: 80px 24px;">
         <div style="max-width: 760px; margin: 0 auto;">
-            <div class="section-title">特定商取引法に基づく表記</div>
+            <div class="section-title" data-i18n="tokusho.title">特定商取引法に基づく表記</div>
             <div class="tokusho-inner" style="margin-top: 32px;">
                 <table>
                     <tr>
-                        <th>販売業者</th>
-                        <td>KURONYLAB（個人事業主）</td>
+                        <th data-i18n="tokusho.label.vendor">販売業者</th>
+                        <td data-i18n="tokusho.value.vendor">KURONYLAB（個人事業主）</td>
                     </tr>
                     <tr>
-                        <th>運営責任者</th>
-                        <td>黒木 皓基</td>
+                        <th data-i18n="tokusho.label.manager">運営責任者</th>
+                        <td data-i18n="tokusho.value.manager">黒木 皓基</td>
                     </tr>
                     <tr>
-                        <th>所在地</th>
-                        <td>（請求に応じて遅滞なく開示します）</td>
+                        <th data-i18n="tokusho.label.location">所在地</th>
+                        <td data-i18n="tokusho.value.location">（請求に応じて遅滞なく開示します）</td>
                     </tr>
                     <tr>
-                        <th>お問い合わせ</th>
+                        <th data-i18n="tokusho.label.contact">お問い合わせ</th>
                         <td>
-                            メール：<a href="mailto:kuronylab@gmail.com">kuronylab@gmail.com</a><br>
-                            サポートLINE：<a href="https://line.me/ti/g/dFVUneYZKS" target="_blank">こちらから参加</a>（返信：原則24時間以内）
+                            <span data-i18n="tokusho.value.contact.email">メール：</span><a href="mailto:kuronylab@gmail.com">kuronylab@gmail.com</a><br>
+                            <span data-i18n="tokusho.value.contact.line">サポートLINE：</span><a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" data-i18n="tokusho.value.contact.line.link">こちらから参加</a><span data-i18n="tokusho.value.contact.line.note">（返信：原則24時間以内）</span>
                         </td>
                     </tr>
                     <tr>
-                        <th>販売価格</th>
+                        <th data-i18n="tokusho.label.price">販売価格</th>
                         <td>
-                            Freeプラン：無料<br>
-                            Proプラン：月額 2,980円（税込）<br>
-                            Premiumプラン：月額 4,980円（税込）
+                            <span data-i18n="tokusho.value.price.free">Freeプラン：無料</span><br>
+                            <span data-i18n="tokusho.value.price.pro">Proプラン：月額 2,980円（税込）</span><br>
+                            <span data-i18n="tokusho.value.price.premium">Premiumプラン：月額 4,980円（税込）</span>
                         </td>
                     </tr>
                     <tr>
-                        <th>支払い方法</th>
-                        <td>クレジットカード（Stripe決済）<br>対応ブランド：Visa / Mastercard / American Express など</td>
+                        <th data-i18n="tokusho.label.payment_method">支払い方法</th>
+                        <td data-i18n="tokusho.value.payment_method">クレジットカード（Stripe決済）<br>対応ブランド：Visa / Mastercard / American Express など</td>
                     </tr>
                     <tr>
-                        <th>支払い時期</th>
-                        <td>お申し込み時に即時決済。以降、毎月同日に自動更新されます。</td>
+                        <th data-i18n="tokusho.label.payment_timing">支払い時期</th>
+                        <td data-i18n="tokusho.value.payment_timing">お申し込み時に即時決済。以降、毎月同日に自動更新されます。</td>
                     </tr>
                     <tr>
-                        <th>役務の提供時期</th>
-                        <td>決済完了後、即時にライセンスキーを発行します。</td>
+                        <th data-i18n="tokusho.label.delivery_timing">役務の提供時期</th>
+                        <td data-i18n="tokusho.value.delivery_timing">決済完了後、即時にライセンスが有効化されます。</td>
                     </tr>
                     <tr>
-                        <th>役務の内容</th>
-                        <td>Chrome拡張機能「ListerFlow Pro for
-                            Yaballe」の有料プランへのアクセス権（ライセンスキー）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。</td>
+                        <th data-i18n="tokusho.label.service_content">役務の内容</th>
+                        <td data-i18n="tokusho.value.service_content">Chrome拡張機能「ListerFlow Pro for
+                            Yaballe」の有料プランへのアクセス権（ライセンス）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。</td>
                     </tr>
                     <tr>
-                        <th>キャンセル・解約</th>
-                        <td>サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。
+                        <th data-i18n="tokusho.label.cancellation">キャンセル・解約</th>
+                        <td data-i18n="tokusho.value.cancellation">サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。
                         </td>
                     </tr>
                     <tr>
-                        <th>動作環境</th>
-                        <td>Google Chrome（最新版）がインストールされたPC。対応サイト：app.yaballe.com</td>
+                        <th data-i18n="tokusho.label.environment">動作環境</th>
+                        <td data-i18n="tokusho.value.environment">Google Chrome（最新版）がインストールされたPC。<br>対応サイト：app.yaballe.com</td>
                     </tr>
                 </table>
             </div>
@@ -866,29 +886,293 @@
 
     <!-- フッター -->
     <footer>
-        <div class="footer-links">
-            <a href="#features">機能</a>
-            <a href="#pricing">料金プラン</a>
-            <a href="#flow">購入方法</a>
-            <a href="#faq">FAQ</a>
-            <a href="#tokusho">特定商取引法に基づく表記</a>
-            <a href="mailto:kuronylab@gmail.com">お問い合わせ</a>
+         <div class="footer-links">
+            <a href="#features" data-i18n="nav.features">機能</a>
+            <a href="#pricing" data-i18n="nav.pricing">料金プラン</a>
+            <a href="#flow" data-i18n="nav.flow">購入方法</a>
+            <a href="#faq" data-i18n="nav.faq">FAQ</a>
+            <a href="#tokusho" data-i18n="tokusho.title">特定商取引法に基づく表記</a>
+            <a href="mailto:kuronylab@gmail.com" data-i18n="footer.contact">お問い合わせ</a>
         </div>
         <p>© 2026 <strong>ListerFlow Pro</strong> by KURONYLAB. All rights reserved.</p>
     </footer>
 
     <script>
-        // FAQ アコーディオン
+        const translations = {
+            ja: {
+                "page.title": "ListerFlow Pro for Yaballe | 出品時間を最大80%削減するChrome拡張機能",
+                "page.desc": "YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→12秒を実現するChrome拡張機能。月額2,980円から。",
+                "nav.features": "機能",
+                "nav.reviews": "レビュー",
+                "nav.pricing": "料金",
+                "nav.flow": "購入方法",
+                "nav.faq": "よくある質問",
+                "nav.tokusho": "特商法",
+                "nav.cta": "プランを見る",
+                "hero.badge": "🎁 現在 1ヶ月 無料トライアル実施中",
+                "hero.title1": "出品時間を",
+                "hero.title2": "最大80%削減",
+                "hero.title3": "する<br>Chrome拡張機能",
+                "hero.desc": "Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。",
+                "hero.btn.free": "✨ 無料で試してみる",
+                "hero.btn.features": "機能を見る",
+                "stat.1.num": "80%",
+                "stat.1.label": "出品時間の削減",
+                "stat.2.num": "12秒",
+                "stat.2.label": "1品あたりの目標時間",
+                "stat.3.num": "70〜80文字",
+                "stat.3.label": "AIが最適なタイトル長さに",
+                "stat.4.num": "1,000件",
+                "stat.4.label": "ASIN履歴保持",
+                "features.title": "なぜ ListerFlow Pro なのか",
+                "features.sub": "出品作業の「無駄」をすべてテクノロジーで解消します",
+                "feat.1.title": "AI タイトル最適化",
+                "feat.1.desc": "ChatGPT との画面往復は不要。出品画面から離れることなく、AIが70〜80文字の最適な長さに自動最適化します。",
+                "feat.2.title": "Turbo Mode（全自動）",
+                "feat.2.desc": "ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。",
+                "feat.3.title": "ASIN履歴管理",
+                "feat.3.desc": "「どこまでやったか？」問題を完全解消。重い共有スプレッドシートと決別し、拡張機能内で管理。",
+                "feat.4.title": "VeRO自動検出",
+                "feat.4.desc": "ブランド警告や出品制限を自動で検知。知らずに出してしまうリスクを事前にブロックします。",
+                "feat.5.title": "作業統計・速度計測",
+                "feat.5.desc": "今日の出品数・作業時間・出品速度をリアルタイム表示。自分のパフォーマンスを「見える化」。",
+                "feat.6.title": "Quick MIPボタン",
+                "feat.6.desc": "画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。",
+                "pricing.title": "シンプルな料金プラン",
+                "pricing.sub": "すべてのプランに1ヶ月の無料トライアル期間あり",
+                "plan.month": " / 月",
+                "plan.free.title": "Free",
+                "plan.free.desc": "まずは試したい方へ",
+                "plan.free.btn": "無料で使う",
+                "plan.free.f1": "1日2回 AIタイトル最適化",
+                "plan.free.f2": "Quick MIPボタン配置",
+                "plan.free.f3": "ASIN履歴保持（最大1,000件）",
+                "plan.free.f4": "VeRO自動検出",
+                "plan.pro.tag": "🔥 一番人気",
+                "plan.pro.title": "Pro",
+                "plan.pro.desc": "効率を最大化し、出品作業を「快感」に",
+                "plan.pro.btn": "Proにアップグレード",
+                "plan.pro.f1": "<strong>無制限</strong> AIタイトル最適化",
+                "plan.pro.f2": "ASIN履歴保持（最大1,000件）",
+                "plan.pro.f3": "最適化後 MIP自動クリック",
+                "plan.pro.f4": "OK ボタン自動クリック",
+                "plan.pro.f5": "CSV出力・一括コピー機能",
+                "plan.pro.f6": "Turbo Mode（1日5回）",
+                "plan.pro.f7": "出品統計・時間計測",
+                "plan.premium.title": "Premium",
+                "plan.premium.desc": "究極の自動化で「時間を買う」運用へ",
+                "plan.premium.btn": "Premiumにアップグレード",
+                "plan.prem.f1": "Proプランの全機能",
+                "plan.prem.f2": "ASIN履歴保持（最大1,000件）",
+                "plan.prem.f3": "<strong>無制限</strong> Turbo Mode",
+                "plan.prem.f4": "優先サポート対応",
+                "plan.prem.f5": "ベータ機能の先行試用",
+                "flow.title": "ご利用開始まで3ステップ",
+                "flow.sub": "決済完了後すぐにライセンスキーが発行されます",
+                "flow.1.title": "プランを選んで決済",
+                "flow.1.desc": "上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。<br><span class=\"feature-note\" style=\"color: #e53e3e;\">※必ずYaballeで使用しているメールアドレスで購入してください。</span>",
+                "flow.2.title": "ライセンスキーを受け取る",
+                "flow.2.desc": "決済完了直後に画面にキーが表示され、登録メールにも送付されます。コピーして手元に保管してください。",
+                "flow.3.title": "自動反映",
+                "flow.3.desc": "購入後、同じアカウントでYaballeにログインするだけで、自動的にプロ機能が有効化されます。※ライセンスキーはメールでも送信されますので、念のため保管してください。",
+                "faq.title": "よくある質問",
+                "faq.1.q": "無料で試せますか？",
+                "faq.1.a": "はい、Freeプランは料金なしでご利用いただけます。またPro・Premiumプランは初月無料のトライアル期間があります（別途ご案内）。",
+                "faq.2.q": "いつでもキャンセルできますか？",
+                "faq.2.a": "はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。",
+                "faq.3.q": "ライセンスはどうやって反映させますか？",
+                "faq.3.a": "決済完了後、同じアカウントでYaballeにログインすると自動的に反映されます。手動入力の必要はありません。<br><br>※ライセンスキーはメールでも送信されますので、念のため大切に保管してください。<br><span class=\"feature-note\" style=\"color: #e53e3e;\">※必ずYaballeで使用しているメールアドレスで購入を完了させてください。</span>",
+                "faq.4.q": "Yaballeの仕様変更に対応していますか？",
+                "faq.4.a": "Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能を更新対応しています。",
+                "faq.5.q": "動作環境はなんですか？",
+                "faq.5.a": "Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。",
+                "tokusho.title": "特定商取引法に基づく表記",
+                "tokusho.label.vendor": "販売業者",
+                "tokusho.value.vendor": "KURONYLAB",
+                "tokusho.label.manager": "運営責任者",
+                "tokusho.value.manager": "黒木 皓基",
+                "tokusho.label.location": "所在地",
+                "tokusho.value.location": "（請求に応じて遅滞なく開示します）",
+                "tokusho.label.contact": "お問い合わせ",
+                "tokusho.value.contact.email": "メール：",
+                "tokusho.value.contact.line": "サポートLINE：",
+                "tokusho.value.contact.line.link": "こちらから参加",
+                "tokusho.value.contact.line.note": "（返信：原則24時間以内）",
+                "tokusho.label.price": "販売価格",
+                "tokusho.value.price.free": "Freeプラン：無料",
+                "tokusho.value.price.pro": "Proプラン：月額 2,980円（税込）",
+                "tokusho.value.price.premium": "Premiumプラン：月額 4,980円（税込）",
+                "tokusho.label.payment_method": "支払い方法",
+                "tokusho.value.payment_method": "クレジットカード（Stripe決済）<br>対応ブランド：Visa / Mastercard / American Express など",
+                "tokusho.label.payment_timing": "支払い時期",
+                "tokusho.value.payment_timing": "お申し込み時に即時決済。以降、毎月同日に自動更新されます。",
+                "tokusho.label.delivery_timing": "サービス提供時期",
+                "tokusho.value.delivery_timing": "決済完了後、即時にライセンスが有効化されます。",
+                "tokusho.label.service_content": "サービス内容",
+                "tokusho.value.service_content": "Chrome拡張機能「ListerFlow Pro for Yaballe」の有料プランへのアクセス権（ライセンス）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。",
+                "tokusho.label.cancellation": "キャンセル・解約",
+                "tokusho.value.cancellation": "サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。",
+                "tokusho.label.environment": "動作環境",
+                "tokusho.value.environment": "Google Chrome（最新版）がインストールされたPC。<br>対応サイト：app.yaballe.com",
+                "footer.contact": "お問い合わせ"
+            },
+            en: {
+                "page.title": "ListerFlow Pro for Yaballe | Chrome Extension Reducing Listing Time by 80%",
+                "page.desc": "Drastically increase eBay listing efficiency on Yaballe. AI title optimization and full auto mode reduce listing time from 60s to 12s. Starting from 2,980 JPY/month.",
+                "nav.features": "Features",
+                "nav.reviews": "Reviews",
+                "nav.pricing": "Pricing",
+                "nav.flow": "How to Buy",
+                "nav.faq": "FAQ",
+                "nav.tokusho": "Legal",
+                "nav.cta": "View Plans",
+                "hero.badge": "🎁 1-Month Free Trial Available Now",
+                "hero.title1": "Reduce listing time<br>",
+                "hero.title2": "by up to 80%",
+                "hero.title3": "",
+                "hero.desc": "Dramatically streamline your eBay listing process on Yaballe Lister with AI and automation.",
+                "hero.btn.free": "✨ Try for Free",
+                "hero.btn.features": "View Features",
+                "stat.1.num": "80%",
+                "stat.1.label": "Time Saved",
+                "stat.2.num": "12 sec",
+                "stat.2.label": "Target Time per Item",
+                "stat.3.num": "70-80 chars",
+                "stat.3.label": "AI Optimized Title Length",
+                "stat.4.num": "1,000",
+                "stat.4.label": "ASIN History Retained",
+                "features.title": "Why ListerFlow Pro?",
+                "features.sub": "Eliminate all 'waste' in listing operations with technology.",
+                "feat.1.title": "AI Title Optimization",
+                "feat.1.desc": "No more switching between ChatGPT. AI automatically optimizes titles to the ideal 70-80 character length, right from the listing page.",
+                "feat.2.title": "Turbo Mode (Full Auto)",
+                "feat.2.desc": "Just paste an ASIN — Get Item → Optimize → MIP → OK, all fully automated.",
+                "feat.3.title": "ASIN History Management",
+                "feat.3.desc": "Never lose track of your progress. Manage your listing history within the extension, no more heavy shared spreadsheets.",
+                "feat.4.title": "VeRO Auto-Detection",
+                "feat.4.desc": "Automatically detect brand warnings and listing restrictions. Block risky listings before they happen.",
+                "feat.5.title": "Work Statistics & Speed Tracking",
+                "feat.5.desc": "Real-time display of today's listing count, work time, and listing speed. Visualize your performance.",
+                "feat.6.title": "Quick MIP Button",
+                "feat.6.desc": "No more scrolling down. The Quick MIP button at the top minimizes eye movement and speeds up your workflow.",
+                "pricing.title": "Simple Pricing",
+                "pricing.sub": "1-month free trial available for all plans",
+                "plan.month": " / month",
+                "plan.free.title": "Free",
+                "plan.free.desc": "For those who want to test it out",
+                "plan.free.btn": "Use for Free",
+                "plan.free.f1": "2 AI Title Optimizations / day",
+                "plan.free.f2": "Quick MIP Button",
+                "plan.free.f3": "ASIN History (up to 1,000)",
+                "plan.free.f4": "VeRO Auto-Detection",
+                "plan.pro.tag": "🔥 Most Popular",
+                "plan.pro.title": "Pro",
+                "plan.pro.desc": "Maximize efficiency, make listing a 'pleasure'",
+                "plan.pro.btn": "Upgrade to Pro",
+                "plan.pro.f1": "<strong>Unlimited</strong> AI Title Optimization",
+                "plan.pro.f2": "ASIN History (up to 1,000)",
+                "plan.pro.f3": "Auto MIP Click after Optimization",
+                "plan.pro.f4": "Auto OK Button Click",
+                "plan.pro.f5": "CSV Export & Bulk Copy",
+                "plan.pro.f6": "Turbo Mode (5 times / day)",
+                "plan.pro.f7": "Listing Statistics & Time Tracking",
+                "plan.premium.title": "Premium",
+                "plan.premium.desc": "Ultimate automation to 'buy time'",
+                "plan.premium.btn": "Upgrade to Premium",
+                "plan.prem.f1": "All Pro Plan Features",
+                "plan.prem.f2": "ASIN History (up to 1,000)",
+                "plan.prem.f3": "<strong>Unlimited</strong> Turbo Mode",
+                "plan.prem.f4": "Priority Support",
+                "plan.prem.f5": "Early Access to Beta Features",
+                "flow.title": "3 Steps to Get Started",
+                "flow.sub": "License key issued immediately after payment",
+                "flow.1.title": "Choose a Plan & Pay",
+                "flow.1.desc": "Click the 'Upgrade' button above to go to Stripe's secure checkout. Pay with a credit card.<br><span class=\"feature-note\" style=\"color: #e53e3e;\">*Please purchase using the same email address registered to your Yaballe account.</span>",
+                "flow.2.title": "Receive Your License Key",
+                "flow.2.desc": "Your key is displayed on screen right after payment and also sent to your registered email. Copy and save it.",
+                "flow.3.title": "Automatic Activation",
+                "flow.3.desc": "After purchasing, simply log in to Yaballe with the same account, and your Pro features will be activated automatically. *The license key is also sent via email; please keep it for your records.",
+                "faq.title": "Frequently Asked Questions",
+                "faq.1.q": "Can I try it for free?",
+                "faq.1.a": "Yes! The Free plan is completely free. Pro and Premium plans also come with a 1-month free trial.",
+                "faq.2.q": "Can I cancel anytime?",
+                "faq.2.a": "Yes, you can cancel anytime via support LINE or email. We'll also guide you to Stripe's customer portal. No charges will occur after cancellation.",
+                "faq.3.q": "How is the license activated?",
+                "faq.3.a": "After payment, log in to Yaballe with the same account to automatically activate your features. No manual input is required.<br><br>*The license key will also be sent via email, so please keep it as a backup.<br><span class=\"feature-note\" style=\"color: #e53e3e;\">*Please ensure you purchase using the same email address registered to your Yaballe account.</span>",
+                "faq.4.q": "Do you support Yaballe updates?",
+                "faq.4.a": "When Yaballe updates its platform, we update the extension as quickly as possible to maintain compatibility.",
+                "faq.5.q": "What are the system requirements?",
+                "faq.5.a": "This is a Chrome extension compatible with Google Chrome (latest version).<br>Supported site: Yaballe (app.yaballe.com).",
+                "tokusho.title": "Act on Specified Commercial Transactions",
+                "tokusho.label.vendor": "Vendor",
+                "tokusho.value.vendor": "KURONYLAB",
+                "tokusho.label.manager": "Representative",
+                "tokusho.value.manager": "Kouki Kuroki",
+                "tokusho.label.location": "Location",
+                "tokusho.value.location": "(Disclosed without delay upon request)",
+                "tokusho.label.contact": "Contact",
+                "tokusho.value.contact.email": "Email: ",
+                "tokusho.value.contact.line": "Support LINE: ",
+                "tokusho.value.contact.line.link": "Join here",
+                "tokusho.value.contact.line.note": " (Response: typically within 24 hours)",
+                "tokusho.label.price": "Selling Price",
+                "tokusho.value.price.free": "Free Plan: Free",
+                "tokusho.value.price.pro": "Pro Plan: 2,980 yen/month (Tax included)",
+                "tokusho.value.price.premium": "Premium Plan: 4,980 yen/month (Tax included)",
+                "tokusho.label.payment_method": "Payment Method",
+                "tokusho.value.payment_method": "Credit Card (Stripe Payment)<br>Supported: Visa / Mastercard / American Express, etc.",
+                "tokusho.label.payment_timing": "Payment Timing",
+                "tokusho.value.payment_timing": "Immediate payment upon application. Renews automatically on the same day each month.",
+                "tokusho.label.delivery_timing": "Service Delivery",
+                "tokusho.value.delivery_timing": "License is activated immediately after payment completion.",
+                "tokusho.label.service_content": "Service Content",
+                "tokusho.value.service_content": "Digital service providing access to paid plans for the 'ListerFlow Pro for Yaballe' Chrome extension.",
+                "tokusho.label.cancellation": "Cancellation/Refund",
+                "tokusho.value.cancellation": "Subscriptions can be cancelled anytime. Due to the nature of digital services, refunds are generally not accepted.",
+                "tokusho.label.environment": "Requirements",
+                "tokusho.value.environment": "PC with Google Chrome (latest version) installed.<br>Supported site: app.yaballe.com",
+                "footer.contact": "Contact Us"
+            }
+        };
+
+        function setLanguage(lang) {
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if (translations[lang] && translations[lang].hasOwnProperty(key)) {
+                    if (el.tagName === 'INPUT' && el.type === 'placeholder') {
+                        el.placeholder = translations[lang][key];
+                    } else if (el.tagName === 'META' && (el.name === 'description' || el.getAttribute('property') === 'og:description')) {
+                        el.content = translations[lang][key];
+                    } else if (el.tagName === 'TITLE') {
+                        document.title = translations[lang][key];
+                    } else {
+                        el.innerHTML = translations[lang][key];
+                    }
+                }
+            });
+            document.documentElement.lang = lang;
+            localStorage.setItem("preferred_language", lang);
+        }
+
+        document.getElementById("langSwitch").addEventListener("change", (e) => {
+            setLanguage(e.target.value);
+        });
+
+        // Initialize QA toggles
         document.querySelectorAll('.faq-q').forEach(q => {
             q.addEventListener('click', () => {
-                const item = q.parentElement;
-                item.classList.toggle('open');
+                q.parentElement.classList.toggle('open');
             });
         });
 
+        // Init language based on browser or saved pref
+        const savedLang = localStorage.getItem("preferred_language") || (navigator.language.startsWith("ja") ? "ja" : "en");
+        document.getElementById("langSwitch").value = savedLang;
+        setLanguage(savedLang);
+
         // 購入ボタン — Stripeの決済リンクを取得後ここを更新
-        const STRIPE_PRO_LINK = 'https://buy.stripe.com/test_xxxx_pro';     // ← 書き換える
-        const STRIPE_PREMIUM_LINK = 'https://buy.stripe.com/test_xxxx_premium'; // ← 書き換える
+        const STRIPE_PRO_LINK = 'https://buy.stripe.com/00waEYe6X2BC87f7yt63K00';
+        const STRIPE_PREMIUM_LINK = 'https://buy.stripe.com/28E5kE2of3FGevDg4Z63K01';
 
         document.getElementById('btnPro')?.addEventListener('click', e => {
             e.preventDefault();
