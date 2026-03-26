@@ -29,6 +29,8 @@
   "settingCopyCsvDesc": { "message": "Show Copy/CSV export buttons on the workspace" },
   "settingWorkTime": { "message": "Show Work Time Panel" },
   "settingWorkTimeDesc": { "message": "Show work time, pause button, and speed badge" },
+  "settingShowStatistics": { "message": "Show Statistics UI" },
+  "settingShowStatisticsDesc": { "message": "Show 'Statistics' button and listing count in the workspace" },
   "btnSave": { "message": "Save Settings" },
   "settingApi": { "message": "OpenAI API Settings" },
   "settingApiKey": { "message": "API Key" },

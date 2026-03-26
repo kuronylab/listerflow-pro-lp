@@ -77,7 +77,8 @@ function initializeElements() {
     autoClickOkAfterMip: document.getElementById('autoClickOkAfterMip'),
     turboListingMode: document.getElementById('turboListingMode'),
     showWorkTimePanel: document.getElementById('showWorkTimePanel'),
-    showCopyCsvButtons: document.getElementById('showCopyCsvButtons')
+    showCopyCsvButtons: document.getElementById('showCopyCsvButtons'),
+    showStatistics: document.getElementById('showStatistics')
   };
 
   // License elements
@@ -158,8 +159,19 @@ function setupEventListeners() {
     if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = true;
     if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = true;
 
-    // UI設定項目
+    // UI設定項目は全て連動してON
     if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = true;
+    if (settingElements.showCopyCsvButtons) {
+      settingElements.showCopyCsvButtons.checked = true;
+      // コピー・CSVボタンの表示連動（エクスポートボタンの有効化）も呼び出す
+      const exportBtn = document.getElementById('exportSpreadsheetBtn');
+      if (exportBtn) {
+        exportBtn.disabled = false;
+        exportBtn.style.opacity = '1';
+        exportBtn.style.cursor = 'pointer';
+      }
+    }
+    if (settingElements.showStatistics) settingElements.showStatistics.checked = true;
   };
 
   // 最速出品モードの連動処理
@@ -598,6 +610,7 @@ async function loadSettings() {
   if (settingElements.autoClickOkAfterMip) settingElements.autoClickOkAfterMip.checked = !!opt.autoClickOkAfterMip;
   if (settingElements.turboListingMode) settingElements.turboListingMode.checked = !!opt.turboListingMode;
   if (settingElements.showWorkTimePanel) settingElements.showWorkTimePanel.checked = opt.showWorkTimePanel !== false; // デフォルトON
+  if (settingElements.showStatistics) settingElements.showStatistics.checked = opt.showStatistics !== false; // デフォルトON
 
   // プラン制限の強制適用 (非同期で実行)
   await checkAndStrictlyEnforcePlanLimits(opt);
@@ -694,7 +707,8 @@ async function loadSettings() {
     settingElements.autoMipAfterOptimize,
     settingElements.autoClickOkAfterMip,
     settingElements.showCopyCsvButtons,
-    settingElements.showWorkTimePanel
+    settingElements.showWorkTimePanel,
+    settingElements.showStatistics
   ];
   proElements.forEach(el => {
     if (el) {
@@ -747,6 +761,7 @@ async function saveAutomationSettings() {
   opt.turboListingMode = settingElements.turboListingMode?.checked;
   opt.showWorkTimePanel = settingElements.showWorkTimePanel?.checked;
   opt.showCopyCsvButtons = settingElements.showCopyCsvButtons?.checked;
+  opt.showStatistics = settingElements.showStatistics?.checked;
   await chrome.storage.sync.set({ [KEY_OPT]: opt });
   alert(chrome.i18n.getMessage("msgAutoSettingsSaved"));
 

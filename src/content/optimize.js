@@ -9,12 +9,6 @@
 /* ---------- Evaluate / Optimize ---------- */
 
 async function evaluateAndRender({ titleEl, btnGet }) {
-  const modal = document.querySelector('.modal, [role="dialog"]');
-  if (modal && !modal.dataset.lfpModal && modal.offsetParent !== null) {
-    // 競合防止：ここでは判定のみを行い、自動クリック等の副作用はMutationObserver（setupListingSuccessObserver / setupNoListingsObserver）に任せる
-    return;
-  }
-
   const title = readText(titleEl);
   const len = (title || "").length;
 
@@ -383,6 +377,7 @@ async function onOptimizeClick({ titleEl }) {
             if (out && out !== finalTitle) {
               finalTitle = out;
               finalLen = finalTitle.length;
+              finalVero = STORE.opt.veroEnabled ? countVeroInText(finalTitle, allMatchers) : 0;
               STORE.optimizeState.lastOutputs.push(finalTitle);
               if (STORE.optimizeState.lastOutputs.length > 5) STORE.optimizeState.lastOutputs.shift();
               setInputValue(titleEl, finalTitle);
@@ -421,6 +416,7 @@ async function onOptimizeClick({ titleEl }) {
       if (finalLen >= 70 && finalLen <= 80 && finalVero === 0) {
         // ターボモードと重複しないように、ターボモードがOFFの時だけ実行
         if (!STORE.opt.turboListingMode) {
+          console.log("[LFP] オプションON: 最適化後の自動MIPを実行します");
           await sleep(250);
           clickRealMipButton();
         }

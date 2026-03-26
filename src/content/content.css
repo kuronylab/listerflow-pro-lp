@@ -75,6 +75,8 @@
   background-color: transparent !important;
   background-attachment: fixed !important;
   color: #fff !important;
+  filter: none !important; /* [disabled] による grayscale(1) を強制的に無効化して紫を維持 */
+  opacity: 1 !important; /* disabled時の半透明化も無効化 */
   animation: lfp-pulse 1.5s ease-in-out infinite;
 }
 

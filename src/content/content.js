@@ -122,11 +122,14 @@ function setBusy(isBusy) {
     if (UI.spin) UI.spin.style.display = "none";
   }
 
-  // ハイライト管理：ボタンが有効かつ設定がONの場合のみ適用
+  // ハイライト管理：点滅（一瞬の紫のグレーアウト）を防ぐため、
+  // 実行中（isBusy）はハイライトクラスを維持する
   if (STORE.opt.highlightOptimize) {
-    if (UI.btnOpt.disabled) {
+    if (!isBusy && UI.btnOpt.disabled && !STORE.turboExecuted.mip) {
+      // 処理が終わっていて、手動で無効化されている時のみハイライトを消す
       UI.btnOpt.classList.remove("highlight");
     } else {
+      // 実行中 または 利用可能状態 の場合はハイライトを適用（または維持）
       UI.btnOpt.classList.add("highlight");
     }
     // インラインスタイルを残さないようにして、CSSを優先させる
@@ -178,7 +181,10 @@ function resetUIState() {
   STORE.optimizeState.needsRetry = false;
   STORE.optimizeState.lastOutputs = [];
   // MIPボタンの点滅防止フラグをリセット（次のASINで正しく再判定）
-  if (UI.quickMipBtn) UI.quickMipBtn._wasEnabled = false;
+  if (UI.quickMipBtn) {
+    UI.quickMipBtn._wasEnabled = false;
+    UI.quickMipBtn.disabled = true;
+  }
 
   listingCounted = false;
   STORE.turboExecuted.mip = false;
@@ -256,6 +262,11 @@ function lockUI() {
   STORE.state.uiUnlocked = false;
   // UIを完全に消去して、次のタイトル出現まで待機する
   destroyMainUI();
+  // ペースト時やGet Item直後に古いタイトルで再評価・再描画されるのを防ぐため、値をクリアする
+  const titleEl = findTitleFieldSmart();
+  if (titleEl) {
+    setInputValue(titleEl, "");
+  }
   // MIPボタンは削除せず、常時グレーアウト表示を維持（resetAllFlagsで無効化済み）
 }
 
@@ -267,8 +278,12 @@ function unlockUI(titleEl) {
   // UI作成後、即座にステータスを更新（ラグ解消）
   const title = readText(titleEl);
   const len = (title || "").length;
-  if (UI.status && len > 0) {
-    UI.status.textContent = `文字数：${len} / Vero：計算中... / 出品：計算中...`;
+  if (UI.status) {
+    if (len > 0) {
+      UI.status.textContent = `文字数：${len} / Vero：計算中... / 出品：計算中...`;
+    } else {
+      UI.status.textContent = `文字数：- / Vero：- / 出品：-`;
+    }
   }
 
   // 出品統計も即座に更新
@@ -577,6 +592,7 @@ async function init() {
         e.preventDefault();
         toggleStatsPopup();
       });
+      statsBtn.style.display = STORE.opt.showStatistics ? "inline-block" : "none";
       bar.appendChild(statsBtn);
 
       // 出品件数ラベルを追加
@@ -590,6 +606,7 @@ async function init() {
       countLabel.style.alignItems = "center";
       countLabel.style.height = "32px";
       countLabel.textContent = "出品完了: -件";
+      countLabel.style.display = STORE.opt.showStatistics ? "inline-flex" : "none";
       bar.appendChild(countLabel);
       UI.listingCountLabel = countLabel;
 
@@ -715,12 +732,33 @@ async function init() {
       sel.addEventListener("change", async () => {
         const v = sel.value;
         if (!v) return;
-        resetUIState();
+        
+        // ペースト時のロジックと完全に同期させる
+        okButtonClicked = false;
+        listingCounted = false;
+        STORE.turboExecuted.optimizeCount = 0;
+        STORE.turboExecuted.mip = false;
+        STORE.optimizeState.lastOutputs = [];
+        STORE.lastRequestedAsin = v;
+
+        onAsinInput().catch(e => console.error('[LFP] onAsinInput error:', e));
+        lockUI();
+
         setInputValue(asinInput, v);
 
+        // ペースト時と同じようにペースト直後判定を入れる（二重実行防止）
+        STORE.state.lastPasteAt = now();
+
         if (STORE.opt.autoGetOnHistory && btnGet) {
-          await sleep(60);
-          btnGet.click();
+          await sleep(30); // 最小限の遅延でAngular認識待ち
+          const currentBtnGet = findButtonByText(/^Get Item$/i);
+          if (currentBtnGet && currentBtnGet.isConnected) {
+            handleGetItemClick().then(() => {
+              currentBtnGet.click();
+            }).catch(err => {
+              currentBtnGet.click();
+            });
+          }
         }
       });
     }
@@ -1221,62 +1259,75 @@ function setupGlobalEventListeners() {
     }
   }, true);
 
-  // ASIN貼り付けイベントの監視
+  // ASIN貼り付けイベントの監視 (即時実行ロジック)
   document.addEventListener("paste", async (e) => {
     // 既にコンテキストが無効な場合は何もしない
     if (!isExtensionContextValid()) return;
 
+    if (!STORE.opt.autoGetOnPaste) return;
+
     const btnGet = findButtonByText(/^Get Item$/i);
     const asinInput = findAsinInputSmart(btnGet);
-    // 元のinput要素またはその子要素で発生したペーストイベントかチェック
-    if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
-      // ペースト後の値を取得するため少しまつ
-      if (!STORE.opt.autoGetOnPaste) return;
-      const t = now();
-      if (t - STORE.state.lastPasteAt < 800) {
-        return;
-      }
-      STORE.state.lastPasteAt = t;
+    
+    // 入力欄へのペーストか検証
+    const isTarget = asinInput && (e.target === asinInput || asinInput.contains(e.target) || document.activeElement === asinInput);
+    if (!isTarget) return;
 
-      // フラグを強制リセット
-      okButtonClicked = false;
-      listingCounted = false;
-      STORE.turboExecuted.optimizeCount = 0;
-      STORE.turboExecuted.mip = false;
-      STORE.optimizeState.lastOutputs = [];
-      
-      const newAsin = normSpace(asinInput.value || "");
-      if (newAsin) STORE.lastRequestedAsin = newAsin;
+    // クリップボードのテキストを直接取得
+    const clipboardData = e.clipboardData || window.clipboardData;
+    if (!clipboardData) return;
+    const pastedText = clipboardData.getData('text');
+    const val = normSpace(pastedText || "");
 
-      // オートメーションを阻害しないよう、非ブロッキングで実行
-      onAsinInput().catch(e => console.error('[LFP] onAsinInput error:', e));
-      lockUI();
-      
-      await sleep(100); // 貼り付け完了を待つ
-      
-      const btnGet = findButtonByText(/^Get Item$/i);
-      
-      // 文字数計算等の重い処理を待たずに即座にクリック
+    // フォーマット検証
+    if (!/^B0[A-Z0-9]{8}$/i.test(val)) return;
+
+    // ペースト直後の重複実行を防止
+    const t = now();
+    if (t - STORE.state.lastPasteAt < 500) return;
+    STORE.state.lastPasteAt = t;
+
+    // Angularのデフォルトペーストとデータバインディングによる遅延や競合をキャンセル
+    e.preventDefault();
+
+    // 即座にフラグをリセットし、UIを無効化
+    okButtonClicked = false;
+    listingCounted = false;
+    STORE.turboExecuted.optimizeCount = 0;
+    STORE.turboExecuted.mip = false;
+    STORE.optimizeState.lastOutputs = [];
+    STORE.lastRequestedAsin = val;
+
+    onAsinInput().catch(e => console.error('[LFP] onAsinInput error:', e));
+    lockUI();
+
+    // 拡張機能側から同期的に値をセットし、Angularに認識させる
+    setInputValue(asinInput, val);
+
+    // Angularの内部状態更新を最短で待機
+    await sleep(30);
+
+    // 最新のボタンを取り直して即時クリック（0.3秒の遅延排除）
+    const currentBtnGet = findButtonByText(/^Get Item$/i);
+    if (currentBtnGet && currentBtnGet.isConnected) {
       handleGetItemClick().then(() => {
-        if (btnGet && btnGet.isConnected) {
-          btnGet.click();
-        }
-      }).catch(e => {
-        console.error('[LFP] handleGetItemClick error:', e);
-        // 万が一エラーになってもクリックだけは試みる
-        btnGet?.click();
+        currentBtnGet.click();
+      }).catch(err => {
+         console.error('[LFP] handleGetItemClick error during paste:', err);
+         currentBtnGet.click();
       });
     }
   }, true);
 
-  // ASIN入力欄のinputイベント: 手動入力・修正でASIN形式が完成したら自動Get Item
+  // ASIN入力欄のinputイベント: 手動入力・修正・ペーストでASIN形式が完成したら自動Get Item
   let asinInputDebounceTimer = null;
 
   document.addEventListener("input", async (e) => {
     // 既にコンテキストが無効な場合は何もしない
     if (!isExtensionContextValid()) return;
 
-    const asinInput = findAsinInputSmart();
+    const btnGet = findButtonByText(/^Get Item$/i);
+    const asinInput = findAsinInputSmart(btnGet);
     if (asinInput && (e.target === asinInput || asinInput.contains(e.target))) {
       await onAsinInput();
 
@@ -1286,7 +1337,7 @@ function setupGlobalEventListeners() {
       // ペーストイベントと重複しないようにガード（ペースト直後800ms以内はスキップ）
       if (now() - STORE.state.lastPasteAt < 800) return;
 
-      // デバウンス: 500ms待って入力が安定してから判定
+      // デバウンス: 300ms待って入力が安定してから判定（手入力・別要因のペースト共通）
       if (asinInputDebounceTimer) clearTimeout(asinInputDebounceTimer);
       asinInputDebounceTimer = setTimeout(async () => {
         const val = normSpace(asinInput.value || "");
@@ -1310,7 +1361,7 @@ function setupGlobalEventListeners() {
              findButtonByText(/^Get Item$/i)?.click();
           });
         }
-      }, 500);
+      }, 300);
     }
   }, true);
 
@@ -1327,6 +1378,7 @@ async function handleGetItemClick() {
   const asinInput = findAsinInputSmart(btnGet);
 
   // 前回の判定結果が残らないように毎回リセット
+  // これによりMIPなどの自動アクションが新ASINで再びトリガ可能になる
   resetAllFlags();
 
   // 前回のタイトルを記録（画面更新検出用）

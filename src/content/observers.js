@@ -224,6 +224,10 @@ function handlePotentialSuccessModal(modal) {
           // OKクリック後、次のASINに備えてUI状態をリセット
           setTimeout(() => {
             okButtonClicked = false;
+            // リセットの前にフラグを確実に初期化
+            STORE.turboExecuted.optimizeCount = 0;
+            STORE.turboExecuted.mip = false;
+            
             if (typeof resetUIState === 'function') {
               resetUIState();
               console.log('🔄 [LFP] 出品成功後のUIリセット完了。次のASINを受け付けます。');
@@ -234,7 +238,7 @@ function handlePotentialSuccessModal(modal) {
           let checkCount = 0;
           okButtonCheckInterval = setInterval(() => {
             checkCount++;
-            const currentModal = document.querySelector('.modal, [role="dialog"]');
+            const currentModal = document.querySelector('.modal, [role="dialog"], .cdk-overlay-pane');
             if (!currentModal || currentModal.dataset.lfpModal) {
               if (checkCount >= 30) {
                 clearInterval(okButtonCheckInterval);
@@ -256,6 +260,10 @@ function handlePotentialSuccessModal(modal) {
                 // OKクリック後、次のASINに備えてリセット
                 setTimeout(() => {
                   okButtonClicked = false;
+                  // リセットの前にフラグを確実に初期化
+                  STORE.turboExecuted.optimizeCount = 0;
+                  STORE.turboExecuted.mip = false;
+                  
                   if (typeof resetUIState === 'function') {
                     resetUIState();
                     console.log('🔄 [LFP] 出品成功後のUIリセット完了（監視経由）。');

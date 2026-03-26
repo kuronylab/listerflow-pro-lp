@@ -21,12 +21,30 @@ function findInputNearButton(btn) {
 }
 
 function findAsinInputSmart(btnGet) {
-  // すべての入力・テキストエリアを取得し、非表示（display:none）でないものをフィルタ
+  // 1. 直出しのIDで検索（最も確実）
+  // 取得中(disabled)でも履歴保存などのために特定できるようにする
+  const exact = document.querySelector('#item-asin');
+  if (exact) return exact;
+
+  // 2. Get Itemボタンの近くを探す（確実性が高い）
+  if (btnGet) {
+    const root = btnGet.closest(".asin-actions, .input-group, form, .row, .col, .panel, .card") || btnGet.parentElement;
+    if (root) {
+      const inputs = Array.from(root.querySelectorAll("input[type='text'], input:not([type]), textarea"));
+      const hit = inputs.find(el => {
+         const attrs = [el.placeholder||"", el.getAttribute("aria-label")||"", el.name||"", el.id||""].join(" ");
+         return /asin/i.test(attrs) || /amazon/i.test(attrs);
+      });
+      if (hit) return hit;
+    }
+  }
+
+  // 3. ページ全体から探す（フォールバック）
+  // 取得中でdisabledになっている場合も考慮してフィルタリングを緩める
   const cands = Array.from(document.querySelectorAll("input, textarea"))
     .filter(el => {
-      if (!el || el.disabled) return false;
-      // offsetParent !== null は基本だが、一部のCSS構成でnullになる場合があるため
-      // getComputedStyle によるチェックをフォールバックとして追加
+      if (!el) return false;
+      // 完全に非表示のものは除外（offsetParentがnullでもdisplayチェック）
       if (el.offsetParent !== null) return true;
       try {
         const style = window.getComputedStyle(el);

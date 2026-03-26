@@ -29,6 +29,8 @@
   "settingCopyCsvDesc": { "message": "作業画面にコピー・CSV出力ボタンを表示" },
   "settingWorkTime": { "message": "作業時間パネルの表示" },
   "settingWorkTimeDesc": { "message": "作業時間、一時停止ボタン、速度バッジを表示" },
+  "settingShowStatistics": { "message": "📈統計情報の表示" },
+  "settingShowStatisticsDesc": { "message": "作業画面に「📈統計情報」ボタンと出品件数を表示" },
   "btnSave": { "message": "設定を保存" },
   "settingApi": { "message": "OpenAI API設定" },
   "settingApiKey": { "message": "API Key" },

@@ -4,100 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="page.title">ListerFlow Pro for Yaballe | 出品時間を最大75%削減するChrome拡張機能</title>
-    <meta name="description" data-i18n="page.desc"
-        content="YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→15秒を実現するChrome拡張機能。月額2,980円から。">
+    <title data-i18n="page.title">ListerFlow Pro for Yaballe | 出品時間を最大80%削減するChrome拡張機能</title>
+    <meta name="description" data-i18n="page.desc" content="YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→12秒を実現するChrome拡張機能。月額2,980円から。">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800&display=swap"
-        rel="stylesheet">
-    <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
 
+    <style>
         :root {
             --primary: #1a73e8;
             --primary-dark: #1557b0;
-            --premium: #9c27b0;
-            --success: #198754;
-            --text: #1a1a2e;
-            --text-sub: #555;
-            --bg: #f8f9ff;
-            --card-bg: #ffffff;
-            --border: #e8eaf6;
-            --radius: 16px;
+            --accent: #f9ab00;
+            --text-main: #202124;
+            --text-sub: #5f6368;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --border: #dadce0;
+            --shadow: 0 4px 6px rgba(32, 33, 36, 0.1);
         }
 
-        html {
-            scroll-behavior: smooth;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', 'Hiragino Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.7;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background: #fff;
         }
 
-        /* ===== NAV ===== */
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+        }
+
+        li { list-style: none; }
+        a { text-decoration: none; color: inherit; }
+
+        /* ===== NAVIGATION ===== */
         nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 5%;
             position: sticky;
             top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
             border-bottom: 1px solid var(--border);
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 60px;
         }
 
         .nav-logo {
-            font-family: 'Outfit', sans-serif;
-            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
             font-weight: 800;
             color: var(--primary);
-            text-decoration: none;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .nav-logo img {
+            width: 32px;
+            height: 32px;
         }
 
         .nav-links {
             display: flex;
             gap: 24px;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text-sub);
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
+            align-items: center;
         }
 
         .nav-links a:hover {
             color: var(--primary);
         }
 
-        .nav-cta {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 18px;
-            font-size: 14px;
-            font-weight: 600;
+        .lang-select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            background: #fff;
             cursor: pointer;
-            text-decoration: none;
+        }
+
+        .btn-cta-nav {
+            background: var(--primary);
+            color: #fff !important;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
             transition: background 0.2s;
         }
 
-        .nav-cta:hover {
+        .btn-cta-nav:hover {
             background: var(--primary-dark);
         }
 
@@ -117,6 +125,8 @@
             inset: 0;
             background: radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
                 radial-gradient(ellipse at 80% 20%, rgba(100, 170, 255, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .hero-badge {
@@ -129,6 +139,8 @@
             font-weight: 600;
             margin-bottom: 20px;
             backdrop-filter: blur(8px);
+            position: relative;
+            z-index: 10;
         }
 
         .hero h1 {
@@ -137,6 +149,8 @@
             font-weight: 800;
             line-height: 1.15;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
         }
 
         .hero h1 span {
@@ -148,6 +162,8 @@
             color: rgba(255, 255, 255, 0.82);
             max-width: 560px;
             margin: 0 auto 36px;
+            position: relative;
+            z-index: 10;
         }
 
         .hero-btns {
@@ -155,9 +171,12 @@
             gap: 14px;
             justify-content: center;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
         }
 
         .btn-primary-hero {
+            display: inline-block;
             background: #fff;
             color: var(--primary);
             border: none;
@@ -177,6 +196,7 @@
         }
 
         .btn-ghost {
+            display: inline-block;
             background: rgba(255, 255, 255, 0.12);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.4);
@@ -199,197 +219,329 @@
             background: #fff;
             border-bottom: 1px solid var(--border);
             padding: 24px;
-            display: flex;
-            justify-content: center;
-            gap: 48px;
-            flex-wrap: wrap;
         }
 
-        .stat {
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            max-width: 1100px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .stat-item {
             text-align: center;
+            padding: 10px;
         }
 
         .stat-num {
-            font-size: 28px;
+            display: block;
+            font-size: 32px;
             font-weight: 800;
             color: var(--primary);
+            font-family: 'Outfit', sans-serif;
         }
 
         .stat-label {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--text-sub);
+            font-weight: 500;
         }
 
-        /* ===== SECTION ===== */
-        section {
-            padding: 80px 24px;
-            max-width: 1000px;
-            margin: 0 auto;
+        /* ===== FEATURES ===== */
+        .features-section {
+            padding: 100px 5% 80px;
+            background: #fff;
         }
 
         .section-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 28px;
-            font-weight: 800;
             text-align: center;
-            margin-bottom: 8px;
+            font-size: clamp(28px, 4vw, 40px);
+            margin-bottom: 16px;
         }
 
         .section-sub {
             text-align: center;
             color: var(--text-sub);
-            margin-bottom: 48px;
-            font-size: 15px;
+            max-width: 700px;
+            margin: 0 auto 60px;
+            font-size: 18px;
         }
 
-        /* ===== FEATURES ===== */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .feature-card {
-            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            background: #fff;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
         }
 
         .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(26, 115, 232, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary);
         }
 
         .feature-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+            width: 48px;
+            height: 48px;
+            background: rgba(26, 115, 232, 0.1);
+            color: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 24px;
         }
 
         .feature-card h3 {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 8px;
+            font-size: 20px;
+            margin-bottom: 14px;
         }
 
         .feature-card p {
-            font-size: 14px;
             color: var(--text-sub);
             line-height: 1.6;
         }
 
-        /* ===== PRICING ===== */
-        .pricing-section {
-            background: linear-gradient(180deg, #f0f4ff 0%, var(--bg) 100%);
-            padding: 80px 24px;
+        .reviews-section {
+            padding: 100px 5%;
+            background: linear-gradient(135deg, #f4f6fc 0%, #eef1f9 100%);
+            border-top: 1px solid var(--border);
+            position: relative;
         }
 
-        .pricing-inner {
-            max-width: 900px;
+        .reviews-section::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.6) 0%, transparent 50%),
+                        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.4) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .section-label {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .reviews-section .section-title {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 50px;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 24px;
+            max-width: 1100px;
             margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .review-card {
+            background: #fff;
+            padding: 32px 30px;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .review-card:nth-child(1),
+        .review-card:nth-child(2) {
+            grid-column: span 3;
+        }
+
+        .review-card:nth-child(3),
+        .review-card:nth-child(4),
+        .review-card:nth-child(5) {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 900px) {
+            .review-card:nth-child(1),
+            .review-card:nth-child(2),
+            .review-card:nth-child(3),
+            .review-card:nth-child(4),
+            .review-card:nth-child(5) {
+                grid-column: span 6;
+            }
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .review-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #e8f0fe;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 800;
+            font-family: "Outfit", sans-serif;
+        }
+
+        .review-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+
+        .review-user {
+            font-weight: 700;
+            color: #202124;
+            font-size: 16px;
+        }
+
+        .review-stars {
+            color: #fbbc04;
+            font-size: 14px;
+            letter-spacing: 2px;
+        }
+
+        .review-text {
+            font-size: 15px;
+            color: #5f6368;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .review-highlight {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .reviews-note {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 13px;
+            color: #9aa0a6;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ===== PRICING ===== */
+        .pricing-section {
+            padding: 100px 5%;
+            background: var(--bg-light);
+            border-top: 1px solid var(--border);
         }
 
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
-        .plan-card {
-            background: var(--card-bg);
+        .price-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 40px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 32px 24px;
             position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
-        .plan-card.popular {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15), 0 20px 40px rgba(26, 115, 232, 0.12);
+        .price-card.popular {
+            border: 2px solid var(--primary);
+            box-shadow: 0 20px 40px rgba(26, 115, 232, 0.1);
+            transform: scale(1.03);
         }
 
-        .plan-card:hover {
-            transform: translateY(-4px);
-        }
-
-        .popular-tag {
+        .card-tag {
             position: absolute;
             top: -14px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--primary);
             color: #fff;
-            border-radius: 99px;
-            padding: 4px 14px;
-            font-size: 12px;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
             font-weight: 700;
         }
 
         .plan-name {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .plan-price {
             font-family: 'Outfit', sans-serif;
-            font-size: 22px;
+            font-size: 44px;
             font-weight: 800;
             margin-bottom: 4px;
         }
 
-        .plan-price {
-            font-size: 36px;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 12px 0;
-        }
-
         .plan-price span {
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 16px;
             color: var(--text-sub);
+            font-weight: 500;
         }
 
         .plan-desc {
-            font-size: 13px;
             color: var(--text-sub);
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            margin-bottom: 30px;
         }
 
         .plan-features {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 24px;
+            margin-bottom: 40px;
+            flex-grow: 1;
         }
 
         .plan-features li {
+            font-size: 15px;
+            margin-bottom: 12px;
             display: flex;
-            gap: 8px;
             align-items: flex-start;
-            font-size: 14px;
+            gap: 10px;
         }
 
-        .plan-features li::before {
-            content: '✓';
-            color: var(--success);
-            font-weight: 700;
-            flex-shrink: 0;
-            margin-top: 2px;
+        .check {
+            color: #34a853;
+            font-weight: bold;
         }
 
         .btn-plan {
-            width: 100%;
-            padding: 13px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            text-decoration: none;
             display: block;
             text-align: center;
-            transition: transform 0.15s, box-shadow 0.15s;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            transition: all 0.2s;
         }
 
         .btn-plan-primary {
@@ -399,47 +551,39 @@
 
         .btn-plan-primary:hover {
             background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(26, 115, 232, 0.3);
         }
 
-        .btn-plan-ghost {
-            background: transparent;
-            color: var(--text-sub);
-            border: 1.5px solid var(--border);
+        .btn-plan-outline {
+            background: #fff;
+            color: var(--primary);
+            border: 2px solid var(--primary);
         }
 
-        .btn-plan-premium {
-            background: linear-gradient(135deg, #9c27b0, #673ab7);
-            color: #fff;
+        .btn-plan-outline:hover {
+            background: rgba(26, 115, 232, 0.05);
         }
 
-        .btn-plan-premium:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.3);
-        }
 
         /* ===== FLOW ===== */
-        .flow-steps {
+        .flow-section {
+            padding: 100px 5%;
+        }
+
+        .flow-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            counter-reset: step;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
         .flow-step {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
             text-align: center;
-            position: relative;
-            counter-increment: step;
         }
 
         .step-num {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             background: var(--primary);
             color: #fff;
             border-radius: 50%;
@@ -447,226 +591,197 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 14px;
-            margin: 0 auto 12px;
-        }
-
-        .flow-step h3 {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
-        .flow-step p {
-            font-size: 13px;
-            color: var(--text-sub);
-        }
-
-        /* ===== TOKUSHO ===== */
-        .tokusho-section {
-            background: #fff;
-        }
-
-        .tokusho-inner {
-            max-width: 760px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-        }
-
-        .tokusho-inner table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .tokusho-inner th,
-        .tokusho-inner td {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
-            vertical-align: top;
-        }
-
-        .tokusho-inner th {
-            width: 38%;
-            font-weight: 600;
-            background: #f8f9ff;
-            color: var(--text-sub);
-            font-size: 13px;
-            white-space: nowrap;
-        }
-
-        .tokusho-inner td {
-            color: var(--text);
-            line-height: 1.7;
-        }
-
-        .tokusho-inner tr:last-child th,
-        .tokusho-inner tr:last-child td {
-            border-bottom: none;
+            margin: 0 auto 20px;
         }
 
         /* ===== FAQ ===== */
+        .faq-section {
+            padding: 100px 5%;
+            background: var(--bg-light);
+        }
+
         .faq-list {
-            max-width: 720px;
+            max-width: 800px;
             margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
         }
 
         .faq-item {
-            background: var(--card-bg);
+            background: #fff;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border-radius: 12px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
 
         .faq-q {
-            padding: 18px 20px;
+            padding: 20px 24px;
             font-weight: 600;
-            font-size: 15px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
         }
 
         .faq-q::after {
-            content: '▾';
-            font-size: 16px;
+            content: '+';
+            font-size: 20px;
             color: var(--primary);
-            flex-shrink: 0;
-            transition: transform 0.25s;
         }
 
         .faq-item.open .faq-q::after {
-            transform: rotate(-180deg);
+            content: '−';
         }
 
         .faq-a {
-            display: none;
-            padding: 0 20px 18px;
-            font-size: 14px;
+            padding: 0 24px 20px;
             color: var(--text-sub);
-            line-height: 1.7;
+            display: none;
         }
 
         .faq-item.open .faq-a {
             display: block;
         }
 
+        /* ===== TOKUSHO ===== */
+        .tokusho-section {
+            padding: 80px 5%;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .tokusho-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tokusho-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .tokusho-table th, .tokusho-table td {
+            text-align: left;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tokusho-table th {
+            width: 30%;
+            background: var(--bg-light);
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
         /* ===== FOOTER ===== */
         footer {
             background: #0d1b4b;
-            color: rgba(255, 255, 255, 0.6);
+            color: #fff;
+            padding: 60px 5% 40px;
             text-align: center;
-            padding: 40px 24px;
-            font-size: 13px;
-        }
-
-        footer strong {
-            color: #fff;
-        }
-
-        footer a {
-            color: rgba(255, 255, 255, 0.6);
-            text-decoration: underline;
-        }
-
-        footer a:hover {
-            color: #fff;
         }
 
         .footer-links {
             display: flex;
-            gap: 20px;
             justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
             flex-wrap: wrap;
-            margin-bottom: 16px;
         }
 
-        @media (max-width: 600px) {
-            .stats-bar {
-                gap: 24px;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .hero {
-                padding: 64px 20px 56px;
-            }
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
         }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        footer p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
+
+        .feature-note {
+            display: block;
+            font-size: 12px;
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+        
     </style>
 </head>
 
 <body>
 
-    <!-- ナビゲーション -->
     <nav>
-        <a href="#" class="nav-logo">🚀 ListerFlow Pro</a>
+        <div class="nav-logo">
+            <img src="./assets/icons/icon128.png" alt="LFP Icon">
+            <span>ListerFlow Pro</span>
+        </div>
         <div class="nav-links">
             <a href="#features" data-i18n="nav.features">機能</a>
+            <a href="#reviews" data-i18n="nav.reviews">レビュー</a>
             <a href="#pricing" data-i18n="nav.pricing">料金</a>
             <a href="#flow" data-i18n="nav.flow">購入方法</a>
+            <a href="#faq" data-i18n="nav.faq">よくある質問</a>
             <a href="#tokusho" data-i18n="nav.tokusho">特商法</a>
-        </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <select id="langSwitch" style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-family: 'Inter', sans-serif; cursor: pointer; background: white; font-size: 13px;">
+            <select class="lang-select" id="langSwitch">
                 <option value="ja">日本語</option>
                 <option value="en">English</option>
             </select>
-            <a href="#pricing" class="nav-cta" data-i18n="nav.cta">プランを見る</a>
+            <a href="#pricing" class="btn-cta-nav" data-i18n="nav.cta">プランを見る</a>
         </div>
     </nav>
 
     <!-- ヒーロー -->
-    <div class="hero">
-        <div class="hero-badge" data-i18n="hero.badge">🎁 現在 1ヶ月 無料トライアル実施中</div>
-        <h1><span data-i18n="hero.title1">出品時間を</span><br><span data-i18n="hero.title2">最大75%削減</span><span data-i18n="hero.title3">する<br>Chrome拡張機能</span></h1>
+    <header class="hero">
+        <div class="hero-badge" data-i18n="hero.badge">🎁 現在 Proプラン 1ヶ月間無料体験実施中</div>
+        <h1>
+            <span data-i18n="hero.title1">出品時間を</span><br>
+            <span data-i18n="hero.title2">最大80%削減</span>
+            <span data-i18n="hero.title3">する<br>Chrome拡張機能</span>
+        </h1>
         <p data-i18n="hero.desc">Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。</p>
         <div class="hero-btns">
             <a href="#pricing" class="btn-primary-hero" data-i18n="hero.btn.free">✨ 無料で試してみる</a>
             <a href="#features" class="btn-ghost" data-i18n="hero.btn.features">機能を見る</a>
         </div>
-    </div>
+    </header>
 
-
-    <!-- 数字 -->
+    <!-- 実績/数値セクション -->
     <div class="stats-bar">
-        <div class="stat">
-            <div class="stat-num" data-i18n="stat.1.num">75%</div>
-            <div class="stat-label" data-i18n="stat.1.label">出品時間の削減</div>
-        </div>
-        <div class="stat">
-            <div class="stat-num" data-i18n="stat.2.num">15秒</div>
-            <div class="stat-label" data-i18n="stat.2.label">1品あたりの目標時間</div>
-        </div>
-        <div class="stat">
-            <div class="stat-num" data-i18n="stat.3.num">70〜80文字</div>
-            <div class="stat-label" data-i18n="stat.3.label">AIが最適なタイトル長さに</div>
-        </div>
-        <div class="stat">
-            <div class="stat-num" data-i18n="stat.4.num">1,000件</div>
-            <div class="stat-label" data-i18n="stat.4.label">ASIN履歴保持</div>
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-num" data-i18n="stat.1.num">80%</span>
+                <span class="stat-label" data-i18n="stat.1.label">出品時間の削減</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num" data-i18n="stat.2.num">12秒</span>
+                <span class="stat-label" data-i18n="stat.2.label">1品あたりの目標時間</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num" data-i18n="stat.3.num">70〜80文字</span>
+                <span class="stat-label" data-i18n="stat.3.label">AIが最適なタイトル長さに</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-num" data-i18n="stat.4.num">1,000件</span>
+                <span class="stat-label" data-i18n="stat.4.label">ASIN履歴保持</span>
+            </div>
         </div>
     </div>
 
-    <!-- 機能 -->
-    <section id="features">
-        <div class="section-title" data-i18n="features.title">なぜ ListerFlow Pro なのか</div>
-        <div class="section-sub" data-i18n="features.sub">出品作業の「無駄」をすべてテクノロジーで解消します</div>
+    <!-- 機能セクション -->
+    <section id="features" class="features-section">
+        <h2 class="section-title" data-i18n="features.title">なぜ ListerFlow Pro なのか</h2>
+        <p class="section-sub" data-i18n="features.sub">出品作業の「無駄」をすべてテクノロジーで解消します</p>
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">🤖</div>
-                <h3 data-i18n="feat.1.title">AI タイトル最適化</h3>
-                <p data-i18n="feat.1.desc">ChatGPT との画面往復は不要。出品画面から離れることなく、AIが70〜80文字の最適な長さに自動最適化します。</p>
+                <h3 data-i18n="feat.1.title">AI タイトル SEO 最適化</h3>
+                <p data-i18n="feat.1.desc">ChatGPT との往復はもう不要。ターゲットキーワードを逃さず、eBay 検索で有利な SEO 最適化済みのタイトル（70〜80文字）を、出品画面から離れず一瞬で生成します。</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
@@ -674,7 +789,7 @@
                 <p data-i18n="feat.2.desc">ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">📋</div>
+                <div class="feature-icon">📝</div>
                 <h3 data-i18n="feat.3.title">ASIN履歴管理</h3>
                 <p data-i18n="feat.3.desc">「どこまでやったか？」問題を完全解消。重い共有スプレッドシートと決別し、拡張機能内で管理。</p>
             </div>
@@ -689,81 +804,144 @@
                 <p data-i18n="feat.5.desc">今日の出品数・作業時間・出品速度をリアルタイム表示。自分のパフォーマンスを「見える化」。</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🔝</div>
+                <div class="feature-icon">🎯</div>
                 <h3 data-i18n="feat.6.title">Quick MIPボタン</h3>
                 <p data-i18n="feat.6.desc">画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。</p>
             </div>
         </div>
     </section>
 
-    <!-- 料金 -->
-    <div class="pricing-section" id="pricing">
+    <!-- レビューセクション -->
+    <section id="reviews" class="reviews-section">
+        <div class="section-label" data-i18n="nav.reviews">利用者の声</div>
+        <h2 class="section-title" data-i18n="reviews.title">テスターの方々のレビュー</h2>
+        
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">A</div>
+                    <div class="review-meta">
+                        <div class="review-user" data-i18n="review.a.user">Aさん</div>
+                        <div class="review-stars">★★★★★</div>
+                    </div>
+                </div>
+                <p class="review-text" data-i18n="review.a.text">出品速度が2倍どころか<span class=\u0027review-highlight\u0027>3倍</span>くらいでした。気付いたら30品終わっている感覚です。通常<span class=\u0027review-highlight\u0027>30品で約30分</span>かかるところが、<span class=\u0027review-highlight\u0027>約10分</span>で完了しました。ASIN入力後は自動で出品が進むので、複数画面やTab切り替え、ChatGPT貼り付けなどの煩わしい作業がすべて不要になりました。繁忙期（4月・5月）の毎日60品、100品出品でも重宝しそうです。</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">B</div>
+                    <div class="review-meta">
+                        <div class="review-user" data-i18n="review.b.user">Bさん</div>
+                        <div class="review-stars">★★★★★</div>
+                    </div>
+                </div>
+                <p class="review-text" data-i18n="review.b.text">体感で所要時間が<span class=\u0027review-highlight\u0027>1/3</span>くらいになりました。これまで出品に時間がかかっていたのは何だったのかと思うほど、あっさり終わりました。資格試験や年度末で本業が多忙な時期なので非常に助かります。今後も活用します。</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">C</div>
+                    <div class="review-meta">
+                        <div class="review-user" data-i18n="review.c.user">Cさん</div>
+                        <div class="review-stars">★★★★★</div>
+                    </div>
+                </div>
+                <p class="review-text" data-i18n="review.c.text">素晴らしいツールの開発ありがとうございます。感激しました。50出品が4名あった時を思い出すと、負担がまるで別物です。本日もトラブルなく出品完了できて感動しました。</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">D</div>
+                    <div class="review-meta">
+                        <div class="review-user" data-i18n="review.d.user">Dさん</div>
+                        <div class="review-stars">★★★★★</div>
+                    </div>
+                </div>
+                <p class="review-text" data-i18n="review.d.text">導入と出品作業を進めましたが、問題なく進められました。出品作業時間が短縮できて感動です。システムの開発と共有、本当にありがとうございます。</p>
+            </div>
+            
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">E</div>
+                    <div class="review-meta">
+                        <div class="review-user" data-i18n="review.e.user">Eさん</div>
+                        <div class="review-stars">★★★★★</div>
+                    </div>
+                </div>
+                <p class="review-text" data-i18n="review.e.text">ChatGPTを使わずに済み、Yaballeの出品画面もほぼスクロールせず出品できるようになり、かなり時間短縮できました。今月50品出品が3店舗あるので、効果が大きい事です。開発ありがとうございます。</p>
+            </div>
+        </div>
+        <div class="reviews-note" data-i18n="testimonials.note">※ v1.0.0（Turbo Mode実装前）時点での先行テスター様の声です。</div>
+    </section>
+
+    <!-- 料金セクション -->
+    <section id="pricing" class="pricing-section">
         <div class="pricing-inner">
-            <div class="section-title" data-i18n="pricing.title">シンプルな料金プラン</div>
-            <div class="section-sub" data-i18n="pricing.sub">すべてのプランに1ヶ月の無料トライアル期間あり</div>
+            <h2 class="section-title" data-i18n="pricing.title">シンプルな料金プラン</h2>
+            <div class="section-sub" data-i18n="pricing.sub">Proプランには1ヶ月の無料トライアル期間あり</div>
             <div class="pricing-grid">
 
                 <!-- Free -->
-                <div class="plan-card">
-                    <div class="plan-name" data-i18n="plan.free.title">Free</div>
-                    <div class="plan-price">¥0 <span data-i18n="plan.month">/ 月</span></div>
-                    <div class="plan-desc" data-i18n="plan.free.desc">まずは試したい方へ</div>
+                <div class="price-card">
+                    <h3 class="plan-name" data-i18n="plan.free.title">Free</h3>
+                    <div class="plan-price">¥0<span data-i18n="plan.month"> / 月</span></div>
+                    <p class="plan-desc" data-i18n="plan.free.desc">まずは試したい方へ</p>
                     <ul class="plan-features">
-                        <li data-i18n="plan.free.f1">1日2回 AIタイトル最適化</li>
-                        <li data-i18n="plan.free.f2">Quick MIPボタン配置</li>
-                        <li data-i18n="plan.free.f3">ASIN履歴保持（最大1,000件）</li>
-                        <li data-i18n="plan.free.f4">VeRO自動検出</li>
+                        <li data-i18n="plan.free.f1"><span class="check">✔</span> 1日2回 AIタイトル最適化</li>
+                        <li data-i18n="plan.free.f2"><span class="check">✔</span> Quick MIPボタン配置</li>
+                        <li data-i18n="plan.free.f3"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
+                        <li data-i18n="plan.free.f4"><span class="check">✔</span> VeRO自動検出</li>
                     </ul>
-                    <a href="https://github.com/kuronylab/listerflow-pro-for-yaballe/releases" target="_blank"
-                        class="btn-plan btn-plan-ghost" data-i18n="plan.free.btn">無料で使う</a>
+                    <a href="https://buy.stripe.com/14k7sM8InezY5Z64gh" class="btn-plan btn-plan-outline" data-i18n="plan.free.btn">無料で使う</a>
                 </div>
 
                 <!-- Pro -->
-                <div class="plan-card popular">
-                    <div class="popular-tag" data-i18n="plan.pro.tag">🔥 一番人気</div>
-                    <div class="plan-name" data-i18n="plan.pro.title">Pro</div>
-                    <div class="plan-price">¥2,980 <span data-i18n="plan.month">/ 月</span></div>
-                    <div class="plan-desc" data-i18n="plan.pro.desc">効率を最大化し、出品作業を「快感」に</div>
+                <div class="price-card popular">
+                    <div class="card-tag" data-i18n="plan.pro.tag">🔥 一番人気</div>
+                    <h3 class="plan-name" data-i18n="plan.pro.title">Pro</h3>
+                    <div class="plan-price">¥2,980<span data-i18n="plan.month"> / 月</span></div>
+                    <p class="plan-desc" data-i18n="plan.pro.desc">効率を最大化し、出品作業を「快感」に</p>
                     <ul class="plan-features">
-                        <li data-i18n="plan.pro.f1"><strong>無制限</strong> AIタイトル最適化</li>
-                        <li data-i18n="plan.pro.f2">ASIN履歴保持（最大1,000件）</li>
-                        <li data-i18n="plan.pro.f3">最適化後 MIP自動クリック</li>
-                        <li data-i18n="plan.pro.f4">OK ボタン自動クリック</li>
-                        <li data-i18n="plan.pro.f5">CSV出力・一括コピー機能</li>
-                        <li data-i18n="plan.pro.f6">Turbo Mode（1日5回）</li>
-                        <li data-i18n="plan.pro.f7">出品統計・時間計測</li>
+                        <li data-i18n="plan.pro.f1"><span class="check">✔</span> <strong>無制限</strong> AIタイトル最適化</li>
+                        <li data-i18n="plan.pro.f2"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
+                        <li data-i18n="plan.pro.f3"><span class="check">✔</span> 最適化後 MIP自動クリック</li>
+                        <li data-i18n="plan.pro.f4"><span class="check">✔</span> OK ボタン自動クリック</li>
+                        <li data-i18n="plan.pro.f5"><span class="check">✔</span> CSV出力・一括コピー機能</li>
+                        <li data-i18n="plan.pro.f6"><span class="check">✔</span> Turbo Mode（1日5回）</li>
+                        <li data-i18n="plan.pro.f7"><span class="check">✔</span> 出品統計・時間計測</li>
                     </ul>
                     <a href="#" id="btnPro" class="btn-plan btn-plan-primary" data-i18n="plan.pro.btn">Proにアップグレード</a>
                 </div>
 
                 <!-- Premium -->
-                <div class="plan-card">
-                    <div class="plan-name" data-i18n="plan.premium.title">Premium</div>
-                    <div class="plan-price">¥4,980 <span data-i18n="plan.month">/ 月</span></div>
-                    <div class="plan-desc" data-i18n="plan.premium.desc">究極の自動化で「時間を買う」運用へ</div>
+                <div class="price-card">
+                    <h3 class="plan-name" data-i18n="plan.premium.title">Premium</h3>
+                    <div class="plan-price">¥4,980<span data-i18n="plan.month"> / 月</span></div>
+                    <p class="plan-desc" data-i18n="plan.premium.desc">究極の自動化で「時間を買う」運用へ</p>
                     <ul class="plan-features">
-                        <li data-i18n="plan.prem.f1">Proプランの全機能</li>
-                        <li data-i18n="plan.prem.f2">ASIN履歴保持（最大1,000件）</li>
-                        <li data-i18n="plan.prem.f3"><strong>無制限</strong> Turbo Mode</li>
-                        <li data-i18n="plan.prem.f4">優先サポート対応</li>
-                        <li data-i18n="plan.prem.f5">ベータ機能の先行試用</li>
+                        <li data-i18n="plan.prem.f1"><span class="check">✔</span> Proプランの全機能</li>
+                        <li data-i18n="plan.prem.f2"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
+                        <li data-i18n="plan.prem.f3"><span class="check">✔</span> <strong>無制限</strong> Turbo Mode</li>
+                        <li data-i18n="plan.prem.f4"><span class="check">✔</span> 優先サポート対応</li>
+                        <li data-i18n="plan.prem.f5"><span class="check">✔</span> ベータ機能の先行試用</li>
                     </ul>
-                    <a href="#" id="btnPremium" class="btn-plan btn-plan-premium" data-i18n="plan.premium.btn">Premiumにアップグレード</a>
+                    <a href="#" id="btnPremium" class="btn-plan btn-plan-outline" data-i18n="plan.premium.btn">Premiumにアップグレード</a>
                 </div>
 
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- 購入〜利用開始フロー -->
-    <section id="flow">
-        <div class="section-title" data-i18n="flow.title">ご利用開始まで3ステップ</div>
-        <div class="section-sub" data-i18n="flow.sub">決済完了後すぐにライセンスキーが発行されます</div>
-        <div class="flow-steps">
+    <!-- 利用ステップ -->
+    <section id="flow" class="flow-section">
+        <h2 class="section-title" data-i18n="flow.title">ご利用開始まで3ステップ</h2>
+        <p class="section-sub" data-i18n="flow.sub">決済完了後すぐにライセンスキーが発行されます</p>
+        <div class="flow-grid">
             <div class="flow-step">
                 <div class="step-num">1</div>
                 <h3 data-i18n="flow.1.title">プランを選んで決済</h3>
-                <p data-i18n="flow.1.desc">上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。</p>
+                <p data-i18n="flow.1.desc">上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。<br><span class="feature-note" style="color: #e53e3e;">※必ずYaballeで使用しているメールアドレスで購入してください。</span></p>
             </div>
             <div class="flow-step">
                 <div class="step-num">2</div>
@@ -772,49 +950,48 @@
             </div>
             <div class="flow-step">
                 <div class="step-num">3</div>
-                <h3 data-i18n="flow.3.title">拡張機能で認証する</h3>
-                <p data-i18n="flow.3.desc">拡張機能のポップアップ → 「ライセンス設定」タブ → キーを入力して「認証」を押すだけで完了です。</p>
+                <h3 data-i18n="flow.3.title">自動反映</h3>
+                <p data-i18n="flow.3.desc">購入後、同じアカウントでYaballeにログインするだけで、自動的にプロ機能が有効化されます。※ライセンスキーはメールでも送信されますので、念のため保管してください。</p>
             </div>
         </div>
     </section>
 
     <!-- FAQ -->
-    <section id="faq" style="padding-top: 0;">
-        <div class="section-title" data-i18n="faq.title">よくある質問</div>
-        <div class="section-sub" style="margin-bottom: 32px;"></div>
+    <section id="faq" class="faq-section">
+        <h2 class="section-title" data-i18n="faq.title">よくある質問</h2>
         <div class="faq-list">
             <div class="faq-item">
                 <div class="faq-q" data-i18n="faq.1.q">無料で試せますか？</div>
-                <div class="faq-a" data-i18n="faq.1.a">はい、Freeプランは料金なしでご利用いただけます。またPro・Premiumプランは初月無料のトライアル期間があります（別途ご案内）。</div>
+                <div class="faq-a" data-i18n="faq.1.a">はい、Freeプランは料金なしでご利用いただけます。またProプランには初月無料のトライアル期間があります（別途ご案内）。</div>
             </div>
             <div class="faq-item">
                 <div class="faq-q" data-i18n="faq.2.q">いつでもキャンセルできますか？</div>
                 <div class="faq-a" data-i18n="faq.2.a">はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.3.q">ライセンスキーはいつもらえますか？</div>
-                <div class="faq-a" data-i18n="faq.3.a">決済完了後、画面に即座に表示されます。またご登録のメールアドレスにも自動送付されます。</div>
+                <div class="faq-q" data-i18n="faq.3.q">ライセンスはどうやって反映させますか？</div>
+                <div class="faq-a" data-i18n="faq.3.a">決済完了後、同じアカウントでYaballeにログインすると自動的に反映されます。手動入力の必要はありません。<br><br>※ライセンスキーはメールでも送信されますので、念のため大切に保管してください。<br><span class="feature-note" style="color: #e53e3e;">※必ずYaballeで使用しているメールアドレスで購入を完了させてください。</span></div>
             </div>
             <div class="faq-item">
                 <div class="faq-q" data-i18n="faq.4.q">Yaballeの仕様変更に対応していますか？</div>
                 <div class="faq-a" data-i18n="faq.4.a">Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能を更新対応しています。</div>
             </div>
             <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.5.q">動作環境はなんですか？</div>
+                <div class="faq-q" data-i18n="faq.5.q">動作環境は何ですか？</div>
                 <div class="faq-a" data-i18n="faq.5.a">Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。</div>
             </div>
         </div>
     </section>
 
-    <!-- 特定商取引法 -->
-    <section id="tokusho" class="tokusho-section" style="max-width: 100%; padding: 80px 24px;">
-        <div style="max-width: 760px; margin: 0 auto;">
-            <div class="section-title" data-i18n="tokusho.title">特定商取引法に基づく表記</div>
-            <div class="tokusho-inner" style="margin-top: 32px;">
-                <table>
+    <!-- 特商法 -->
+    <section id="tokusho" class="tokusho-section">
+        <div class="tokusho-container">
+            <h2 data-i18n="tokusho.title">特定商取引法に基づく表記</h2>
+            <div class="tokusho-content">
+                <table class="tokusho-table">
                     <tr>
                         <th data-i18n="tokusho.label.vendor">販売業者</th>
-                        <td data-i18n="tokusho.value.vendor">KURONYLAB（個人事業主）</td>
+                        <td data-i18n="tokusho.value.vendor">KURONYLAB</td>
                     </tr>
                     <tr>
                         <th data-i18n="tokusho.label.manager">運営責任者</th>
@@ -848,22 +1025,20 @@
                         <td data-i18n="tokusho.value.payment_timing">お申し込み時に即時決済。以降、毎月同日に自動更新されます。</td>
                     </tr>
                     <tr>
-                        <th data-i18n="tokusho.label.delivery_timing">役務の提供時期</th>
-                        <td data-i18n="tokusho.value.delivery_timing">決済完了後、即時にライセンスキーを発行します。</td>
+                        <th data-i18n="tokusho.label.delivery_timing">サービス提供時期</th>
+                        <td data-i18n="tokusho.value.delivery_timing">決済完了後、即時にライセンスが有効化されます。</td>
                     </tr>
                     <tr>
-                        <th data-i18n="tokusho.label.service_content">役務の内容</th>
-                        <td data-i18n="tokusho.value.service_content">Chrome拡張機能「ListerFlow Pro for
-                            Yaballe」の有料プランへのアクセス権（ライセンスキー）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。</td>
+                        <th data-i18n="tokusho.label.service_content">サービス内容</th>
+                        <td data-i18n="tokusho.value.service_content">Chrome拡張機能「ListerFlow Pro for Yaballe」の有料プランへのアクセス権（ライセンス）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。</td>
                     </tr>
                     <tr>
                         <th data-i18n="tokusho.label.cancellation">キャンセル・解約</th>
-                        <td data-i18n="tokusho.value.cancellation">サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。
-                        </td>
+                        <td data-i18n="tokusho.value.cancellation">サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。</td>
                     </tr>
                     <tr>
                         <th data-i18n="tokusho.label.environment">動作環境</th>
-                        <td data-i18n="tokusho.value.environment">Google Chrome（最新版）がインストールされたPC。対応サイト：app.yaballe.com</td>
+                        <td data-i18n="tokusho.value.environment">Google Chrome（最新版）がインストールされたPC。<br>対応サイト：app.yaballe.com</td>
                     </tr>
                 </table>
             </div>
@@ -874,6 +1049,7 @@
     <footer>
          <div class="footer-links">
             <a href="#features" data-i18n="nav.features">機能</a>
+            <a href="#reviews" data-i18n="nav.reviews">レビュー</a>
             <a href="#pricing" data-i18n="nav.pricing">料金プラン</a>
             <a href="#flow" data-i18n="nav.flow">購入方法</a>
             <a href="#faq" data-i18n="nav.faq">FAQ</a>
@@ -886,24 +1062,37 @@
     <script>
         const translations = {
             ja: {
-                "page.title": "ListerFlow Pro for Yaballe | 出品時間を最大75%削減するChrome拡張機能",
-                "page.desc": "YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→15秒を実現するChrome拡張機能。月額2,980円から。",
+                "page.title": "ListerFlow Pro for Yaballe | 出品時間を最大80%削減するChrome拡張機能",
+                "page.desc": "YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→12秒を実現するChrome拡張機能。月額2,980円から。",
                 "nav.features": "機能",
+                "nav.reviews": "レビュー",
                 "nav.pricing": "料金",
                 "nav.flow": "購入方法",
-                "nav.faq": "FAQ",
+                "nav.faq": "よくある質問",
                 "nav.tokusho": "特商法",
                 "nav.cta": "プランを見る",
-                "hero.badge": "🎁 現在 1ヶ月 無料トライアル実施中",
+                "review.e.text": "ChatGPTを使わずに済み、Yaballeの出品画面もほぼスクロールせず出品できるようになり、かなり時間短縮できました。今月50品出品が3店舗あるので、効果が大きいです。開発ありがとうございます。",
+                "review.e.user": "Eさん（プロセラー）",
+                "review.d.text": "導入と出品作業を進めましたが、問題なく進められました。出品作業時間が短縮できて感動です。システムの開発と共有、本当にありがとうございます。",
+                "review.d.user": "Dさん（コミュニティー運営者）",
+                "review.c.text": "素晴らしいツールの開発ありがとうございます。感激しました。50出品が4名あった時を思い出すと、負担がまるで別物です。本日もトラブルなく出品完了できて感動しました。",
+                "review.c.user": "Cさん（チームマネージャー）",
+                "review.b.text": "体感で所要時間が<span class=\u0027review-highlight\u0027>1/3</span>くらいになりました。これまで出品に時間がかかっていたのは何だったのかと思うほど、あっさり終わりました。資格試験や年度末で本業が多忙な時期なので非常に助かります。今後も活用します。",
+                "review.b.user": "Bさん（外注セラー）",
+                "review.a.text": "出品速度が2倍どころか<span class=\u0027review-highlight\u0027>3倍</span>くらいでした。気付いたら30品終わっている感覚です。通常<span class=\u0027review-highlight\u0027>30品で約30分</span>かかるところが、<span class=\u0027review-highlight\u0027>約10分</span>で完了しました。ASIN入力後は自動で出品が進むので、複数画面やTab切り替え、ChatGPT貼り付けなどの煩わしい作業がすべて不要になりました。繁忙期（4月・5月）の毎日60品、100品出品でも重宝しそうです。",
+                "review.a.user": "Aさん（副業セラー）",
+                "reviews.sub": "先行テスターの方々から、劇的な効率化を実感いただいています。",
+                "reviews.title": "テスターの方々のレビュー",
+                "hero.badge": "🎁 現在 Proプラン 1ヶ月間無料体験実施中",
                 "hero.title1": "出品時間を",
-                "hero.title2": "最大75%削減",
+                "hero.title2": "最大80%削減",
                 "hero.title3": "する<br>Chrome拡張機能",
                 "hero.desc": "Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。",
                 "hero.btn.free": "✨ 無料で試してみる",
                 "hero.btn.features": "機能を見る",
-                "stat.1.num": "75%",
+                "stat.1.num": "80%",
                 "stat.1.label": "出品時間の削減",
-                "stat.2.num": "15秒",
+                "stat.2.num": "12秒",
                 "stat.2.label": "1品あたりの目標時間",
                 "stat.3.num": "70〜80文字",
                 "stat.3.label": "AIが最適なタイトル長さに",
@@ -911,8 +1100,8 @@
                 "stat.4.label": "ASIN履歴保持",
                 "features.title": "なぜ ListerFlow Pro なのか",
                 "features.sub": "出品作業の「無駄」をすべてテクノロジーで解消します",
-                "feat.1.title": "AI タイトル最適化",
-                "feat.1.desc": "ChatGPT との画面往復は不要。出品画面から離れることなく、AIが70〜80文字の最適な長さに自動最適化します。",
+                "feat.1.title": "AI タイトル SEO 最適化",
+                "feat.1.desc": "ChatGPT との往復はもう不要。ターゲットキーワードを逃さず、eBay 検索で有利な SEO 最適化済みのタイトル（70〜80文字）を、出品画面から離れず一瞬で生成します。",
                 "feat.2.title": "Turbo Mode（全自動）",
                 "feat.2.desc": "ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。",
                 "feat.3.title": "ASIN履歴管理",
@@ -924,7 +1113,7 @@
                 "feat.6.title": "Quick MIPボタン",
                 "feat.6.desc": "画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。",
                 "pricing.title": "シンプルな料金プラン",
-                "pricing.sub": "すべてのプランに1ヶ月の無料トライアル期間あり",
+                "pricing.sub": "Proプランには1ヶ月の無料トライアル期間あり",
                 "plan.month": " / 月",
                 "plan.free.title": "Free",
                 "plan.free.desc": "まずは試したい方へ",
@@ -936,7 +1125,7 @@
                 "plan.pro.tag": "🔥 一番人気",
                 "plan.pro.title": "Pro",
                 "plan.pro.desc": "効率を最大化し、出品作業を「快感」に",
-                "plan.pro.btn": "Proにアップグレード",
+                "plan.pro.btn": "無料で試してみる（1ヶ月間）",
                 "plan.pro.f1": "<strong>無制限</strong> AIタイトル最適化",
                 "plan.pro.f2": "ASIN履歴保持（最大1,000件）",
                 "plan.pro.f3": "最適化後 MIP自動クリック",
@@ -946,7 +1135,7 @@
                 "plan.pro.f7": "出品統計・時間計測",
                 "plan.premium.title": "Premium",
                 "plan.premium.desc": "究極の自動化で「時間を買う」運用へ",
-                "plan.premium.btn": "Premiumにアップグレード",
+                "plan.premium.btn": "Premiumプランで始める",
                 "plan.prem.f1": "Proプランの全機能",
                 "plan.prem.f2": "ASIN履歴保持（最大1,000件）",
                 "plan.prem.f3": "<strong>無制限</strong> Turbo Mode",
@@ -955,25 +1144,25 @@
                 "flow.title": "ご利用開始まで3ステップ",
                 "flow.sub": "決済完了後すぐにライセンスキーが発行されます",
                 "flow.1.title": "プランを選んで決済",
-                "flow.1.desc": "上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。",
+                "flow.1.desc": "上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。<br><span class=\"feature-note\" style=\"color: #e53e3e;\">※必ずYaballeで使用しているメールアドレスで購入してください。</span>",
                 "flow.2.title": "ライセンスキーを受け取る",
                 "flow.2.desc": "決済完了直後に画面にキーが表示され、登録メールにも送付されます。コピーして手元に保管してください。",
-                "flow.3.title": "拡張機能で認証する",
-                "flow.3.desc": "拡張機能のポップアップ → 「ライセンス設定」タブ → キーを入力して「認証」を押すだけで完了です。",
+                "flow.3.title": "自動反映",
+                "flow.3.desc": "購入後、同じアカウントでYaballeにログインするだけで、自動的にプロ機能が有効化されます。※ライセンスキーはメールでも送信されますので、念のため保管してください。",
                 "faq.title": "よくある質問",
                 "faq.1.q": "無料で試せますか？",
-                "faq.1.a": "はい、Freeプランは料金なしでご利用いただけます。またPro・Premiumプランは初月無料のトライアル期間があります（別途ご案内）。",
+                "faq.1.a": "はい、Freeプランは料金なしでご利用いただけます。またProプランには初月無料のトライアル期間があります（別途ご案内）。",
                 "faq.2.q": "いつでもキャンセルできますか？",
                 "faq.2.a": "はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。",
-                "faq.3.q": "ライセンスキーはいつもらえますか？",
-                "faq.3.a": "決済完了後、画面に即座に表示されます。またご登録のメールアドレスにも自動送付されます。",
+                "faq.3.q": "ライセンスはどうやって反映させますか？",
+                "faq.3.a": "決済完了後、同じアカウントでYaballeにログインすると自動的に反映されます。手動入力の必要はありません。<br><br>※ライセンスキーはメールでも送信されますので、念のため大切に保管してください。<br><span class=\"feature-note\" style=\"color: #e53e3e;\">※必ずYaballeで使用しているメールアドレスで購入を完了させてください。</span>",
                 "faq.4.q": "Yaballeの仕様変更に対応していますか？",
-                "faq.4.a": "Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能を更新対応しています。",
-                "faq.5.q": "動作環境はなんですか？",
+                "faq.4.a": "Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能の更新対応しています。",
+                "faq.5.q": "動作環境は何ですか？",
                 "faq.5.a": "Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。",
                 "tokusho.title": "特定商取引法に基づく表記",
                 "tokusho.label.vendor": "販売業者",
-                "tokusho.value.vendor": "KURONYLAB（個人事業主）",
+                "tokusho.value.vendor": "KURONYLAB",
                 "tokusho.label.manager": "運営責任者",
                 "tokusho.value.manager": "黒木 皓基",
                 "tokusho.label.location": "所在地",
@@ -991,35 +1180,52 @@
                 "tokusho.value.payment_method": "クレジットカード（Stripe決済）<br>対応ブランド：Visa / Mastercard / American Express など",
                 "tokusho.label.payment_timing": "支払い時期",
                 "tokusho.value.payment_timing": "お申し込み時に即時決済。以降、毎月同日に自動更新されます。",
-                "tokusho.label.delivery_timing": "役務の提供時期",
-                "tokusho.value.delivery_timing": "決済完了後、即時にライセンスキーを発行します。",
-                "tokusho.label.service_content": "役務の内容",
-                "tokusho.value.service_content": "Chrome拡張機能「ListerFlow Pro for Yaballe」の有料プランへのアクセス権（ライセンスキー）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。",
+                "tokusho.label.delivery_timing": "サービス提供時期",
+                "tokusho.value.delivery_timing": "決済完了後、即時にライセンスが有効化されます。",
+                "tokusho.label.service_content": "サービス内容",
+                "tokusho.value.service_content": "Chrome拡張機能「ListerFlow Pro for Yaballe」の有料プランへのアクセス権（ライセンス）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。",
                 "tokusho.label.cancellation": "キャンセル・解約",
                 "tokusho.value.cancellation": "サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。",
                 "tokusho.label.environment": "動作環境",
-                "tokusho.value.environment": "Google Chrome（最新版）がインストールされたPC。対応サイト：app.yaballe.com",
+                "tokusho.value.environment": "Google Chrome（最新版）がインストールされたPC。<br>対応サイト：app.yaballe.com",
                 "footer.contact": "お問い合わせ"
             },
             en: {
-                "page.title": "ListerFlow Pro for Yaballe | Chrome Extension Reducing Listing Time by 75%",
-                "page.desc": "Drastically increase eBay listing efficiency on Yaballe. AI title optimization and full auto mode reduce listing time from 60s to 15s. Starting from 2,980 JPY/month.",
+                "page.title": "ListerFlow Pro for Yaballe | Chrome Extension Reducing Listing Time by 80%",
+                "page.desc": "Drastically increase eBay listing efficiency on Yaballe. AI title optimization and full auto mode reduce listing time from 60s to 12s. Starting from 2,980 JPY/month.",
                 "nav.features": "Features",
+                "nav.reviews": "Reviews",
                 "nav.pricing": "Pricing",
                 "nav.flow": "How to Buy",
                 "nav.faq": "FAQ",
                 "nav.tokusho": "Legal",
                 "nav.cta": "View Plans",
-                "hero.badge": "🎁 1-Month Free Trial Available Now",
+                "review.e.text": "Zero back-and-forth with ChatGPT and minimal scrolling. Since I manage 3 stores with 50 listings each, the impact is huge. Thanks for the development.",
+                "review.e.user": "User E (Professional Seller)",
+                "review.d.text": "The setup and listing process went perfectly. I'm moved by how much time I saved. Thank you so much for developing and sharing this system.",
+                "review.d.user": "User D (Community Founder)",
+                "review.c.text": "Thank you for this amazing tool. Compared to when we had 4 people doing 50 listings, the burden is completely different. Very impressed with the smooth experience.",
+                "review.c.user": "User C (Team Manager)",
+                "review.b.text": "Listing time reduced to about <span class=\u0027review-highlight\u0027>1/3</span>. It was so easy that I wondered why I spent so much time before. Huge help during my busy certification exams.",
+                "review.b.user": "User B (Sourcing Agent)",
+                "review.a.text": "Listing speed wasn't just doubled; it was more like <span class=\u0027review-highlight\u0027>3x</span>. I finished 30 items before I knew it. Tasks that usually took <span class=\u0027review-highlight\u0027>30 minutes</span> were done in <span class=\u0027review-highlight\u0027>10 minutes</span>. No more annoying tab switching or AI copying.",
+                "review.a.user": "User A (Side Seller)",
+                "reviews.sub": "Our early users are experiencing dramatic efficiency gains.",
+                "reviews.title": "Customer Reviews",
+                "nav.tokusho": "Legal",
+                "nav.faq": "FAQ",
+                "nav.flow": "How to Buy",
+                "nav.reviews": "Reviews",
+                "hero.badge": "🎁 Pro Plan 1-Month Free Trial Available",
                 "hero.title1": "Reduce listing time<br>",
-                "hero.title2": "by up to 75%",
+                "hero.title2": "by up to 80%",
                 "hero.title3": "",
                 "hero.desc": "Dramatically streamline your eBay listing process on Yaballe Lister with AI and automation.",
                 "hero.btn.free": "✨ Try for Free",
                 "hero.btn.features": "View Features",
-                "stat.1.num": "75%",
+                "stat.1.num": "80%",
                 "stat.1.label": "Time Saved",
-                "stat.2.num": "15 sec",
+                "stat.2.num": "12 sec",
                 "stat.2.label": "Target Time per Item",
                 "stat.3.num": "70-80 chars",
                 "stat.3.label": "AI Optimized Title Length",
@@ -1027,8 +1233,8 @@
                 "stat.4.label": "ASIN History Retained",
                 "features.title": "Why ListerFlow Pro?",
                 "features.sub": "Eliminate all 'waste' in listing operations with technology.",
-                "feat.1.title": "AI Title Optimization",
-                "feat.1.desc": "No more switching between ChatGPT. AI automatically optimizes titles to the ideal 70-80 character length, right from the listing page.",
+                "feat.1.title": "AI Title SEO Optimization",
+                "feat.1.desc": "No more back-and-forth with ChatGPT. Instantly generate SEO-optimized titles (70-80 chars) designed to rank higher in eBay search results, all without leaving your listing page.",
                 "feat.2.title": "Turbo Mode (Full Auto)",
                 "feat.2.desc": "Just paste an ASIN — Get Item → Optimize → MIP → OK, all fully automated.",
                 "feat.3.title": "ASIN History Management",
@@ -1040,7 +1246,7 @@
                 "feat.6.title": "Quick MIP Button",
                 "feat.6.desc": "No more scrolling down. The Quick MIP button at the top minimizes eye movement and speeds up your workflow.",
                 "pricing.title": "Simple Pricing",
-                "pricing.sub": "1-month free trial available for all plans",
+                "pricing.sub": "1-month free trial available for Pro plan",
                 "plan.month": " / month",
                 "plan.free.title": "Free",
                 "plan.free.desc": "For those who want to test it out",
@@ -1052,7 +1258,7 @@
                 "plan.pro.tag": "🔥 Most Popular",
                 "plan.pro.title": "Pro",
                 "plan.pro.desc": "Maximize efficiency, make listing a 'pleasure'",
-                "plan.pro.btn": "Upgrade to Pro",
+                "plan.pro.btn": "Start 1-Month Free Trial",
                 "plan.pro.f1": "<strong>Unlimited</strong> AI Title Optimization",
                 "plan.pro.f2": "ASIN History (up to 1,000)",
                 "plan.pro.f3": "Auto MIP Click after Optimization",
@@ -1062,7 +1268,7 @@
                 "plan.pro.f7": "Listing Statistics & Time Tracking",
                 "plan.premium.title": "Premium",
                 "plan.premium.desc": "Ultimate automation to 'buy time'",
-                "plan.premium.btn": "Upgrade to Premium",
+                "plan.premium.btn": "Start Premium Plan",
                 "plan.prem.f1": "All Pro Plan Features",
                 "plan.prem.f2": "ASIN History (up to 1,000)",
                 "plan.prem.f3": "<strong>Unlimited</strong> Turbo Mode",
@@ -1071,25 +1277,25 @@
                 "flow.title": "3 Steps to Get Started",
                 "flow.sub": "License key issued immediately after payment",
                 "flow.1.title": "Choose a Plan & Pay",
-                "flow.1.desc": "Click the 'Upgrade' button above to go to Stripe's secure checkout. Pay with a credit card.",
+                "flow.1.desc": "Click the 'Upgrade' button above to go to Stripe's secure checkout. Pay with a credit card.<br><span class=\"feature-note\" style=\"color: #e53e3e;\">*Please purchase using the same email address registered to your Yaballe account.</span>",
                 "flow.2.title": "Receive Your License Key",
                 "flow.2.desc": "Your key is displayed on screen right after payment and also sent to your registered email. Copy and save it.",
-                "flow.3.title": "Activate in the Extension",
-                "flow.3.desc": "Open the extension popup → 'License' tab → Enter your key and click 'Authenticate'. Done!",
+                "flow.3.title": "Automatic Activation",
+                "flow.3.desc": "After purchasing, simply log in to Yaballe with the same account, and your Pro features will be activated automatically. *The license key is also sent via email; please keep it for your records.",
                 "faq.title": "Frequently Asked Questions",
                 "faq.1.q": "Can I try it for free?",
-                "faq.1.a": "Yes! The Free plan is completely free. Pro and Premium plans also come with a 1-month free trial.",
+                "faq.1.a": "Yes! The Free plan is completely free. The Pro plan also comes with a 1-month free trial.",
                 "faq.2.q": "Can I cancel anytime?",
                 "faq.2.a": "Yes, you can cancel anytime via support LINE or email. We'll also guide you to Stripe's customer portal. No charges will occur after cancellation.",
-                "faq.3.q": "When do I get my license key?",
-                "faq.3.a": "Immediately after payment, your key is displayed on screen and also sent to your registered email.",
+                "faq.3.q": "How is the license activated?",
+                "faq.3.a": "After payment, log in to Yaballe with the same account to automatically activate your features. No manual input is required.<br><br>*The license key will also be sent via email, so please keep it as a backup.",
                 "faq.4.q": "Do you support Yaballe updates?",
                 "faq.4.a": "When Yaballe updates its platform, we update the extension as quickly as possible to maintain compatibility.",
                 "faq.5.q": "What are the system requirements?",
-                "faq.5.a": "This is a Chrome extension compatible with Google Chrome (latest version). Supported site: Yaballe (app.yaballe.com).",
+                "faq.5.a": "This is a Chrome extension compatible with Google Chrome (latest version).<br>Supported site: Yaballe (app.yaballe.com).",
                 "tokusho.title": "Act on Specified Commercial Transactions",
                 "tokusho.label.vendor": "Vendor",
-                "tokusho.value.vendor": "KURONYLAB (Sole Proprietorship)",
+                "tokusho.value.vendor": "KURONYLAB",
                 "tokusho.label.manager": "Representative",
                 "tokusho.value.manager": "Kouki Kuroki",
                 "tokusho.label.location": "Location",
@@ -1108,13 +1314,13 @@
                 "tokusho.label.payment_timing": "Payment Timing",
                 "tokusho.value.payment_timing": "Immediate payment upon application. Renews automatically on the same day each month.",
                 "tokusho.label.delivery_timing": "Service Delivery",
-                "tokusho.value.delivery_timing": "License key is issued immediately after payment completion.",
+                "tokusho.value.delivery_timing": "License is activated immediately after payment completion.",
                 "tokusho.label.service_content": "Service Content",
-                "tokusho.value.service_content": "Digital service providing access to paid plans for the 'ListerFlow Pro for Yaballe' Chrome extension. No physical items are shipped.",
+                "tokusho.value.service_content": "Digital service providing access to paid plans for the 'ListerFlow Pro for Yaballe' Chrome extension.",
                 "tokusho.label.cancellation": "Cancellation/Refund",
-                "tokusho.value.cancellation": "Subscriptions can be cancelled anytime. If cancelled by the last day, no further charges apply. Due to the nature of digital services, refunds for paid fees are generally not accepted.",
+                "tokusho.value.cancellation": "Subscriptions can be cancelled anytime. Due to the nature of digital services, refunds are generally not accepted.",
                 "tokusho.label.environment": "Requirements",
-                "tokusho.value.environment": "PC with Google Chrome (latest version) installed. Supported site: app.yaballe.com",
+                "tokusho.value.environment": "PC with Google Chrome (latest version) installed.<br>Supported site: app.yaballe.com",
                 "footer.contact": "Contact Us"
             }
         };

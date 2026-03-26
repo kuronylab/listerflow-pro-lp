@@ -1,7 +1,7 @@
 const KEY_OPT = "lfp_options_v1";
 const KEY_STATS = "lfp_stats_v1";
 const KEY_HIST = "lfp_asin_history_v1";
-const DEFAULTS = { apiKey: "", model: "gpt-4o-mini" };
+const DEFAULTS = { apiKey: "", model: "gpt-4o-mini", showStatistics: true };
 
 const LFP_LICENSE_API_URL = "https://script.google.com/macros/s/AKfycbz8Esv6o7yZt0iIi03q2dyPFA4TXAYWqEJCOzN1r11l-ufH3CV0c02ccykripH1ToYd/exec";
 
@@ -445,8 +445,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     const payload = msg.payload;
     (async () => {
       try {
-        console.log('[LFP-SW] サーバー通信開始:', payload?.action);
-
+        console.log('[LFP-SW] サーバー通信開始:', payload?.action, 'Payload:', JSON.stringify(payload));
         let response;
         let fetchErr;
         // 最大2回のリトライループ（MV3特有のAbort対策）
@@ -457,7 +456,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           try {
             console.log(`[LFP-SW] Fetch試行 ${attempt}回目...`);
 
-            response = await fetch(LFP_LICENSE_API_URL, {
+             response = await fetch(LFP_LICENSE_API_URL, {
               method: "POST",
               headers: { "Content-Type": "text/plain" },
               body: JSON.stringify(payload),
@@ -485,7 +484,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             name: fetchErr.name,
             message: fetchErr.message,
             stack: fetchErr.stack,
-            type: fetchErr instanceof TypeError ? 'Network/CORS/Permission Error' : 'Other Error',
+            type: fetchErr instanceof TypeError ? 'Network/CORS/Offline' : 'Other Error',
             url: LFP_LICENSE_API_URL,
             online: navigator.onLine,
             timestamp: new Date().toISOString()

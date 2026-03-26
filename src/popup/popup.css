@@ -446,6 +446,19 @@ input:checked+.toggle-slider:before {
   color: #e67700;
 }
 
+/* Pro オプション特殊スタイル */
+.pro-item-box {
+  background: #f0f7ff;
+  margin: 4px -12px;
+  padding: 8px 12px;
+  border-top: 1px solid #d0e7ff;
+  border-bottom: 1px solid #d0e7ff;
+}
+
+.pro-item-box .toggle-title {
+  color: #1a73e8;
+}
+
 /* 履歴管理 */
 .history-stats {
   font-size: 12px;
