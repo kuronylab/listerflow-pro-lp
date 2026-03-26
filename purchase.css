@@ -273,6 +273,12 @@ h1 {
 
 .hero-risk-free { font-size: 13px; color: var(--text-muted); margin-top: 16px; line-height: 1.7; }
 
+/* ===== Section Spacing ===== */
+section {
+    margin-bottom: 140px;
+    scroll-margin-top: 100px; /* Offset for sticky nav */
+}
+
 /* ===== Grid Sections ===== */
 .section-title { text-align: center; margin-bottom: 64px; }
 .section-tag { font-family: 'Outfit'; color: var(--primary); font-weight: 700; font-size: 14px; text-transform: uppercase; margin-bottom: 12px; display: block; }
@@ -305,6 +311,73 @@ h2 span { font-size: 36px; font-weight: 800; display: block; line-height: 1.3; }
 .ss-caption { padding: 16px 24px; font-size: 13px; color: var(--text-sub); border-top: 1px solid var(--border); }
 .ss-stats-wrapper { max-width: 900px; margin: 0 auto; }
 .ss-label-stats { background: var(--primary-light); color: var(--primary); }
+
+/* ===== Savings Table (Fixed) ===== */
+.savings-section {
+    margin-bottom: 160px;
+}
+
+.savings-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    margin-top: 40px;
+}
+
+.savings-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.savings-table th, .savings-table td {
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.savings-table th {
+    background: #f8fafc;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-sub);
+}
+
+.savings-table .row-label {
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.savings-table .highlight-col {
+    background: var(--primary-light);
+    border-left: 2px solid var(--primary);
+    border-right: 2px solid var(--primary);
+}
+
+.savings-table .premium-col {
+    background: rgba(15, 23, 42, 0.02);
+}
+
+.savings-table .total-row {
+    background: #f8fafc;
+    font-weight: 800;
+}
+
+.saving-value {
+    color: var(--success);
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.savings-note {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
 
 /* Pricing */
 .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; }
