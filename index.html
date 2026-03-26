@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,1387 +9,323 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="data:image/png;base64,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">
-
-    <style>
-        :root {
-            --primary: #9333ea;
-            --primary-dark: #7e22ce;
-            --secondary: #a855f7;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --white: #ffffff;
-            --border: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --gradient: linear-gradient(135deg, #4c1d95 0%, #7933ff 100%);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: var(--text-main);
-            line-height: 1.6;
-            overflow-x: hidden;
-            background: #fff;
-        }
-
-        h1, h2, h3 {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-        }
-
-        li { list-style: none; }
-        a { text-decoration: none; color: inherit; }
-
-        /* ===== NAVIGATION ===== */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 5%;
-            position: sticky;
-            top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--primary);
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .nav-logo img {
-            width: 32px;
-            height: 32px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            align-items: center;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .lang-select {
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-            font-size: 13px;
-            background: #fff;
-            cursor: pointer;
-        }
-
-        .btn-cta-nav {
-            background: var(--primary);
-            color: #fff !important;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .btn-cta-nav:hover {
-            background: var(--primary-dark);
-        }
-
-        /* ===== HERO ===== */
-        .hero {
-            padding: 140px 20px 80px;
-            background: var(--gradient);
-            color: var(--white);
-            text-align: center;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .hero-banner-container {
-            margin-top: 50px;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-            perspective: 1000px;
-            z-index: 10;
-            position: relative;
-        }
-
-        .hero-banner {
-            width: 100%;
-            height: auto;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: rotateX(5deg);
-            transition: transform 0.5s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .hero-banner:hover {
-            transform: rotateX(0deg) scale(1.02);
-        }
-
-        .hero-badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 99px;
-            padding: 6px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            backdrop-filter: blur(8px);
-            position: relative;
-            z-index: 10;
-        }
-
-        .hero h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(32px, 6vw, 58px);
-            font-weight: 800;
-            line-height: 1.15;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .hero h1 span {
-            color: #7dd3fc;
-        }
-
-        .hero p {
-            font-size: 18px;
-            color: rgba(255, 255, 255, 0.82);
-            max-width: 560px;
-            margin: 0 auto 36px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .hero-btns {
-            display: flex;
-            gap: 14px;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: relative;
-            z-index: 10;
-        }
-
-        .btn-primary-hero {
-            display: inline-block;
-            background: #fff;
-            color: var(--primary);
-            border: none;
-            border-radius: 10px;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary-hero:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-ghost {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 10px;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            backdrop-filter: blur(8px);
-            transition: background 0.2s;
-        }
-
-        .btn-ghost:hover {
-            background: rgba(255, 255, 255, 0.22);
-        }
-
-        /* ===== STATS BAR ===== */
-        .stats-bar {
-            background: #fff;
-            border-bottom: 1px solid var(--border);
-            padding: 24px;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            max-width: 1100px;
-            margin: 0 auto;
-            gap: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 10px;
-        }
-
-        .stat-num {
-            display: block;
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--primary);
-            font-family: 'Outfit', sans-serif;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-
-        /* ===== FEATURES ===== */
-        .features-section {
-            padding: 100px 5% 80px;
-            background: #fff;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: clamp(28px, 4vw, 40px);
-            margin-bottom: 16px;
-        }
-
-        .section-sub {
-            text-align: center;
-            color: var(--text-sub);
-            max-width: 700px;
-            margin: 0 auto 60px;
-            font-size: 18px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 32px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .feature-card {
-            padding: 40px;
-            border-radius: 20px;
-            background: #fff;
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            border-color: var(--primary);
-        }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(26, 115, 232, 0.1);
-            color: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 24px;
-        }
-
-        .feature-card h3 {
-            font-size: 20px;
-            margin-bottom: 14px;
-        }
-
-        .feature-card p {
-            color: var(--text-sub);
-            line-height: 1.6;
-        }
-
-        .reviews-section {
-            padding: 100px 5%;
-            background: linear-gradient(135deg, #f4f6fc 0%, #eef1f9 100%);
-            border-top: 1px solid var(--border);
-            position: relative;
-        }
-
-        .reviews-section::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.6) 0%, transparent 50%),
-                        radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.4) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
-        .section-label {
-            color: var(--primary);
-            font-size: 14px;
-            font-weight: 700;
-            display: block;
-            margin-bottom: 8px;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .reviews-section .section-title {
-            position: relative;
-            z-index: 2;
-            margin-bottom: 50px;
-        }
-
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 24px;
-            max-width: 1100px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        .review-card {
-            background: #fff;
-            padding: 32px 30px;
-            border-radius: 20px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-        }
-
-        .review-card:nth-child(1),
-        .review-card:nth-child(2) {
-            grid-column: span 3;
-        }
-
-        .review-card:nth-child(3),
-        .review-card:nth-child(4),
-        .review-card:nth-child(5) {
-            grid-column: span 2;
-        }
-
-        @media (max-width: 900px) {
-            .review-card:nth-child(1),
-            .review-card:nth-child(2),
-            .review-card:nth-child(3),
-            .review-card:nth-child(4),
-            .review-card:nth-child(5) {
-                grid-column: span 6;
-            }
-        }
-
-        .review-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .review-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--border);
-            flex-shrink: 0;
-        }
-
-        .review-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            text-align: left;
-        }
-
-        .review-user {
-            font-weight: 700;
-            color: #202124;
-            font-size: 16px;
-        }
-
-        .review-stars {
-            color: #fbbc04;
-            font-size: 14px;
-            letter-spacing: 2px;
-        }
-
-        .review-text {
-            font-size: 15px;
-            color: #5f6368;
-            line-height: 1.8;
-            text-align: left;
-        }
-
-        .review-highlight {
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .reviews-note {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 13px;
-            color: #9aa0a6;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* ===== PRICING ===== */
-        .pricing-section {
-            padding: 100px 5%;
-            background: var(--bg-light);
-            border-top: 1px solid var(--border);
-        }
-
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .price-card {
-            background: #fff;
-            border-radius: 24px;
-            padding: 40px;
-            border: 1px solid var(--border);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .price-card.popular {
-            border: 2px solid var(--primary);
-            box-shadow: 0 20px 40px rgba(26, 115, 232, 0.1);
-            transform: scale(1.03);
-        }
-
-        .card-tag {
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: #fff;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .plan-name {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .plan-price {
-            font-family: 'Outfit', sans-serif;
-            font-size: 44px;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .plan-price span {
-            font-size: 16px;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
-
-        .plan-desc {
-            color: var(--text-sub);
-            font-size: 15px;
-            margin-bottom: 30px;
-        }
-
-        .plan-features {
-            margin-bottom: 40px;
-            flex-grow: 1;
-        }
-
-        .plan-features li {
-            font-size: 15px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .check {
-            color: #34a853;
-            font-weight: bold;
-        }
-
-        .btn-plan {
-            display: block;
-            text-align: center;
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
-
-        .btn-plan-primary {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .btn-plan-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-plan-outline {
-            background: #fff;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-
-        .btn-plan-outline:hover {
-            background: rgba(26, 115, 232, 0.05);
-        }
-
-
-        /* ===== FLOW ===== */
-        .flow-section {
-            padding: 100px 5%;
-        }
-
-        .flow-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        .flow-step {
-            text-align: center;
-        }
-
-        .step-num {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            margin: 0 auto 20px;
-        }
-
-        /* ===== FAQ ===== */
-        .faq-section {
-            padding: 100px 5%;
-            background: var(--bg-light);
-        }
-
-        .faq-list {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-
-        .faq-q {
-            padding: 20px 24px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .faq-q::after {
-            content: '+';
-            font-size: 20px;
-            color: var(--primary);
-        }
-
-        .faq-item.open .faq-q::after {
-            content: '−';
-        }
-
-        .faq-a {
-            padding: 0 24px 20px;
-            color: var(--text-sub);
-            display: none;
-        }
-
-        .faq-item.open .faq-a {
-            display: block;
-        }
-
-        /* ===== TOKUSHO ===== */
-        .tokusho-section {
-            padding: 80px 5%;
-            background: #fff;
-            border-top: 1px solid var(--border);
-            font-size: 14px;
-        }
-
-        .tokusho-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .tokusho-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .tokusho-table th, .tokusho-table td {
-            text-align: left;
-            padding: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tokusho-table th {
-            width: 30%;
-            background: var(--bg-light);
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        /* ===== FOOTER ===== */
-        footer {
-            background: #0d1b4b;
-            color: #fff;
-            padding: 60px 5% 40px;
-            text-align: center;
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-        }
-
-        .footer-links a:hover {
-            color: #fff;
-        }
-
-        footer p {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 13px;
-        }
-
-        .feature-note {
-            display: block;
-            font-size: 12px;
-            margin-top: 4px;
-            opacity: 0.8;
-        }
-        
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="data:image/png;base64,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">
 </head>
-
 <body>
+    <div class="bg-gradient"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
 
-    <nav>
-        <div class="nav-logo">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAABkK0lEQVR4nO29d5wlR3Uv/j2nu++9E3d2NifFXe1qFQGRTFIwUQSbnAy2DDiAMQIMDsAigo1NNNjYJhneA9usABEkARIgCZkkkIRyWqXd1ebd2Uk3ddc5vz9OVXX3nREPv+fP5/3xe63Pambu7a6uOjnVKcJ/06WqdPHFF/OKFSvo7LPP/u8a9v9dA9fVV1+Nq6++Wi666CL5vzoRVSVVZVVNVZX+r07m/4cXEUFVk+3btyf/J/BP/6sPqCpdffXVCREVABSAAMCFF1449NKXvvTM4eHhY1etWoU8F1q+fLk2Ggmc3YfED+GcIwBw/rMkSexvByQJ1MF/64AkSeDsS0qSRAGQf2/9cg4uSeLv4d7wjod9rnycksQBSNQ5R0kCDU+68t2V+x9+PmEd/js4/7MyN3EA2cJsgsnA2EgSD4NEjxw5yDMzMwAS3bdvX97pzN341Kc+9T4iCiPgKr0qPRtnCxH9lyTDr005nsq48tLkxz/+8aOGh0fPXbZs6TnNVuvkVqu1Zmx09L9MVP/v+vWvvCgwOzs71e2093S7vSv379//3Ve96lVX7dixowcAqpq8G9CLfk1C+LUIQFWTgPj3v/9jq84//+xXrl699qVDw0OPHB8b5eqtAIrK2OpEiJjBgAoABiAixMwqTogTxsBl3CRCYLa/BQTGILfZ3MOggIoIAYxwLwsUXFujCkAQUQYUzCQQYrDaK0HMA+MDIgCxf7dAwGD/Xfny+rwEAEtlHBIBmAERAcDKHOZia2MAYS4CKCDEwhD/3cDaG+Gl3W4XU9Mzt83Pzl161133fuHZz37aHRWcCX6F1PtfXl7PJwCw7YMfXHnjjTe+Z8+ePXu0fvWd06JwzqmqqKpzqiKqKioqIipiv6uqOOdExP4K3w1cIiLqnN3i/9kXlXsWPOWv8Fx438C91TFduE/8JMKP+E9qL4tjVe6rDC71Zyv/qvP273Lq1EVYSBi2tlT/nBNVV7gIFyfOrkJV+6qah4cOH5lq33n3jk/9+9e+djJgdsK2bdsWcNivdVUf/MEPrnnF/Q88+GAFkH3nXO6cinOqTlU84J2qOudKmJZ4KQHi/D8ZRE9l8a4K8IXfL/bHosBf5A3i1JXji6pzLtDjgnHk4ccenEskqkWer6/NOec8nGqwWOQ95VyduAhHV35ncy+caldVC1XVqaPTs9ddd8PfAmgCgG7X5GERvdi1ffv2BAAuuODPxn7+ixs+Nz8/HxbQVz/x2iI9J1c/X4SLF+PMxbnbDQBeFnDhYhJARAziAwCtoiGMFABXRaTJqfrItfdV5r7ItH+ltKmN6QyBTo2BIjEGSaB1QnJOTVJUmagGRyNi59QV6rSnnhB27Lj3mksuuWSDl+a/HhGomsr57Gc/u2Lnrl3X+knnxugDK6ks1A38rP6rUrerIEHULYROBNLAvTUkRgCVny0OvEEEVNVUVAERAQsRt4CbF6O8QVj8inkutoY6I9lXgctVA24XZyTVytyMmKJU6Kuq7j9w8P4rr7zqib8WEahH/pVf+9qyffv23+Bf0HPO1UTy4FJKZEXglkj331cXHVXuIgaARuQv4NAqgBfQTWUotwhwa8DywHUD864ieFHiHZzIIhOqIWkRmIXxIgHqwPvDa1yFANSIoHrvYmu0dxq1BKmQq6ru27Nv7vLLL3/KYkTAFeQTAP3oR/91YutjH/etVatWPsI56atqg5jJrFR/b3UEgjJAVAtGSGl6U+12Uq1a5RQHq97EArBN7eG8lMHPiew9wVMI5m+4rxxeQQB7i9t7JfWB1e6xuRLVvAJVGysulir/BudGAGl9rnE8hsTvKu6C2iMAK5vXYV8SM1XXEtcYHpU4jvdQCCCiFECxas2qodNOO/3iH37vh1uJyOmgYailtZ/cfsedV3qy6zkTLOIWp+aKTjRLdkD8D1rVgZqruq4iyvxPL21MoQeuqb26FNV13opjBi/ElRqmpjO9RHPhqYG1laqn5Nb4LvcwWuBXqIDFbrXpeS9g0HYKcFKzD+y+CGNXVXcVyVFK3xqwtJQEu3c/dPcnP/mlpWoRXIJnAFzsAzzXXfeLt528ZfNvAuhDpQEFRIwXzSPXAY4iz2WkqqSkpa+qAKik/cBH5NlAAfXSoMpLAJjBUFIiFYVC1Q9DWhnWuKAcXz3/EGB+MwHK5or7Z6qM6OMSEv6qXRT/JqiqMgMQL2HYS0r86stgoOCBe7X2kwMs7DNVJbLVkogApCalmIVAYrKLgWqQR6pyFASpyjOTV8ycAOivW7d205OfcubHfHyAAYC3b9+evITZXX755Y8+4YTj3wOgEJGUiZVBCq6K/gHJq/HlxAwoSUCSF2S2KP9onKSXanZfBSIxrhyeZhi6I5AWxrwjJVL5DokzDmpkEF8CQAzPUr61clGcH5HWwj0VhFV/kqmHmsgnehhCEYEIwMIQER/vAqmSwseKjO1irMtDgkTshvgOJa1pIWbWcjUUmJAgSAEUJxx//Kt+9KOfPZ2InKompKpMRHLv/Q9cc8Jxxz5ZLJKXMLxdQACBtKIPAweQhoUrSEl8xIoDVMiAogSlGjAUSiSkSkbxCvWDEVBGDBfT//Uo3SJ/iQ+5Vbh6cBw1oLNKldttBFJaSDFhDYAGjv1VcwvvrEUCB98PZotwYnC+FikMz4gITCaClGJU0FiKangQH0lcsO6ApzDHXbv33HPzTTc+/vzzz59mIpLbb7/7acdu2PBklPkZPwKBxDiAyCi8uhBPCUQEZTDUDJeAfNhjpFXYBKEsXvxFNir1RTCMwoT9vwr9hH9UTiJezGrECz+XOi5VQT4mi3CfGYyB2KNZSlo1bD3jR6Xyq6/FiCSoRgKzDxQLiJjYh5hVlaBEImLvViXDpygRhKpIJTWL0Rbq38cqJtJq76xcBCDfsH7t5g0bjn0tEQm/6EXbk2XLl741SRgioqRKpGYBi0LFWHGB1Y2S8kqp4CVWpLYgn0ux6WUZKVUATBV1Ll6HD8YvK+qnZjT4SUSkDUqOQQKMkojZkEnlfapaIZz4ZjLmIyUi9UplELBVhJeWvSwkArL1aVigqiGMw2SIlJk9cxB8bgAigIjZLU4EwQQKsPXiJuQSald1Es5JBkCWr5j8g09/+tOTdOONNz5m46aTfjI6MkyAqAgTD0A/um60YECTDp4I/WTUJ1WqA1BFd8ImLAZSGoRRTQWU6H04h9DfI4CG3Exw7QaSKNHckIqYZYCMa9jAjyDp4qKNyRaqhlLx0OCPmks6ADL7LiJMLClUhZehF0SqEFVxBShrcHgWAKgoAE4B9nOTQFj2PFXWXoeTiDBznhdF88477rogHVuy9MWjI8MMoAA4pUHtagreWwNxxLg4hpE1ISLYFqMgDURB5cLYQxTEqirR7B3EsYgoc20ZWhmjurgwLyL2gFUQD8QFKmvyBCIh1lCLOQTbxcPfVJ+ZhBRMr5qUWZwwq7YtDfwGET+fMsNpKcdggRBURFHkos0mgRusR6dyHDpcUJoCy5YyxpY0TSqox7YZAWBeFPnhUmaQCDhLU52cXHZB2mpmz63AJYpIc0kQ4bCYHoDnzgFrVwVCTFwR7IYjn55Vr/2JGBqsy4rFQkxQ8SJ6wJjTmnCqgDcIJ14oeAeJgMz+DjpZ49u1iv0ShBTgYpYgVQkrvqMiHCsiuWKUedHigaKAEAQQIoKat6ViN6mCkpQ0aSa0+8GOfvlfp/VHV85SlhGBSeFUX/SapfTCVyxDoaKsniQt9a2q4Aoj16ChIFJICrA0W40n0PTMjI6PjamKEpgGxZxCQMoR0bVR1YPCoB5y2t4thJKYFeNhKmb5Bd0HjWRTVQMi0AEVtECEVz4vn6tz+EILv4qc6AXUrGYMiHoKYy6Sjx/8O0oLDFwDYAu6OliUBAiYGa6w2EdqJjjde1dHv/WlKfzoez3NEsLqNRkaDYI4paJQveWOOXrVnyzT3/mDFcj7oKRRgrZSvzAwFRBQRgrUiVC/yF2apFyZaWmtmq+hATi0UBtHfS1mNhMRiS/4qL/dvtMFvy9CV4NuYOWlWrl/8Muavx4KMPxVNVg97AVQIq7bJqVr69+zCEEGWNRnVidMCzLxAnUFAVQdQGTiUJwDMSFNzIO67to5/e4l07j5Jx0MNTNdsTpDmij6fSMeVUXKSoVTHDzSx2e+cTxGxpN65KMO1zqkRExN+iKdlBRVS9rrIwET+yGCBqwvJACCqcIlSirqke/9VK0YiAFBRBSiXpXQooliL1DUr9UEJBa8u4R8JcBEqvEpHsAQlYYZA1AGq0KplPrekkHFzlCNoXULdZJ6t92Pu6gBoAHV9o5YPuS5XkmVVBw0a4ASTpD3C3z/O7Pyrf84QrvvEUyMZ3Lc8cMEgLp9p3luodqwDlcAjSaj3wZ27exjy6lDUBEkFbVZZaoqA4WYg8AqqFKKNrwP2ABE0Z2PcF/UEqeSKLxrFbRBVP82oH0bEOuNgHqErXygYuzV36qIyKqoBY2PGgaZMRCxqNoAqNKORqsLKKW4qTI1kiy1nZKyfUlB3Q1cNRXhJWB1vhCnJKqapqQAY+pwjqu/M4vvfWMG+x4UrFie6aZNKQonnPcFClBitnQlImEEpOTpNQowDvaTDGJqwD4JtpSCWdPqrUEFlDD1lrFGCtDBgeLi7H6J9OXr7IIFJdFHJ40idhGiCmNRnegWqJ4BQ82e8witElcQ1yXLVrwVu0kHxafNOEonG8sbWFQafPV5AINGa3SfRRRERJyYOXXPHV1875vT+NGV8+jOKlatamDTpibluaLdcRoWRmRCSrkmBJUSoN91NLksxfoNzZAPgCiUqYaXBVJTxOwxZiYBKAVinLcEsil0C9NqeDqgspwJKkRQWXjVXIgcQaBgKMb3+dDWgErXCpGUgaJBcC9i4UTVERGx0BKsckfwA6NkCuMEKeQXYrEws9sB1JFcnQD7qaoCTqDiRNOMyFe94xc/nqPLts/prde1qZGSrFiRUXMVo5+rttsFEZuyFRM+pOIhKQghVQCqzQbR7t19POEZIxgdT5AXSmlCxmfiEb/oJAFLkLEV0DLbvgAaCNJ46WUcTIv63pVlV34qSNTi3APsSlRi2ixF1UEDLHwb1e6CuDuVYnrwsUCYFfEcKomD6vC3BQHEPhZQMspCS77yqP/c6h6izinn4o0HUYvUZSkDCaPddnrtFXP4zlfn6b47ezoxzjj+uIYCTL2+oNMVZBmTJKrqlMhTrJrI5DwXYiXljIhZ4QrDV6er9LhzRgkm+BBNBMag3VFHhedrZhaIUKpqMeWKaWts4o20GOkjqJYKd3HhTVAm9npemUoiqlr8CkAH6xuiTlnc6KsiWsun4gA2bwk5ztriB4iFNAb+zNBQi0py7X1eEgGAOoAS+CBWRTlV5+kcVFWQpkzMrIcPFfju16bxg2/N4ug+pWXLm9h80hBUoJ1uH0RAs0Eqyjh6uKChIUajySicKBGBSKmfqw6NAuuOyXDbDT1dsjSFqqLXdTq5MqWtZw6Z9GWquay0OH4MvCXTmQrgsO5gCxtdK3kFxLZmHQwHR2iWUrmKCGL2xFPl2EXJJg5bqhLx3EUL3L5BhFZo0ty1BXoYZXi3rqstBqAKCvKSgIoVbfgX8akLH+aGTzyHSYgYYEzMM+24s4PvXDKP634wr3nH0YrlLV22iakogG4HxIliuJWqg9Ce3X0AgsedPaIzRxw9tNMhyQzYzRZjz64eXvgHY7jxRx3OEoI40iQhTE336cTTUwwPpyicUpKU3suA1qtzmYdf3P/AjFS1ogMpGj+eLclsAZAYFKPLXmWDQbRS8OcGEidGURELXgCXDn91bA1SYzFxH29CLYZEQAxGAYbIWumWBwSzKUIFCxMYEFHPdkHaSbB7GSZj1Yt+9dlrEQUnhKDfb/jZPC750ozeel1PR1pEy1ekaK5sSL/vuNMF0oQwNGSie/fOAkicPvqcYbz8dRP0vW/M6A0/m0OapNRsMnECnTqc45jNGZ3zrFH96uendd3qFjtRpA3SuRmls54wHiARjVWGDzPHRFNFNdQ8lPL+tCL9S/erohTJwpRU0RARnF4ZEKgWhIklPCZRyhdUAyrKRCwWCq7xuFK508e4tDr5qoU7oALUCxtvtNWvkg60JBsJC7O4RdV7NKnleYYUPgagJA6UpoSECZ224IdXzOLKS+Zx7x0dWjrW0JOOb5Iy0OsX1GkDaYN0uMU0Py+6+76chsYU5z6/hd9+1XJaMqHY9id79J5f5jQ0zFi5hqBgtOeEDh7qY9s/HYM7bu6g1xblBFKIkCuYkib0tEcOEQBikpLVAFRtgEUSbbVLBEgJdUMv6HvY6KU1vMgAVQlg4VczrGOo1aSoN09L39likeT9QqoNJ2XRA3FwaipIHCCX+J149JGCfeFEcEPq9xOFghBi/1IfG1WmWGhpxOmzYKrG9UlKygzseqCP714yTT++oq0zh4WWLctw0onD6kDay4VEFGmDNc0Is7NKD97fxZIVTC/5wzE89bljOr40xZ6HOnjjM/egAUajkWDz6RlOO2tYLvn8NM13HT35WaM45oSWfOHjhzE6mpHHB7o9xZJlhDUbUgCiVYE/kEWNMKv97vMxAjARKPVpA5/v85U7EtmIyDg6lHZhACMV90ltj52AyEJ98Fa+al0v1SUBTFQYoggRcXXPNFqeVZsx+PaKmNGDEJStsofq8yu5m5lL78DXMzMqEsAGJFcATkSblorFXbd26Gv/No1f/HAeXCRYtaqBFRsZeS7o9AUMUJqllKaqhw8VmDrSpw2bMnrVSyfwtN8ew9CwBfpv+vms/s2f7ceqySaOTPXopDMb+swXj9P733oQK5clVCTAa9+yEnCCB3cUOjaWUuElz8G9uT726S3ixN6bZRXA1tMtVF+2l32M6AIqQdMohJWiORVr6qJUjTbRIObCS8rgkVUvmfYIBISaekFIBMUy0mo2MODAq9uqQqnIfe+S1eblCQEa762svqpkpBLO1cjtJW2Ls5q4NCWkILr5hjYu+eK03vjjeYy1Ejp+fUuZGb2+oNN2Skw0NERgEA4fzvXwVI6Npzf4gr9Yro9/ypitvbDRf/HjObz/LXtx4nFD2L2rh7POHcGf/OUyeu1zdun6NRntfahPb3z/Sl0ykeo9t7V5eqqQYzY0tddTNBqgfi7Yetqw2TJBk/nlcQW5i1zRtmNmhMqhVEMJla8fNJXIQQpolLt1CtCIfF9HVw2mAFE1GGI8O5eJCu906QBRxXmSF+FsFqnUIlwBn5FZA4GVY/kQ3+IJLPhC15BG92pOIQWQZLY1X0Vx7RXT+q2vzOLeWwsaH06w6bghELH2cwdRIRagOQRVIT2wL8dsp8DmRzTp91+6Qh/7pFEFQP0cqk6p2SJcc8UMPvyXe3HKKSN63709+o2njeBP37UG7/7j3UgppSNHFY980pD+xrnjAED33NYX12MkCRNTAXEEJEpbzmyYK50QqaVtygIT5up6F6qAgAIALKCUIFSmjw1x4oFk4tV7WhQzg1QZLAbTQ7IkuHGgaEso+RAVg2OYNxp/ka7i0EHSxwwlcbylXrRZ4f6wKPFunRKUF0N+sFcEJARSEXVC1MhImUG9juCHV87pN794FDvv69OKZQ3ZeHwD4oB+btkgBrTVIrg+4aGH+tQrHB71xGE895XL9ZTThwGA8lzNiADQaBG++e9H8ekPHsCWLaO485YOnf3bo/jTd66m7V84hF/+tINNW4axZ39PX/O2tVQ4aJqAbvhxF2NLCM4JJRljbk515doUK1elYbu51goFzbMK1UWLrt1XTpkLzEqpLrYn3qpxqnHcijSn2uAUdEuZ2Vs0DOkdO42Ti2IjjFmP+pExYd2Cq6uh2v1hguzDodWCCE/C6g0gX18nqmBkKVOSQA/s7+LKb87pD77RxvTBAitXZtiyeVjzXNHpGn8lCWkzS7TXAe+8tw9JHJ74rFE87+VLcOzxTSNAp2HBSBLShEGfeM9BfPviGZx2xqjec3cHz/2dcfq9C1fqA/d28D8+PoVTTxnS225p0xveuZwml2dUFIKZowXuurXNE0sS6fdEG03CzIzQo89qoTmUUZ5bxRQPBj5q0Fo88hJKWxWMFDqonxF1CFWEv3qTv3p56IaatBh/94ZIqQKCxmDjPGKrdiUTPtUJQ0tyEz+NYKzX3YX6NOz5oJj89P2cgnYjMOAKqEIoTS3hu+POLr715aP42Q/aKHpEa1ZnunxTC3ku1Ok6FSFKE0KjSWi3oXt392lsEvr0l47Ss186jhWrzQorCvO9OCEtCiBLCXlP6D1/tgc3/WcPj3jUEO64o4tXvn4Sz3/1UogA//CeA7p+VUZHjzo+8fSGPv0FS5Dniixjuu+uvranHVavbGq37cAM6vQLPPLxkwAgIWAejHWvMk1u+rYYi9CGSWgO0RLRNDExGdHgOdr0p0I1dtioGt4B6mVBlblT5v6xD0YEBJi9Z4kgi9aRj/bUErKBxBavPYgEWRP71e81VCj5iGDUTqLw7TiAJDUo3XjdDC750qze9OM2RloNXbumQY2MtZcrdbuqqpA0YUqarPMzBe3e2cPkmoxf8cZx/c3njmJ4xCM+Nx85SSzG7pxSmhLmZgt9xx89RHvuc3raI4Zx0w0d/P5bJvC8Vy4FAP3Wvx/CjttyOuXUIdxyexsf+eAaiLOYFED4yQ/miFNW8d6ZCFOjSbpxq703uFUclw+vND0rAMTRMi/hJQIFmzpmgFJvM1ZDqnZ32AfgDbhBey2KfkBhiR0C+zyAZzk2pITijEqYVclqRsnrhoUVZyH0vKgRV/4dv2OxEnYfDYtFDxZaVyS+Fc1PrprVr/zrNHbc3sHk0oxO2jRMAJD7xIwqIWsAaZrS4QM9HJkqcOyJGf7wdStw9rPGNU0BqOn4NCGkaaBeRV4ospR1+khOf/b7uzF3hOSkzUN80y/m8co3TOJ5r5ykohDd+UAXn/v4FE45dUTuvGOeX/DqJbpxyyj6PQc/Tb1/Rw/jYwmcQDkBzc3mmFwHWrehpa4ALeys4w1biYRAVcYK9zCbl4PEpHFqnlbdWq6OHXIC5GPBVTXgbTJLR1WqbNVjGOR9ec/bFQMRZPVYcWNIlfYA0xsCT2Fa9/cQev9UglZK1UoioVwYWQZlJjhH+P5lM/SNf5vG/bf3sWplqidvGda8AHV75a61LCPKmPXIEYepoz1s2ML4nTev4Kc8fRQgq7cvCqU0Jc2yuj4sctUsY+x7KMfbXr0bqowTTmzg1lvn9JVvnKQX//4k+n1Fo8H40F/tpxWTmc7NFDQ6yXjJBcvIOWiSEiUJY+pwH7t25Fi5ogVXqDYywtys4oxHWUBCVMBE5O2aiDAGwn6DKuoXlMPFWnwWTTkkiH2s2wM8BEi0IvhrwWB4veNxo7xA2wRRXrfcfNLcKh3EF5tX+FnLfWQaLBwiilu2/Rgm7CmGqNUTBgoF0oSRJMDcrKMrvjWNK74yR4d2qU4uS7B16xD6uUO7I2EINBqkBOJDBwudnhKceEaK1/zVMjzmSaMAoK6wHRmcMFKOafqYESqcIssY997VxUV/shdDjUSXr0px883zdMGFy/BbrwjIJ3zhHw5i371OTztzGDfdNIdtn1iH1lCCIjeeSRJg984cvR5plin1usppStpuOzzisUuNfSxNpwu4tYR8yHIvYrmVjAswUoGY8+YXFNy50pYCEIs5F44W9quJAMqCJMgB9q5eZb4hPez1mpaOQ5iXpWME4jfEcyC9SCAV+8DsAbJSK+dEs0aCFKDpaaff/I9pXPHVaerMKFYub2LT5oT6fdFuT+Obmo0Eqoq9ewrq9hVbH5nhD182jsc+cQQAo+hbbQMzE3MZWeRyRlQUijQj/PTqOXzs3fuxbEmTRscIN904p697+0o892UT6HUFzRbj5uvbuPizR3H6acO4d0cPT3j6CD3icSMoctEkZcr7Nu5N180j8Tk1ItU8BzWHgS1bW4a2JIm6f7CyGSb6F0MVgFjp7CEplEaTK5pM0YIPHBcCJQ9Ti2MfMkNVmcQIyTiEfAzIcsqqXk1whaAqsilOmMWXeVPcmxAJIOQUVG2rrKholjJxkmD/nhyXf+Wofv+yGerPEFavaei6lUy9vmK+7Uy8sNLwUKrOQfY9lPNcN8dZTxnC81+1VLecOkSAFV2ClbjBCr8Tl+KWK0uRq4CM8wmXfGkKn/nbw9hychPMpHfc3qY//MvlePaLJ9DvW6q423H48Dv3Y+2aBno9IWHB71+4Ek4ATgBVUU6Mc265vovRsQSFKDgltGdF1xyT8YbjW2bfkJIIKROYiWOhFRBS8XVDuWoEMABRIfEle6l637xUAVTd2hWMfVogyu1LrwaCdrDEYc2KNwT7oDIHxJuxzxTLHctNnGZMsvgav+ponricgxJDkwSUgHH7zW294muzdN3VHS16itWrG2gtJ/T6hHZHFAAlTMgyon5PsfOBLgpVetx5Q3jh763ChuObZgjmtlMpZVIwWWm337gRVS2TOmc0mWWE//lPh3T7J2dw6hkt9HuCB3d28fYPrtYnnDdGRWG5mjQlfOYjhzF3SPSYU1u4/bZZvO7tq3RyWYYiF+KUSJU0TQVzs4527ch15dIGxIHSTGl2ttBHnD0Cj2AwUxlPgRBin0MJhnhdslaUrDFk9NyRkulTLst21H9LGuMCfoSB/LLX2WUkf0CmD5Z+V1LGQTWUpdiVKGOI1ccYQ3i1iCJJCIn1IqVf/HgWX/vSNN11fU9HmomuXtnQNBP0+tBOGwApJQlpq0GYnyfs3t2n1ij07OcP4/wXj/Ha9cMKAP2eU04SZMyQBKoCIr8fQCorUgK5QjRNGaqKD71rn/70210641HDOj2dY9dDfWz7h9X0iMeMaiCmLCX88rp5XPpvczjtjBF66KG+Hn9yU5/+/CXo9YTS1OAmTomZ9fabZrU/R9RczdrpWkCu2xM6dmMWZ+Ezvv5vSwULEEu+B5BfNbH8Nn5W23VugSDWapiXSFUEbAThFXjJqYN0RQviMoac2pvNqA9mgS81s4hRCPNWumPU6g9FAOeUssyKLzrdQn9w6Qx9+6tzeOjuXJcuzXDicSOkpNrPHec9C8BmGaPVZMzOCd1xfxcr12Z4+euX6FOfM06jE6yAaL8vlCSMNEsigDxRa6UpkoZasLwv2miyzs8W9J437tMH7iqw+eQhTE85emhvX//6U2ux9cxh9PtKSWJ7H2dmHD5x0SE65tiGqiOanhG84xOrCIAmCWtCJrbV9nvTbb/oaJKo0R2BXA6hDHTGY0cZgDKpxooO9fEVrdklNTwM/qF+WSEZlhoHllFfsWRQzDCZGyhQ4mrL0sFeHRprBkL8P5qVHrI+NRy8DJRh4YVzZcA5hQhplgHMhPkZh0u/Mk2XbZ/B7GHFqpWpbto8DOcE3X7hDRRFlpA2GoS5acWunV2s3MD0R381id88fxypT+sWOcAJa6PhM5bi8x9kgJQg2Ri2EQRm6TeajL17uvSuP95L7SnGxpMamJ0psOdAF+/55zXYeuYw5Tk0axDlfaVGg/WTH9iLuaOC9VsbuP2Wtp7/0hE64aQhzfuCrGFRMV+mrSDBLde3MbE0Q5ErkgTozDms3ZBhzbqGScakjLARQbXq99ek7KKXeWtS2lJpkOvB3asaD567zcWu1uNWdkkGXzyIFpQTCpQRhiwTTkHkCMoMg/+yKIy80pQ0SaAH9hb87Yun9QeXzqI9q1i9OsPaLaz9vqLTFbMRlTTLFJywTk85PHg4p2M2tfC6103SOc8Y1TTziC+UmEk5AYVIEXmghfVoSGRV5Fq/L2g0WG/+xRz+9m37MdzK9LgTMpo5WuCh/V28/1Pr9eTThlAUiiwjKgpoo0F01eXT9JPvdnDaacM4uN/RivUJXvlHy+AKKCcM5wJQGEkCOrxf9OAeYPlkgsIBzQbRzEzBj39CUwGoc2bx+/7B9mQF2z7DKVqJ7C6gAE/YbGqj2i4+OA6+SYJ32kxvxPRtZQOPJ7nwt7IFKDBghJi5V9tJI95mrcosV9i2ltQK1XHv7V265ItTdN21PXChtGZNA6tXMno9pXbbKjGZGM2GDbN/v0O3J1i/MaMXvWEJzjt/nAikhQgVhTcYrX6PVKFhD7EG8wY+PBkgqyaaXSHaaDCu+c40PvKXB7F+Qwtj48D0VIGH9nXxnn9ZjZNPG6Kir0gbVkzIrHT4QKGf/rsDdOwxLXUOtOehPt75ieVoNBPb6sXRvTXEMuP2m7rUmXNIV6co2pZF7eSiJ53SokCWEfnRma9VagOG/EXia/Emi+p6OysFgjsWMEka6T9mUaAKywoMlnD57ywuRQyBZY4JvjqnuptIIvJjyUZRAGkCJD6k+pOrZ/CtL8/oXTf2MDKUYN3aBtJEUfQU3a4VETIRNZtMWgAH9zvMzhe09TEZXvh7y3H6I82wEwd1Kjauj0GI32BRzX4GXzfE3L0wUlEzWLIG8OUvHMD/+OgUNm0cQdYgnTuqvPdAH+/9l3U49YxhWCzAYKJiVboffdc+zZJMxycY997dpcc/dQiP+o1xFIXGjSJm/Sr7AC5d/6NZGhpiVSEBKblCtdEgnPJI8wASM/Iiy1Hl/wKARSB1QzAyY/jFYjYCZhYBOFUjmRhtDYAJySCfzWGlkjkGBh4MSYatExSd0+qOHlUSZ1W2aWaVSf2eo+9fPofvXDyHnTv6NLmU9YQTh6CqmveEerkfL4E0Gky9DrB7Vx8CwqOe3KDnvXw5NvkgiXMAVMAJU0pl6RfgEW/BLlYlCfkCH52MJWFOQFYUQvjgO/bStd+ex5bNw8op0J5zdPBIrn/7+fW08eSmId+IV52VaOul26dwy3V9OvmUFmamBTxE+IO3rQg7jSNHWKsi0iRRFkd67509HR1NURT2/m5XaM0xKVavzaQohNm8D7IWW97j9jGVMsuHwf4AMCe7TNd7LwDMkNSLCzP6K7V0RDFEhPiCeoCo9onAoFnRSTGGECZZiBmDiRfzh/b38e2vHaVrLu9h+qBg1coMmze31DlB0RfjSmXKMtIkIZ2fK2j3LkdjE6TPeMmoPvX547R6TcjKiRIxODHCFfUSasA6VqPQeI6A9f0j8bUH5ByQpsDU4Vzf+6Y9eOBOh5O3DEEcdG5WcOhQj/76s+ux8eRmzPwBgBjn60MPdPHZDx/E8SeMKJho586CXv/OSUxMppFAbH+eqRgRIE1JH3ygR3secHrc8RnyXKiRJXpkLtfTT2tqkjL1+9bnzWIj6jcLV4z3KvxpEE9liYZ/t/qAraZRF5VSyWDkXxK2S1X39FcIIYYH2VvMluuNeQXzs3NrgpB6//22Gzq47KszetOP55B3E1qzuoHlGxMtclCnI0pkwzYbBAjj0KECU9MFNpyU0KteMaFPe94Ymi2To0Vu9flpYqlAW6A3Zsyhq2bFSl0UyZqsMoKhRa7IMtI7bunQX79lD8gxnbCpIc4pHZ0SavcLfPALG3DcphblfdG0UVY9SKHKDdDfv/cgRoczDA0T9j3Ux8bTMzz1eUvgkR/fGsWPms12xy3zSqxIEmi3bwGk2fkCpzx6icGXOGY5K7uTwkUoawOrUhqVv4PRKCLeDSDmVOB9yNAJIQRvwj68UCK+yD6+SiKmpES2NIA4kBMT843M9uFdfcUMvvHFGbn/zpzGRhKsWtlAmjHynqLdMZrKMlCasRY9pb17CnT7OU45q4k/ftkknfX4kfgeV3jEZ9HVJAD+JI6YDYlAqKg0VWUk1hKP1Yf5CmeZuh9dPYsPvGWfbljXxMioRdgOHHSaDQt95HMbaPW6hua5Im1wDImJA9IG47tfP6R33tjXk7e2qOgrpqedvuPtK6u77tS7YNYcSgWwBt168/VtDDUTc8OtQ5gWhdDxm5owthJmjkQQY3Iebaae2fAI2+4V3P6ILhvIxAHbNlJKGWxgYdZK3Cga+NVmSguuiiII4WN1ooUwpZkVLc7NFvjO16dx5dfncHCnw7JlDWw+qQUBkPcc+l17fZYRZRlhZqbAoQdzag4xzjp3CM9+yThO3DxEQBCZCmbSJC1zlH6pUWVxpTY6TrXCG74RoqVWhVQFaDSILv3KEXzmA0ew8fghTVLLQ+ze2eeVx5G+9xMbMDaRoSiUsiy05wPEV1LMTRf4Hx+bwXHHNsDMeHBXF+e/fJRO3DysPoUcAjCWa/FZGU4TdYXDzh2iI2NsRiIzd+cLWXtMk07YaLYN+caWCDjxezBDxjQcZSPM+jDYAuDdPwkesFg2kH15SSgI9b6xt+apIjvNSqoWBYRqVBExTsgYSIB9ewv61r8f0asun6X2UcGa1S2ctDmDz8GTgY7QaFgXoSOHHQ5N9bDuuAZe/IdLcO6zxjC5ohHFPGCeQpJGW7W0btXQaTYDxWqQBfYILC6hIcvtGAkByIB//Jv9euXXZmjTxiHkDpxmid5zVxcnPTLViz6xllJidQU0ZYo18ArP/SnwuY8eguZEo2MppmcchiYEL3vdMjPoOIp+smbQMaJOCUP37S2wf1ePNqxtIS9UG03gyGFHm85oqHcbKU3hGR5l9k+A2IqnLMVbsOaFqpB9ZZb1B6jeTFCLJJAViQQGC/GRaopRVUBhKzSnBvWbfj6HSy+exs0/zcGFYtWaIW2uBnp9Radre5ETAhoNRlEA+/fmmGs7bDy9iVdcuAJnP308viDPoUlSGlre8CjtkMHiMYtXGHLL/ZLhYW/mEpgpbKqgfl/0PRfu0Tuu69PmzSPo95SGhkjuvr1Lpz2hSe/66DprgCxKSerVXXBzRZGmRHfc3MGV35zHSZuaKoXi/vu79Ob3T+rwSApXaOi4Yhdz2H7kN2YDt1zfpqJPSDKi3JkdMDsj9JhzRvzyzE4Y7L9ohp+AmOJml0okMKoALe0xiuaPvy8NT9SKbgixBMMzPpWeO4JnR2BoxozpqUJ/9P1Z/OCbc3TvHYWOjRAds6aBJDXEd9sKJISUiZOMJO8Kdj+YkybQM584hGe/ZAm2nt4C4DthOkGWsGZZNFCDEKoGNsIHcT6W6oyWMABQzDGQgYeINUT2Dh/oY9ubdtPUbsLGzU102g7Dw6nedUeHHvu0YXr7X69WETXfy5e7wdfc+K6iyPuKj1+0H2tXZ2AiHDjYxylnNfU3nz2JokDcPOrhpgw7y9AIyDJ5D9zTQzMj34ZGyeVAY1hx2hlB/Jt0DgUVvr+UJ4bo6gakVvsDRH1eRmxrPRSR+oVxTAZ6mApTGXO215Ri32oA0e8K/c9PHtHvf2uGerPQ5csz3bixSU5V+7lALeKFRssc8OmpQqcOF1i6MsF5LxjWZ7xwDGs3DAEAihzWGj4ltWZHdmyaj2tFue9N/IE4BCzbVJkf1PdaD6AnKJhR5CZ97rung3f9wS7KklTXb2hqp+uo0WS98+42nvuqMVzwJyu1KOC3LsQcZtwO75xFLS/+7EHse6DAxk1DEFEcnXX48zevBoLdXC/LIIjNVcnEt4hgx+19LBlP4XIHZkKn42jlKsbaYzP4sjiqNJiGr6sYNMq1fEnppYWPQmwmqHlvC1BqJ1dQUGqkBIV4YeArLzRuG/O6REn7fcHbLtiD++/o6YkntrixFsgLRa+nCgY4IWo2WV2h2PNQrt2uo5POaODlb1jGjztnVG2fnFDeV7BFAolA1pfft5mLbk/J+paDKKVV+VWoaTCoK6jMnQMmwgtLLtG1V87o379rH61Y3tDRsQz9XChlwu23tXHBW5bhha+ehA/XwldDhVyTbcYw/1937eziK5+bphNObEFEsX9fH2c9aZhOOqWlPkBUIiD4pqQI+62YACeKnfd1ZLTRoqGRhFwuOLDX6eOeMUwAw+VGKEkS7S0wlTumg3vuu4/GXkYaaHfBZdWzPm+AVKq98qL9VGqSsHmSPLM5Zzn5H1w+Sw/eletpjxim2aMi7a4Sk3pngojA2HV/D33n8Jizh/n5r1iKTae2IkCKviglrGmmMe/g30+AIb+sMQ2z83+Xmr9C5bH2IBw0GQEmoqRCmqXQL/3LQXzpk1O6efOwjw8ru77qgzt7eOvfrMC5509QkUPTzIeEPcx8xSmJt96dA73vTfswsaQRUdsrRF/1hmUWmSOq9Qok77oFveVLpDRLE7rgrcvoH993ROfaBY7d0ES77XCKdf9g4rKnQowfGFva7klr4BBL4f07g/CLkrIUoKHOX9TXA5BG7NodxMxW5VO2ii/z+x7c99zew9gEoz1vFgN7HQUr9tZOu+DffvUYnvHCMYwvbQgAynNzX4jgjUZDL1VQKd5bZbZGRhaOqvj6i1UIoixgAcp8AzPUzvElgEGfeN8+XHHxHLaeMoI8d5oxUacN3X8o1/d9ag2ddtYIPPJtLl6WJvYCKENFzCj9+EX7ML1Hdf3xjCQh3H9Ph5758nGsP7aBohCkKdcP7ygxoaphW7eQc6xPPX85Hvnocfrmvx/Btd/tYNm6lJ5w3piKWOk5xJ8xgNDPwqqdB6zycPpozW2vACnEAcDw6gSglFlUlYMNQPGmMhAUqKNsEwPQ1JEuCIqsAc3zUKWi5U4vBW69voMlyxN9zJNTLF3GyDJGkYuP0Q7klgJaPZlbwCLuSonGYLABonaNVclQJyb2QqM/VyilGWm3A33vW3fRPTfm2HrqENodR60hTqYOFTqfO/zt59bxiVta0u04ajWTWGgReiVEJvBi/QeXHqHvXjyF08+cAEjw0EN9LFmd6Ctet1ydK3v2+GMJojANaknBSBgQMSTkucOylQ383p+u1hdeUCDvKtIM4QQRCNuRuJbIKd3bkNOvMsZgh9aKPRAhLaFsFwA5dRJ75XjIaujwVEK4NLCcuTXX/ee0/sVr92LziaOYWMqUF6L9oozKMBhz8wVm51Sbo+DfOG9En/nCJXrMcQ17rxM4IUpTqiWvY0BSfEFGyTwLIpGVRXkSEojYw4V109R9e/r0rtfvpc4R6NoNGdrzgqFhxb6HCh1bxfTOj66h1WsbmvcFaWYzqRJ7cNXMtxTMTBf6xpc+yJNLmujOQQ8ezKkxrvjgZ9fr+uNbcE6QJEwhQmfxttJdteivqTVfiWFmjR31QFlqVr0T2/whkFByTx4+IF+hXCEG6/9XjwNUPagAP/OFJFYEgdSpQ6UFTPC1rQrYXGeUfOjdFwUz4Yafzus/f+AgHdwlumx5psuWMzkn2s+NOzklpAmh6AsOH3LIFTj5ERme8fwldNaThsHEqqokzqKXcWeH6fFYXl6ZfMDFIPKrl+S5UJYx3Xl7W7f98T60OKHVazKdb6uOjRJ2Pdillccl8v5/PpaHhuHrBWq2SOlleIawpA3w1t+9Dzf8qIPjTxqmZSsSPP7cUTzt+UswMpoEuGhAlIr4QgPf/C20zrf9XxAFk7ICJrqYQb6NPhLisHbx6VvLYlayfyYFY4sYeNld5fgFcFNve1jwUIhc4RwlZYa85g4Oiv6KNW66FYAqXf2dWf3W9qO497Y+lo5lMrkiJU6I8lys+oVBrRbBOdWpw4KZ2T6t2pDgaS+Y0POevYRHRmwBhR1Mr0w+XBp2/1T2KNIAAQSCDa3eigKaZcAPvzuNT7zvEFZMNDEySuj1FcNDie7Y0cGJpzTwvn9aiyS1qpwsAcS2SUeiCnCw/XqCNGNc/tUD+Nr/mNLf/9M1OHFLi1aubZQ2iOcq5wzxoQrJT7HqkA4ScW09AkByKyrxXoiP9/gT170ruSAgVP6hXG1+WF6lBABC6T/IOXVk0VgNSA+bPWL5duyShaqYUGtaqMSJUeWtv5zHZf8+o7/40TyhYKxalWFkNEHhFEVu5kGSwLY6zTns35vT6GSKJz1jhJ7+22NYf4yddZwXAgIRMynVW9WXamBgm1pRiKoCWcb4yheO4PMfOYKTTmoBBBVVyhKmO+/o4twXDOuF71oD56wQMEnYQghclqArfHsbMaNKPbh23DmvG7e0kFh0h6z2wPwpEUGaltVQ7flcdj6Y0x039PDQQwX15hRHD+bodETBqiOjhPElGVrjhKEW48STmrTp1CatWZ+CkDiY0UwgaMJeGpSim0owxLoQQYVI+GEJQFSEIwGRcyq+v3J1T72pPFN7XkRRSQAVcUKeEBRm+QLQPbu6fM2353DV5XN6cLdg+bIMS5dZvXUvV1WxhkuNDNTtKg4eECogOOWRQ3jWC0f1rCcNgc321qIQIiJitnBmVe/FoEwBZba9hp/+6H792udmsHXrMPLCIfHm7Y67evTqN0/qC39vEkVhFTEMsLK5iBUY1FrgxwwMoqtlnUQSz7FOQzWTtudz/OyHHfz4+7N09+09nZ2BJI6okRJnTUIj83luk/IoCodeX6nfhzoVYias3pDRqY8YknPOH6XNpw4DgBTWXobS1AitLF2quZoRb5V/i6nOYDyaLe6sIC3ydTAm4hVfWIknV2nKp1gFIHWACCTLbIS8X+AnV83rZV+epnvvyDE8xFixrKFpA1QUqnmhSBiUNRJSxzh0MMf0fE/XHpfiWS9comc/YwzDo2kAtI/IeHfPE0GRK9KMdPZogb99+x7ceWNfTzypRZ22apYx9fsODz5Q0JveuwLnPntM81yQJKzlECBB0LH1AhKp/S/UxZrRJmr9eQFg354cl/3HlF77vTamDynGR1JdOknUbDAoMaNN7eRJZVIQq1gDSpCo2s4aJXKi6Mwrpo849AvFsScl9JyXj8tTnrFEAaY8F+LMKJPsqiEViN3ay2B4XQLUMQcQqapTxEJCUgVExcRO/XFaMKRxCPnARtQtIqDCOeUESD2UbrtxFt+5ZA43/GdPi76jJeMJJiZSgJh6PUAhmmVMaQqZmXY4fKhPQ2Ogx503qk9/3hKcsLnlDWeQy8X2o5Ptbb/r1jY+9Bf7tHs00XXHJpjvKpoNwtxRpcMzfbz9A6vprCeOIO9Dswzk/EEBTBaGkHByFzH58EqMPQigLL5Sisw4LZx5DJ224N8/fRiXfnkamUt01ZoGhkYSCNScLSYUfcXcLKhfKFRUi1ygKppmltlMU8bICFHWNOXslJTNDKa5adEDh/q6YWPCb3jnGt20tYU8N++AkwGXsCIJFlUBXlxKPLbHpBwVzkliC68GDKIKCMk1ESupHqCskqqkDDL4mJyCQ5k3QjUQjhzO8bNr5nDVZXO479YetVoplq9ootlQ5DlQOKdJZiHbbltw6GBBfVGcuLmlz37ZEjzmycNoNku36IufOojt/3wEa1cP6dgEo9MWDI+S7tuTExqKv/7nDbT+uEYZ4BHAWcba1hLm7UPJRMbdgdpFoQmMUJyFUSVLQD+9ehb/9P7D1JsnrFufgRNV390Drg86cqTQTleQDAGjY0zHbMwwNpF4e6oPTkl7PaU9dzvs3eOQtxVDwwlNTCQ6NEzaz5WZoY0W5OCegqZmC3r1G5fheS9fCldYh5WEyxPNNOLCHzSJqoUUcOWlVzVC6ZyTygkfQGkl+uH8gKWNsBhhVcSLeArkELZRVbMlRCzEGu689ZfzuPIbs3TDD3votRXLlzUwtgRaFKK9XJEw0GwwiShNTYkeOVLQqrWpPvnpY7TlkU38x6cO6703F3T8CQ11EBSFYng4lZ33d2nFMSm/5x/X6sRkapXHdjKCwNQcQqqBUIZ8KSA+eADGBWbneIMgTRif/4eD9LXPTeuxG4ZoZIzR7SiyhkpRgPbtzUGp4tRHD+Fx5wzjjMeOYNkyDuxV9cn930JHpxx++dN5/Ow/27j7+hyzRwUrVzYwMg7qtJ1rNK1A+87bO/Tk54zrhdtWgRPboeobX4Qxq8ftPLwKEEBYrHbUOXW+15CGGmNCTV+g5gF4pJvYV4jGjYooAetbvJq1EY7HgfgZihMQNGzJoqNHClx75SyuvGQOu+/LZelkgqVLrQKi3xcWhWapFY/Mz4EOHyw0zx1NLEl1ckWGTseBSNBsMu7b0dNTHtvEOz68nrIGSuQH/94IPURpqTznKJwhuLDptBMAopSkpB95x15c+502Nm8Zpn5foAJtDjEe2tmDg+CZL5mgZ75gTJevKjs4KkDi1McU1AJBxFAVSlJoBYnotAtc/e1Z+uYXp/XQQw4bjm0op9C8AA0PJbj7jh5tPCPFez+5AWlqiKp0CynbxS0eJylthnCjlwA1sR7jxb6Fut/yDe8SLhw0hEyl6r+XRpsY1VimThDMTagQidouW3gR9aPvz8tlF09hx609aqYZlq9MqZGZenBCyokiZZ9VdRaGTjOAVPXOO7t49u+M4Y/fthoiFr+wWEUp3SwQYsETn2kMgRGQ2mENRpZ+p5BCxAmlGdFfv3Wv/uKaNjZvGcb8vEOjkVDRF9z3YA9PfPqIvubCSZpc0QBgmVGCMYeP3JXwMk0CCPvcoMA5EzYJqSYpo58X+NZ/zOoX//GILl/CNLk8o3YHOjrCePCBLk5+dJP+6kNroMJeGvhIoHddB3AakB/jACGWUKoATxAoe8mGcwgkhDNjcNxGKuPy1R6BgIpaX8dKwShViAO+4tg2arAJnhBdDOrknjvmcdmXp/GLa3vI28DE0hSjY9akkUEkBIKoZg3WzpzwwakeXv2mSTznxcvEFSBi7zOX3bPJ75uwoIrvlBTq7GGhZ/OGPPuLAIVzaGSJfvx9e/n7X5vTracOY25WMDTMOHrY0Vzb6R+9czk96anWEdRLnDBE1S2Dh7t6i02NtZjAEPbV1ESkeS6aJFa2df+9Xf3Am/egM0W0en2G+Y7q6BDjvvu69Nint/DWi9b5LW/qjTuuqoBBm828SBaFjwVQUThJShlSOxApxozF7yCuBIHiC7yH5NmLKUauQBwLFqM4tbw1ldKAKPQfshtcYdsT0szeMTfjcMOP53DxZ2do9ojIshUJ5TmpQihhUHtW0Sucvusf1uLELU3q90XTVC1nTqTijMiMkuPaTF86YSYu098+9h34ocgtonflN6fpY+/Yr6efMYz5OaXWMOvhQ47ShuKif1qL1eszLQrjqKgOQwkaR50cCUAhmgjDwcc4iEScT/hQeF7gHJA1WNtth3f+4U4c3s1YuTqhdlt0fDzBzb/s0Ou3LcczXzCBwratq4hY1KSM6SwSChZlsG2UUnVOUbMCBw9ciq4esMC0jPcKYENWGhT4N1A1fh0Mq5Bk4VCL4sWJ+MCTWu6VOGFlBuU9wZ+8eBfShDUlQMkOUez2BO/91BqsXm8JnSTl+E4LS8WeQ1XbphZSLQ0CxN1Q4kCcQHc90NM3vXgnH3fskBYKZA1g6lABGiL6yOfX6fjSlPxO31rDpmp4NlZTeTfSQUDMqiIenByB4/MAns0EhUDTjDE7W9CbXv6gcpFifAlDxA5d2re/i09+7RhMLMuqG7AqidT6JSZqAfi2fU58BqxSVBXixNEvDJmj+maEiq1g6kLqsQNrVWI7WYhUgxoAqMxG6SBhsZ99AqSJUWWvJ5o1GY964gimjxTIGglBiJKU0G4r0oY36RMv1kIY1/K4QQ0FCFTP7vXlfl4SAbAW8Wrty1ToQ+/ajyXjmXJqVTn9juLonNB7P7kG40tTuMK2eYuthQBfseRVHvsITSABq9/wp1XZYgEIWKy/hk8lk4M1vOIMyPtCY2Mp3v2JNXR4qkfSF4IIGi0gUcK//v0hT8g2C2INEaLB4I+li6WU8gxIyRk0kFhQDWW1cZNQZbDQaD0UGypDSUQI4SAIg7ghJIg2/z7VcBJ7FE1hQpYU9NKECepDzPiN3xzWbk9gQTsgzaC9tuK6H7ZDCjlyczU/FuCvUAqF+eEdCsSDmMRTonOqSQp8ffu0PnhHTqvWZOj1C6QpsGt3Hxd9cq2uWdew3T4+fcuBiL1bHMquhVHdYlfCQSR0bLeDNhkIklJEfLdyJgYTMbTfd9hw3DAueMsKPPBgjmYzQa8juv6Ypv7n9+Z194NdTRKGE/GHQMVl1zDq325GFyCc2OmWsTEjVx6kUoxaYkix2FWmbkHKzCqMKPaDDRAs4vB3KaLDuyLCbJNJJQeeJAAEuvWMIVq1oUmzswJOoOKIli5N9dorZuxNUf9aoIQZgSLIB9fUzjUQP2UGK2mSmgdjJrIiTRnTU7le8q9TOP64Fro90NBwSjsfyPGcV4zh1DNb6PcVSShYtfGr/n2V+sLSFN7pQKh7Eqv39IYBm9RSTVPGrvs6+Pm1R7XXKTRNGQknyHPBs160BOs2pjg65ZCkCYgJrYTp61+a8vZaogH2i6PLN6Pwh4qwcERAMOSicachGmhxPR1QAYixaIonbXgyqBckBm7UKkWKWH1bPbMQa1WUTIyGZ5wVL+rjzxvC4QM5NRpEeQEsWcq455Ye7t/RDe4Q1Dd1UkU4xjbOg0Aq3s0BgTodp5duP0Kq5jeKsyjH9y+foc5RUKOhUBGdn3HanCC89LWTEG/p1+x7KqUoVClEFyuro7A8BcqzlVXIalgUYsUk+Pj79uLCl+3Ce//0gL7+Jffr3l1dSlJfhwHGi187QQcO55o1lHpdR6tWZ/jZNV3MzzkkicTa/wH2J5iRHySTEYAvJ42IpdC8M5iu/k/hMiBUwVdcPANR3pKPtQ9eQcOw/T/YDwghhqoN4v1aDXMLVY7nPntUHakWfVF/+KCyEq79zpzN0zqIgQWgAIoodsP8lFREmaCf/ug+/vbXjyBJ2Lp/MQNQ/PCKWZ2czLTXF80awJ69PTzzBSMYHkkhOrDZow5ks4jM1iizdKVVjrJiNfibgFPVNGN84M/34oqL5/W440f01NPHuDuX0YfecVCcA7KMyRWCJ54zrquPYZqesh0GrWHG3JTQjT+dAydsEtDiM1VkeVVlVq+3fbXaTQIB/FJa8Wa++RLGigsQ4qVBddgLSstCQaFA0AinqmKUvP0jleQ22YxVKi6TlDxGRHAOWLOuSSed0cTRIwWyDMhzoRUrMlx7xZzvuwOok2iQVVETVYQzMXvfnW188ROH9VnPXx5jFUkC7Lyviz07HEaWAIXzzSBbwFOfM+GlCkqoedBW4OCpnK2EvOqTS/gynMnAsPyC7a76wJ8/hJ9e0dYzzhxGkSva8wWOWdfArh05dt3fUWZS543dc56xBIcP5siarEWhWDKW6I+/1wZ8LB5AtH6DFI1S2riVgglaubT2C7HtrQhVQVShpIgzG5mcxC6UFZj7YmLypwWEtiyh4CT4nfBuoImSxc7y9ZMyyn7S04dxZFqQZAxXACNjjP17c9x0/bwCIFXr0FVdTDAyQ1GmOMHfv2cfJpc1sWa937fu5dbtN/fMFmBGmhCOTgk2bW3QshUZnNNQMAu/ltDjSOMcDdGDPridKVNZlBaACiNJGR9+51787Hs9nHzqEObmTXwRSJ0qlBw76xsWS8Qf9aRhgGx3uQowMpLQrvv7JM4Rc+08joqW8htMhFWsvpwYNX8x/BpOyaVSb5cewkKDh80X4Oq7KrZvVB2xEDFIBsTtZwGAgSo5/KIInkiMeT/pN8dpeMKh23VB79PoMNMPvzvvJZdQrTrWqDda2GkK/fRH9+HAg9CJlRlNrvDNg3z73dt+3tFGI0UhiqypmJkvcNaTx/zUNWyvsqHFgldFISgKi2py3LYV3cASXgIwbEuy92Twd3+5R39yRQebNre0My/WkktVsww4eCjH2mMaOG7jsO9cYgOvPz7D5JqUuh1zWZsjwIE9fRzcXyBJoj2H6kWAUtg67t1Grvt9AZ+2Hc5TT+R2qhADEAtJgxsX3ybxHvOpSyUMT8WVPYrBYbVS7CBKA2yhCJLAXpbngtGxRB/1lBEcPlggzUh6fdWVy5v4+dVtHD2So9FgrdoroZjJ+Xr9m342h29+aV43HNugonA6POo9Dr8LaM+uAsNDibUNASC50tYzW6ZDK/JffaQ09Xn9NCVVVTjnOV4wCF61+gMAypSmwHvf/BCu+14XG09qaq9bgBmkohR+Htyf44/+YoUmFpkjZnNbG1mCNetTas+LEluDbC1Yp2dK6C9yKcFcVLNNWKvaLOCjatEH5AY1HdceCGFwgUAsNzInwijHuI8BMelifnNp40VxpeRPvkJwBlCz5AJnP/38CZptOyREJAI0W0B3VvXHV896ZMf2RDEoQszotoU+9q5DOPaYFuW5+futIR8ZY1BRiPY6gkbTQhl5DxgeJ102mZTztDyGEgO3/GIe2964S//i9Tvx1S8cUmbSJAHyXCBsVT9UgaEqVJQ1SaHvf+se3PKjrp60pYVOR0HM5FQ1YVCSEu64o4u3vn8ltpw2jMJBKbEzDwNjn7C5qd2ulPYoE6YO5p7SIuFHvMLbORYwEgqh6yCuK3ZqnSAqhkRtQ3aUChpOAkEwICnoQqrs2DGpbtJFACiHbtCVS4Kf6udEMUpvbJVYmPbk04ew/pgU00cdGhmhKICJpan+5xUdVOgF5KnMEibAP39wv3bmHI2MEpwDNRoJktRUXZIA87NOZ2YKyhqGvX4OnViR0tLlaazA8b2C6cH7Ovrnr91FD9xc0OF7lf7nx6bpza/YRQf2FpRlDJdX2MNLN99PgP7ur/bihms7OOGkFs23xUrNVJUZRMy4+655evP7V+pTnrUEeV8oCSduVYyIyZUJ8r6Qz/wpBNhzf274l0F7rGKTlM0myMdOS8SHsifS8qh2ttgeMNgfFN6LK/V3GC1izt8UrVCLzhpRDBrT0OgcDkqh+HK2aJ8mKenTXjBOhw8VyFJGnoMmlyV0981d3bOraxk5E8VwuW3nuuaKab3ia3NYf1xLum1RIkWSWtAgiCIRJXGWPSIA6hTNZiJJyuS8a6d2wLd+56uzGBtuYd2xwxgZS3XLKS0c3qd4w4t36fU/m0OWsfb7Vq1Man58mgEffsde/el3O7ppU1PbbSGre7fC1pSZdtzZ1Qvfv5rOffYSynNBlrKE6GIMOgMYHUtDNlYJilRJZ44WxoA+Cb8AXRZ59p3CBGzioOqFI1a/EvxmQwX7vc4VH8CkDPu4d3xBoLxBxQIllgpNqImjio0RRIod6SpSVy8aQiwg35MP554/hsaooN+3sH6WEpEQfnCZVwOi7MRiCFOHC3zyrw/RiScOad5zZHXwpOKgUjoM4ITMx9eo56OZ4+swgwtAU0ccDQ2R9nqiIor5tmDlqlRXLUuw7XV78cMr56jZZDinKArbVPuJ9+3Hf17e1k1bGmRi38ORLDh07z0d/NnfraBznjlubm3GJCy2KVXhD/SyCauorye1TygBfJtf+FPfqjrAQFyxsWA2TaWzp/dng6TxPi/VojommMtnCKGXYLD0EXbQwidaPbxinEDCy7icWMWtsiAdxy2OVDEMo9FZFKDxiQxnPXmIDh7KkTYInR50xcqMfnjFnBaFaJKQqrN9C5947wE0kKDVInICCC04/4AA207WHPJpAgonZ1AAnsXrfYLpmOMzHNxfoNWC77FM6PUUzVaCzVuG8JE/34eL/3XKTiDNCP/0gYP4zvY5bNnaom5XQx5IrXUe6Z13dPD6bSv0iU8bR68ryFLr5wfxO2RDaZrvctTrOuuwSjD7QUBDzRBsrLjpFfgacRj+2J82MIBcDXisOP5xY4hW7qxcWi2ntiPhvBnHKI0RL02sDAveHXwYe7UWWazsCA7yKnh5z3z+hM7N9YhIyTnVkdFE9+90uPkX89YKNSO95vJZuuHaHtauy9DvKtjvqqXEMFl4u8k5RXOIMDTKHrCKJCXtzDtyhSBJLcuYptZ55AWvmtStj2nQfXd3aXiY/B4CQt4HRKGbNjfxmQ8exBf/4RA++8ED+u3/mMUppw6h3RHLj/ltuVlGdNstXX7DRStx3nOXIM9Fmi3LWKjndvKxk4Thz1MFFQpNGvCGmqoTwZIVtQB0xRMypBNBgpENAKz+jwqX1TCrEjJdtYrgAYOgFvitdqmi8naUTQzNlFa/46g2U0bloGmWYBsECeUjknHnrZ60tYW1JzQwOyuaJkqqqmPDSQgN69HDOT77kUM45phMe33fBp6gENI0IZ05mlN7zvn4gZFsM2PkfSsWa7aIjux1esis6xqMmi3G33xqg25+dAP33NnD8Ah7xagQp9TvsZ7xyGFc8dU5XHNpG1tOaWm3JxZuN/+Wsgbo7ts79IZ3Lddn/NYS5LlSlvh27cSU2AmAGlWAgUEB6AN39ag1lKkqoBAiBtae0FIAHPZZDuKzXIOxEpNvDxe5TGNjEApIqxLHgDIovyt93qpdF0I9qtBo2Cl8GZku4gRUjD6xjIXW/JSKyhBRSlLGOc8Yx8F9uaYNQr8vNDHJdPN1bQgcf+7vD6LfUbSGE4tbmO9KjQbo0ME+Np7S1NXrG1q4qOho9TpCu+0UYCRM6HWgB/e6YPl4zUEQf5rEu/9+nT7u3GG649YOhobZmvD4RiW9LrBqVYZVaxvU7yk48TzNpFlKuP2WLv7gr5br+S+eQK/rkGSV1q+Vizkk4yRE5PWuW7sYGWZyTuEcQ6AYnyittJoKqODQZwPtd5SWGPl1+VhX5SEq3cHgXQUkUai09dGaigVPdcKpdwynmLKsCpWakciWhETVmAnGqvltvpblnGeNoTlCJLlxcdZMlRzjX/76oP7yRz2sXd/UXleMM/27C1HqFkpv2baW0oSBcn665RHD6HQFaWKOQKMBuum6DhlRRovGW24gEaW3/d1qPO9V43Tb7W1isvME7Ray1jl9BRERfEePpol9XPD2pfqsF02g1xNkDSYS7yKrb9cDVl8oxgLAOStM2b+nx4f2iA6PMoiIOnOiq45LaM3ajMKRNiW6yr9Fgjcm5gYG/75KLWTFujHubKteIFDCt6F6loL4Du4d+b296j+vxPipbuL74fwrpGLsUTm3mpoh8j12HHT56gynPWaYjhwq0GwypBAaG8/wi6v6umJZ0/Y+QRQCVREMDyfYdX8Pv3/hJK09tmG1fwnAfqvXqY8cVqQKVwiKQjC+hPGza2fgjVOtTsY2FhCKAnrBhSv09duW6u23z1DRJ221TMURQVNTdwoBhlpM99zZw2vetoye/4plyHuCLPW2JgHgUGBj7UyDVCztf+Bn13RR9GJ/Be11HZ14QkvTNCUpW5PUYBaAr6EoFpVs4AA+Yo8ZzzHeCF2ACAonmxJBQimUVE1/M/iCWDOuV8AfTlc6GH5vcsg8GheUHZWwwPD0RG0uMJ76vBGdnlNKfRtQUcXEsgROxB97ygQFNRqEvXv6OOM3hvWpvzWheS4aTuFgf7bxcSe06JgTMszNWFHZxNIUD96V49br561Zk4tbIyIxpqlF/57xvEn87efW674DHTp80GFohKF+3x8IaA0z7birg1e9eRLP/51J9PuCtMnklXaAk8FflRIR8vlzK8Ejqzy+4lvTunxFqnlu28xmZ0Uf+UTbTEo0qEBKTUBA+bVUmLX6iLlxGv1GU9elKxbGqzj8wdjXkM3xASWtbmCEVwtqm6/C6ep+FP868v1wYsyg+nzF7vQY4IQAUpzx2BFdsYZlbk5NBytpUagXIX7LS0JaONZu4fCHf7HcjmzzRrPAagWdtzsff94oDh7OqZExnADjoym2f/aQvVpL4ajBd1Ily04qnfGYUXz0S+uRjTm+5+6+tpoJhkeIGinh9lvaePkbl+K3XrGUut0CiVl5GoJkoZjFx3tUAMuiCsjZrmT85/ePYOedOSYmUjgBej1Ba5T0zMcOAag1k6wyjfGLVBpKsBm9VffOPo+VjDUPbGCoANt60aWUxBSqTwYurws99CIua/zNIRto+j8SX4UYfKyGCHAFIcuYznhCRkcO9SnLKp4oAbb9QrXZAD1wb49e8UeTWLm6aRU4rNafjm1TQOIzguc9Z5yyEUKeQ4u+Ys3aBm6+rodbb5xHlpH1ow8RAT8hgsXwi0Jp3bFD+Pi/HavPeFGL7tkxj/t39nDDzXN0wduX4fm/s1zzvqiFm31s3swQM7z9OcjGIAwo+9N1HEQcvvypKaxbl6HbEzQz0P49Oc56SosmJhs+NDwI80qsw8ceIMEGkAXigsTXatlO4XLrl5YcWLMJBF5qqFIp5rU8+q1mjPiCMVtR1S/xqI/hF9N9XjVU3xUnGkjXf/+Up46hn4v6pgYxaS0KNBrAvj2Fnv64Bj3npUvJOWiWcLRVzO9SL2IFk8synP2MYezZlevQEFPuFOvWNfGxbQfQbruKwRTWVdoqaWJiupEyXvPm1fjgF9bhT967Ep+59Fj9rZctRZELhTMPYw2ciFm9FGL0YWiB2TqCNE3oy587jP27FEuWJFQUNul23+G5L5sgePGuqPvlJc6sIoirfyclCK1w0hOdcSo0ln0T+V1UtZX7cI9NNEiDYGkHwGBAwijMj7cxtfo5xAi/1Cu1aCZifXH0DAiaJOYSnnrmCNaemNLsjD+F00tqZiDvgwou6M3vXWU+tVUkKkCQEHa2PfzWwdMpXnLBJLhRcLcDiFOMj6doH2X66Lv3a5KQncJdri16KwK/O0iBIlc6YUsLT3jyCI47vkmFAziBMrE/Ok+8b8qBKXy83jcsYVBeCLKM5YafzOmX/3mGTjixpd2O6vAQ0+5dfZz9rFEct3EIRS4+jl7aJwvIQAAwSMAkIlQR9ihZUYKfZ5uVgnHmq4IGqcqIh9mnGe0EnCD+S90Wi0BsD4H/TMsRY1OyGC8oI4VU/19tBgSAREjBjLOfPU6HjjhqNBgiClHC8DDRgw/08ftvWYaJZSm5wg6CVoIPglj/vcjN1jQLS5c16DVvW4Ed97ZldDhFuy3YcGyqN1zVo0995CCS1LKMoXAhCDQC/KYYUwmhXF3Vzkfya6SQHyXyDQkIFOIjwb/O+6pZg+nOmzr8/gsP4tgNLRWn4ATUnhegIfR7b1zudzwzEuaww2NQuBqGy4orYmZlhYs+vcdCbCBQ5T4v4qpUVfvJKA0qL9koSgYvQSKFh2JioqoqMW4NIkFKKSLV+WEgyGFwsmpYAE9+6pjmXKDbERoZYR0fS3DLTW38xrNaOPdZE3CFImnAYvAK9UdUxxgF2d4gJCkhz0XPO38Cz3z5KN19zzyNjTLm5pxu3NzEt/9tVj//iYOUppa9KpxEQzlEt4ghRL5IlUo7hw1AQUKSeMc/AMFqVqEuV202Er3+J9P6ttfu1rVrUySNcJAmdNeuDr35PSsxvjRVVSuVD/Bf5DLpLCA4icWqpE5zWEOeqN9DWzIpxwpHflZ1rvfwK46cglUh1W1JithsIU4gZhuDRKnb9kFMRdEKjbQ4qErI71+zAKxTcEL6nW8cwj+9/yiGx1O0ZwRbz2zQRf+wFgmzMltLbm9oRZUStoRF6WkOqEqhlDLpW15zP/beozjmhCbmZi2WcN89PTrt8U1907tX0pKJ1GwmB00Y1m6ZamFxDyTEgijbx0eROeDp0s5dMBf43z51QLZ/5ijWrxtGs0nU7ytGRllvv7lNv/OmZfSi353UvLCiUvNl4nEZC2Vl+X4FIE6EaHp6WsbHx60DOLy7VOkTFJIvZmGUlvfgoKLQJIgXO8Q4UFnFcKxMShC7xA5MtbbHDkEblT/9K71xH+ZlR3fYsW0pyYH9fdxzd4cmJjI65bRhe8gfhBDPz60cvW4EWal6i/v4zJ3p9Rze/Lu7MLMPdMwJDZ2bE4wMJ7RnVx/cLPTlfzyJpz1vaZxv6IySsJJtnoqL0NCHSV0JSrGjhjWci3zf3R395N/sp/tvKfTETS11am30Wi2i225u6/kvW0J/9OcrkeeWnCJFsOeDW78YAcTd3xG4ew/sm129YtWoiNjWXk+NsRMX/GFiXh9Xm/UG/5W91RmrUDhkOus/y5n4GIM//KxGHz5KpFy2xw/NKgdUEA3+rmIZ29DUMb6v3H00SEj+Ow2iP7aG9QBUgUAKojQlnZtz+PPX7NT99zneuGUE8/OizSZRr+v0oV1dbDhpGL95/hg99twhrFidRT1set0MKRENFbvWppsFvh8TAcCD93XwjX8/KldfNkcTow2sXJ1IZ04pbShBSe+9t0vPe+UEfu9NK8jZbhmfVyOpzBuolHBW4RTsXetpKKA9e3Z/fc2adc8DUABINYpUOws8nPKqFQIYpCzfW0dQp7oI6FLsWCtXCsj1Jn8IC1QGDFvLyoM8NapWfbh3mM9p81BREiMxCtvDw72hkwlEWEOHtGCQaiQUAKVksOYUApcDH3rnQ/jp9/rYeOIwcaJ2BkETOjvjcOiQQ9JQ2nRKQx9/3ohuPaNJ649rhmreQYmovb7w7gc6euv1Pfz0mjnsuCVHIyVdu7aJQpSkEGkNMaYOFXTwSI9f+/bl+qwXLIMrlNhOfq7Co9YiZsAKDOpVRR04SdyRqaMJXX/9zy887fQzPpKlWQEgCcgS+PKr0pcfFP3GdcEt8/oubs4Mzmalchgm3iuH2CGG+yLARZQrByRVkkNVLq4+s0C0hWBUaPoU7xWPZlUVO3whziV6T1UC8GpKfc8A59eWMPD1Lx3Bl/5xioZaqa5ek5E4gQgkSUGuUBw9Kpg+6pC0gKVLmVasznTF+gaGRxUKkW5bec+9PRw84DA/Qyi6wMRSxuSyVEGgfl8x1CRtzyv2PtTX1ccn/Ed/tQonnz6EXk/QzDgCxzZilbYYShUwSHDhKgCkux7c9SPavn37MU9+8lNuWrVq5ZIQkeKQJKz2DkNF+S9mBwCkJRIWRKP9iReoIiYagiVnR48kGIuoEfGiZ+LUOCogXwCwh0rJ/FTj7JK4amci+nK4UO9q0sEnptV3CkOagvbt7uMLnzyMn1/VQavBunJVqlnG1vvPZkeuUC1ypm7XIe+JOhEgUWUmtJpMrSYhzViTFOScnXiZNRi9DvDQri5GJlif+8oxet7LV9j29FyQJRT7NgZUBHc+rqmGohoelJml18+T2++469UEAPfce++/bjzhhN8VQcFAYv1SvNQUjefVowS8h1toxGDtxypIslrBMghU49aSAAQUyy8XIjn40hXdHfBTnccghfswZ3S1BiIcyiJkpet+g6QAocN8UHKxINbsakB9D0EYGVGlQyjuuaOLiz8/pTf9ZA4kKZaMJWgMEYaGgjsYKqMCTGz/vJPgNZp4c6I0PwWdOtrXbIToac8fx/NfuVSGx1ISp6xQSSiArCRYm6uozxiTqrKPLg1oAaiIOGbm++5/4Lb3XPTuxxAAfO971zzyrLPO/OmSJeMsYgcUegz7nN2iRhSFlBgZaWkAuoiQNV3Uqo7yLdSt2M5vlA7GHgau4Iqq1QUgGGjV71CZSwUQEMATQHkNEEmp4HxcKqqvUnV5CVC6crFvknrxoAJVAbzljn17cvz4mlnc/KM29u0u6Mh+USSMTEGNhuU3ChFNEtUktYISKaCFA+VkpeHHnZjhsWeP6LnPnsD4hJ3tnedOkyQhLptnC3yHdz+/umSrmNZVmPqfuao2brzx5lc96lFn/k/avn178uIXv9jddtttX9m6desLBMhJNQMAsja6URN4l20xHRw6VUaOZwRrLE4S1dMsLAzKCxIXFVFW5V6t31X5zv8mC++pqYrA0eEdbL9QxSYAVVRBlAB1KVSdQDmeA0RrzaK13S6w8/4e3XVzH7t29KnTVYiyMjnkfScCcJYlyuxo7boUpz5mlFatSXX12pbNWaxpdpYAsgCZrLwQxRo6ilfgNggzAcAHDhy89ZOXX/YY/O4DffKdOvQHP/jBSVu2nHz92rVrWk6EmDwLe4UqpOFsocWMCr8vPxzditBhrAa0BZlBRX2XtQJCsYVbfFmF/Uvk2Je1+QSLvSYeoxDyIjEeLBVUVdnOLhiBwfkhQtlVs1RpQGn4Rkc1qEBrnA1wWnowVThV4DbISACAorC6xoSNhezoHJgCCv0MQ7KEohdAPm0MoHThUberLGfnJLvhxht+69GPfvQ3VDVhIpKLL76YzzvvvLtuvf22i3r9fpIwF06dBRaCYVjP64cXhFStVbB4tvL6zqzqgASEyHfln0q5pTCEQpVCqXKlACVaiZZDCHXxFaPRDDXEY1YCkL2yKQVXWIcEjUmxNYufQJw/YF4CV7AVtlF4iehTaB6HXh34rqQkYgGhorDK4yKHFrkgz8VvJhUUuZ1uIv5coCQFsoTBVuMfYoYaFK6pARqss7CNNh7+MWvr4e7pwgHIdty7418f/ehHf2P79u0JEblyhKs0BYBf/vLmr6td3cIC3IP/tPJT4+cufl/U7hdVKe8Wpyoi9j9X+yoOG551zrnwffW9oqpu8P1OVZyL37n4uVtkrurifXaUq31eeVftd/VzdpV31b+TgfH9fBaZq83TOec0/Fd7Js7POVERVedE1TkX1uXimgZx4my9rvpZuPqqqjt37bpx27Zto2r752tuNnA2RFX5l7+84fV33nXPHQCalKAIN4ZsYI0lURWJIaVqe9A17COwTJdW3RSygp0gxSoDBXfd/ii3eIdEYd3yr8yFSi4VEpQZxWDPonpJHKMmfklrLoaG3UteIEVgUfXZUuXURDoD6tVL1copN2L47G/IlgbYAFABW0dLJTuHz6tEFzbWWkyJBlSqvXfAqBIxzj94+MiDd9155/MuuuiiOQCghRId2LZtGwPAZz7zmbV33XXXzZ56OkVh9Oqc54xFKN6TupcEkQj9dzXOHqD4QWId4K6BLyKXLHisvK3yvigJav+cGoctkCyVecoicwmrX/zdtUWH91ckUPk+e79zzlUlZwkX5yRISGeSsJRoJr2kMskBqVOT2j1V1cOHD++66jtXbTF6/VWHiwPYvn17AgAf+9jHVt199z0/9ZPv5XnhPNDiGisYKsWXi7/H28JESwCWNDKIyep4A6K2BHSJnPovuoBAXHhL+WyYegTqwFKqqit8Ul9uRQQPXoPIHrwvvNPZMB5ZNmoVGhVG8gQQ1GEFvhUwlLB3GtRFX1V1956H7rv00ktP9shPfiXyB4ngwgsvHLrxxps+2+/1wwJyV1lkFWBVHbwI4jxlB07yz9fB86uA93A/y99dqadNErnBMarPeThVOWdxG2BQ3/+KMWvzKzlxAZ2IZ2lXHd9VGKT2zxmhDMzDVSkgfFg4J865PHzz4M6d3//89u3r/kvIr6qDEKG78vvff9UDDzywq7KIfjBjXDBY6kRQ+ycqNXFlKzDCLzFaFy4yCOYBAMeVVwARx3bl74tcUkfQYkitzNbPZVA6/OrLnnYLxrUvF2OUmgSN8HSmArQmecv7olHonHOup17kHzp8eP6ee+79C3i7IDD0f/lSK09iAPjwhz+87sYbb/j41JEjRyuLyZ1z/aIoXNBbWgH+ABVEoAQvQKQOywq0fhXX1Ti0BvGBZ128Nz7uxJhK3KAKkCoJVsWSLBj/V9gAC+e+CBG7CsMEOGj4qaLh+2gHeNjG9RmnB26P4rnT7ujOnTu/d9lll50W8Bfsuoe7FssXLLiuuuqq9JxzzikA4NJLLz1h69ZTX7t06ZJXjI2NbUiSSFy2x1aEBGXpKdeM4DJZE1LDbDfFKwRpaxVB/7VLFwkFV76r/V4dO/5eRizjbw8/l3qxQwy8SIhPYjEYiE+4SZmN9N5GzYqvwKFsm8Ohs1MW5nPw4OEjs3PTPzu4Z++/PO6JT/wGYCK/5uc/zPVrA1c17JS3QT/0oX9Zft55j3nS5PLlLxpqtZ65YvnyiV93rP93/Z9fR4/OyJEj0zdMTU998cH7d3z1BS94wW4g4inUZ/wvr/R/fYtd3m9027Zt43e/+91ERIcAXALgkksuueS4jRs3Pmnp0qUnJ2nymwkny0ZHRtBoNn0Hfvicr8WwQ6MjT33VcDCB2QHwhzoobKMzC0RI2PrahaQSANhB01JNUCmglFBiWUWLjgWJoHBCoNgflRV2mKVzdogFGOpzFBrb2UolL5yQooCdtcqMWOPod42WksOnxp0yl1KSxEnY4KoSzyiqZPPtc/guJWX4UoVmZmZpfn5+d7vdvmzv3oNXn3POk34Oi/BBVfniiy8mz6ALffz/7kvNPkh0ceuSt23bxmoRp/AvlDxX/17s9/Lvbdt427ZtvE23sVbH27bwvsr3FO/ZpvU51O+h8P023bbw3f73bbotrmXbtvrv1Tn5z/2Y2yr3buNtqrytMo/qmPZsfZ6LwI5VY1uleBERrrrqqlRrLXz/a9f/9oPVa9u2bXz22WczAJx77rlFJNz/d/23Xx7ZCQAZ3Jb3v3P9txDAw41bJYSYZl2YJYzp2lDiXR2ocj+F8WxLGMVsYLTmyjL1mHUL4/o5BCutYtT5tKIvbqBKfwSqDB2mY//z+fH6+vwMrFqgWrqmquWEKvfi4eE/AAMbkBb57v/0+v8AW+nxFQE1b88AAAAASUVORK5CYII=" alt="ListerFlow Pro Logo">
-            <span>ListerFlow Pro</span>
-        </div>
-        <div class="nav-links">
-            <a href="#features" data-i18n="nav.features">機能</a>
-            <a href="#reviews" data-i18n="nav.reviews">レビュー</a>
-            <a href="#pricing" data-i18n="nav.pricing">料金</a>
-            <a href="#flow" data-i18n="nav.flow">購入方法</a>
-            <a href="#faq" data-i18n="nav.faq">よくある質問</a>
-            <a href="#tokusho" data-i18n="nav.tokusho">特商法</a>
-            <select class="lang-select" id="langSwitch">
-                <option value="ja">日本語</option>
-                <option value="en">English</option>
-            </select>
-            <a href="#pricing" class="btn-cta-nav" data-i18n="nav.cta">プランを見る</a>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAABkK0lEQVR4nO29d5wlR3Uv/j2nu++9E3d2NifFXe1qFQGRTFIwUQSbnAy2DDiAMQIMDsAigo1NNNjYJhneA9usABEkARIgCZkkkIRyWqXd1ebd2Uk3ddc5vz9OVXX3nREPv+fP5/3xe63Pambu7a6uOjnVKcJ/06WqdPHFF/OKFSvo7LPP/u8a9v9dA9fVV1+Nq6++Wi666CL5vzoRVSVVZVVNVZX+r07m/4cXEUFVk+3btyf/J/BP/6sPqCpdffXVCREVABSAAMCFF1449NKXvvTM4eHhY1etWoU8F1q+fLk2Ggmc3YfED+GcIwBw/rMkSexvByQJ1MF/64AkSeDsS0qSRAGQf2/9cg4uSeLv4d7wjod9rnycksQBSNQ5R0kCDU+68t2V+x9+PmEd/js4/7MyN3EA2cJsgsnA2EgSD4NEjxw5yDMzMwAS3bdvX97pzN341Kc+9T4iCiPgKr0qPRtnCxH9lyTDr005nsq48tLkxz/+8aOGh0fPXbZs6TnNVuvkVqu1Zmx09L9MVP/v+vWvvCgwOzs71e2093S7vSv379//3Ve96lVX7dixowcAqpq8G9CLfk1C+LUIQFWTgPj3v/9jq84//+xXrl699qVDw0OPHB8b5eqtAIrK2OpEiJjBgAoABiAixMwqTogTxsBl3CRCYLa/BQTGILfZ3MOggIoIAYxwLwsUXFujCkAQUQYUzCQQYrDaK0HMA+MDIgCxf7dAwGD/Xfny+rwEAEtlHBIBmAERAcDKHOZia2MAYS4CKCDEwhD/3cDaG+Gl3W4XU9Mzt83Pzl161133fuHZz37aHRWcCX6F1PtfXl7PJwCw7YMfXHnjjTe+Z8+ePXu0fvWd06JwzqmqqKpzqiKqKioqIipiv6uqOOdExP4K3w1cIiLqnN3i/9kXlXsWPOWv8Fx438C91TFduE/8JMKP+E9qL4tjVe6rDC71Zyv/qvP273Lq1EVYSBi2tlT/nBNVV7gIFyfOrkJV+6qah4cOH5lq33n3jk/9+9e+djJgdsK2bdsWcNivdVUf/MEPrnnF/Q88+GAFkH3nXO6cinOqTlU84J2qOudKmJZ4KQHi/D8ZRE9l8a4K8IXfL/bHosBf5A3i1JXji6pzLtDjgnHk4ccenEskqkWer6/NOec8nGqwWOQ95VyduAhHV35ncy+caldVC1XVqaPTs9ddd8PfAmgCgG7X5GERvdi1ffv2BAAuuODPxn7+ixs+Nz8/HxbQVz/x2iI9J1c/X4SLF+PMxbnbDQBeFnDhYhJARAziAwCtoiGMFABXRaTJqfrItfdV5r7ItH+ltKmN6QyBTo2BIjEGSaB1QnJOTVJUmagGRyNi59QV6rSnnhB27Lj3mksuuWSDl+a/HhGomsr57Gc/u2Lnrl3X+knnxugDK6ks1A38rP6rUrerIEHULYROBNLAvTUkRgCVny0OvEEEVNVUVAERAQsRt4CbF6O8QVj8inkutoY6I9lXgctVA24XZyTVytyMmKJU6Kuq7j9w8P4rr7zqib8WEahH/pVf+9qyffv23+Bf0HPO1UTy4FJKZEXglkj331cXHVXuIgaARuQv4NAqgBfQTWUotwhwa8DywHUD864ieFHiHZzIIhOqIWkRmIXxIgHqwPvDa1yFANSIoHrvYmu0dxq1BKmQq6ru27Nv7vLLL3/KYkTAFeQTAP3oR/91YutjH/etVatWPsI56atqg5jJrFR/b3UEgjJAVAtGSGl6U+12Uq1a5RQHq97EArBN7eG8lMHP" alt="ListerFlow Pro">
+                ListerFlow Pro
+            </a>
+            <div class="nav-links">
+                <a href="#features" data-i18n="nav.features">機能</a>
+                <a href="#pricing" data-i18n="nav.pricing">料金</a>
+                <a href="#testimonials" data-i18n="nav.reviews">レビュー</a>
+                <a href="#faq" data-i18n="nav.faq">よくある質問</a>
+                <a href="#tokusho" data-i18n="nav.tokusho">特商法</a>
+            </div>
+            <div class="nav-right">
+                <select id="langSwitch" class="nav-lang-select">
+                    <option value="ja">日本語</option>
+                    <option value="en">English</option>
+                </select>
+                <a href="#pricing" class="btn-nav-cta" data-i18n="nav.cta">プランを見る</a>
+            </div>
         </div>
     </nav>
 
-    <!-- ヒーロー -->
-    <header class="hero">
-        <div class="hero-content">
-            <div class="hero-badge" data-i18n="hero.badge">🎁 現在 Proプラン 1ヶ月間無料体験実施中</div>
-            <h1>
-                <span data-i18n="hero.title1">出品時間を</span><br>
-                <span data-i18n="hero.title2">最大80%削減</span>
-                <span data-i18n="hero.title3">する<br>Chrome拡張機能</span>
+    <div class="container" style="padding-top: 100px;">
+        <header class="hero">
+            <div class="hero-banner">
+                <img src="banner2.jpeg" alt="ListerFlow Pro for Yaballe" class="hero-banner-img">
+            </div>
+
+            <h1 data-i18n="hero.title">
+                <span class="hero-line">1品の出品時間を</span>
+                <span class="hero-highlight">60秒 → 12秒に。</span>
             </h1>
-            <p data-i18n="hero.desc">Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。</p>
-            <div class="hero-btns">
-                <a href="#pricing" class="btn-primary-hero" data-i18n="hero.btn.free">✨ 無料で試してみる</a>
-                <a href="#features" class="btn-ghost" data-i18n="hero.btn.features">機能を見る</a>
-            </div>
-        </div>
-        <div class="hero-banner-container">
-            <img src="./assets/images/banner2.jpeg" alt="ListerFlow Pro Banner" class="hero-banner">
-        </div>
-    </header>
 
-    <!-- 実績/数値セクション -->
-    <div class="stats-bar">
-        <div class="stats-container">
-            <div class="stat-item">
-                <span class="stat-num" data-i18n="stat.1.num">80%</span>
-                <span class="stat-label" data-i18n="stat.1.label">出品時間の削減</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-num" data-i18n="stat.2.num">12秒</span>
-                <span class="stat-label" data-i18n="stat.2.label">1品あたりの目標時間</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-num" data-i18n="stat.3.num">70〜80文字</span>
-                <span class="stat-label" data-i18n="stat.3.label">AIが最適なタイトル長さに</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-num" data-i18n="stat.4.num">1,000件</span>
-                <span class="stat-label" data-i18n="stat.4.label">ASIN履歴保持</span>
-            </div>
-        </div>
-    </div>
+            <p class="subtitle hero-catchphrase" data-i18n="hero.subtitle">
+                <span class="catch-highlight">AIタイトル最適化</span> × <span class="catch-highlight">ワンクリック自動化</span>で、<br>
+                出品作業のすべてが<span class="catch-text-glow">変わる。</span>
+            </p>
 
-    <!-- 機能セクション -->
-    <section id="features" class="features-section">
-        <h2 class="section-title" data-i18n="features.title">なぜ ListerFlow Pro なのか</h2>
-        <p class="section-sub" data-i18n="features.sub">出品作業の「無駄」をすべてテクノロジーで解消します</p>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">🤖</div>
-                <h3 data-i18n="feat.1.title">AI タイトル SEO 最適化</h3>
-                <p data-i18n="feat.1.desc">ChatGPT との往復はもう不要。ターゲットキーワードを逃さず、eBay 検索で有利な SEO 最適化済みのタイトル（70〜80文字）を、出品画面から離れず一瞬で生成します。</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3 data-i18n="feat.2.title">Turbo Mode（全自動）</h3>
-                <p data-i18n="feat.2.desc">ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📝</div>
-                <h3 data-i18n="feat.3.title">ASIN履歴管理</h3>
-                <p data-i18n="feat.3.desc">「どこまでやったか？」問題を完全解消。重い共有スプレッドシートと決別し、拡張機能内で管理。</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🛡️</div>
-                <h3 data-i18n="feat.4.title">VeRO自動検出</h3>
-                <p data-i18n="feat.4.desc">ブランド警告や出品制限を自動で検知。知らずに出してしまうリスクを事前にブロックします。</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3 data-i18n="feat.5.title">作業統計・速度計測</h3>
-                <p data-i18n="feat.5.desc">今日の出品数・作業時間・出品速度をリアルタイム表示。自分のパフォーマンスを「見える化」。</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3 data-i18n="feat.6.title">Quick MIPボタン</h3>
-                <p data-i18n="feat.6.desc">画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- レビューセクション -->
-    <section id="reviews" class="reviews-section">
-        <div class="section-label" data-i18n="nav.reviews">利用者の声</div>
-        <h2 class="section-title" data-i18n="reviews.title">テスターの方々のレビュー</h2>
-        
-        <div class="reviews-grid">
-            <div class="review-card">
-                <div class="review-header">
-                    <img src="./assets/images/avatars/avatar1.png" class="review-avatar" alt="Avatar">
-                    <div class="review-meta">
-                        <div class="review-user" data-i18n="review.a.user">Aさん</div>
-                        <div class="review-stars">★★★★★</div>
+            <div class="hero-actions-wrapper">
+                <div class="hero-stats-row">
+                    <div class="hero-persona">
+                        <span class="hero-persona-label" data-i18n="hero.persona.label">🎯 対象ユーザー</span>
+                        <span class="hero-persona-text" data-i18n="hero.persona.text">Yaballeで月50〜1,200品<br>出品するセラーのための<br>出品特化ツール</span>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stats-inner">
+                            <div class="stat-item">
+                                <span class="stat-prefix" data-i18n="hero.stat.prefix.max">最大</span>
+                                <span class="stat-number">80<span class="stat-unit">%</span></span>
+                                <span class="stat-label" data-i18n="hero.stat.1.label">作業時間を削減</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-item">
+                                <span class="stat-prefix" data-i18n="hero.stat.prefix.max">最大</span>
+                                <span class="stat-number">16<span class="stat-unit">h+</span></span>
+                                <span class="stat-label" data-i18n="hero.stat.2.label">毎月の節約時間</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-item">
+                                <span class="stat-prefix" style="visibility:hidden">初月</span>
+                                <span class="stat-number">¥0</span>
+                                <span class="stat-label" data-i18n="hero.stat.3.label">初月の費用</span>
+                            </div>
+                        </div>
+                        <span class="stat-note" data-i18n="hero.stat.note">※ 削減時間はPremium・月1,500品出品時の最大値。まずはProの1ヶ月無料トライアル（¥0）からお試しいただけます。</span>
                     </div>
                 </div>
-                <p class="review-text" data-i18n="review.a.text">出品速度が2倍どころか<span class=\u0027review-highlight\u0027>3倍</span>くらいでした。気付いたら30品終わっている感覚です。通常<span class=\u0027review-highlight\u0027>30品で約30分</span>かかるところが、<span class=\u0027review-highlight\u0027>約10分</span>で完了しました。ASIN入力後は自動で出品が進むので、複数画面やTab切り替え、ChatGPT貼り付けなどの煩わしい作業がすべて不要になりました。繁忙期（4月・5月）の毎日60品、100品出品でも重宝しそうです。</p>
-            </div>
-            
-            <div class="review-card">
-                <div class="review-header">
-                    <img src="./assets/images/avatars/avatar2.png" class="review-avatar" alt="Avatar">
-                    <div class="review-meta">
-                        <div class="review-user" data-i18n="review.b.user">Bさん</div>
-                        <div class="review-stars">★★★★★</div>
-                    </div>
+
+                <div class="hero-cta">
+                    <a href="#pricing" class="btn btn-primary btn-hero-cta">
+                        <span data-i18n="hero.cta.btn">✨ 1ヶ月無料で試してみる</span>
+                    </a>
+                    <p class="hero-risk-free" data-i18n="hero.cta.note">クレジットカード登録後、1ヶ月間は完全無料。<br>期間中のキャンセルで費用は一切かかりません。</p>
                 </div>
-                <p class="review-text" data-i18n="review.b.text">体感で所要時間が<span class=\u0027review-highlight\u0027>1/3</span>くらいになりました。これまで出品に時間がかかっていたのは何だったのかと思うほど、あっさり終わりました。資格試験や年度末で本業が多忙な時期なので非常に助かります。今後も活用します。</p>
             </div>
-            
-            <div class="review-card">
-                <div class="review-header">
-                    <img src="./assets/images/avatars/avatar3.png" class="review-avatar" alt="Avatar">
-                    <div class="review-meta">
-                        <div class="review-user" data-i18n="review.c.user">Cさん</div>
-                        <div class="review-stars">★★★★★</div>
-                    </div>
+        </header>
+
+        <section class="comparison-section">
+            <h2 class="section-title">
+                <span class="section-tag" data-i18n="comparison.tag">実測データ</span>
+                <span data-i18n="comparison.title">1日50品出品の場合</span>
+            </h2>
+            <div class="comparison-grid">
+                <div class="comparison-card comparison-before">
+                    <div class="comparison-label" data-i18n="comparison.before.label">ツールなし</div>
+                    <div class="comparison-time">50<span data-i18n="comparison.unit">分/日</span></div>
+                    <p data-i18n="comparison.before.desc">毎日50分、月に20時間の出品作業</p>
                 </div>
-                <p class="review-text" data-i18n="review.c.text">素晴らしいツールの開発ありがとうございます。感激しました。50出品が4名あった時を思い出すと、負担がまるで別物です。本日もトラブルなく出品完了できて感動しました。</p>
-            </div>
-            
-            <div class="review-card">
-                <div class="review-header">
-                    <img src="./assets/images/avatars/avatar4.png" class="review-avatar" alt="Avatar">
-                    <div class="review-meta">
-                        <div class="review-user" data-i18n="review.d.user">Dさん</div>
-                        <div class="review-stars">★★★★★</div>
-                    </div>
+                <div class="comparison-arrow">→</div>
+                <div class="comparison-card comparison-after">
+                    <div class="comparison-label" data-i18n="comparison.after.label">Premiumプラン</div>
+                    <div class="comparison-time">10<span data-i18n="comparison.unit">分/日</span></div>
+                    <p data-i18n="comparison.after.desc">月1,200品でも、たった4時間で完了</p>
                 </div>
-                <p class="review-text" data-i18n="review.d.text">導入と出品作業を進めましたが、問題なく進められました。出品作業時間が短縮できて感動です。システムの開発と共有、本当にありがとうございます。</p>
             </div>
-            
-            <div class="review-card">
-                <div class="review-header">
-                    <img src="./assets/images/avatars/avatar5.png" class="review-avatar" alt="Avatar">
-                    <div class="review-meta">
-                        <div class="review-user" data-i18n="review.e.user">Eさん</div>
-                        <div class="review-stars">★★★★★</div>
-                    </div>
+        </section>
+
+        <section class="features-section" id="features">
+            <h2 class="section-title">
+                <span class="section-tag" data-i18n="features.tag">機能</span>
+                <span data-i18n="features.title">その「地道な作業」を、テクノロジーで解決</span>
+            </h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper"><span class="feature-icon">✨</span></div>
+                    <h3 data-i18n="feature.1.title">AI タイトル SEO 最適化</h3>
+                    <p data-i18n="feature.1.desc">ChatGPTとの往復はもう不要。ターゲットキーワードを逃さず、SEO最適化済みのタイトルを一瞬で生成。</p>
                 </div>
-                <p class="review-text" data-i18n="review.e.text">ChatGPTを使わずに済み、Yaballeの出品画面もほぼスクロールせず出品できるようになり、かなり時間短縮できました。今月50品出品が3店舗あるので、効果が大きい事です。開発ありがとうございます。</p>
-            </div>
-        </div>
-        <div class="reviews-note" data-i18n="testimonials.note">※ v1.0.0（Turbo Mode実装前）時点での先行テスター様の声です。</div>
-    </section>
-
-    <!-- 料金セクション -->
-    <section id="pricing" class="pricing-section">
-        <div class="pricing-inner">
-            <h2 class="section-title" data-i18n="pricing.title">シンプルな料金プラン</h2>
-            <div class="section-sub" data-i18n="pricing.sub">Proプランには1ヶ月の無料トライアル期間あり</div>
-            <div class="pricing-grid">
-
-                <!-- Free -->
-                <div class="price-card">
-                    <h3 class="plan-name" data-i18n="plan.free.title">Free</h3>
-                    <div class="plan-price">¥0<span data-i18n="plan.month"> / 月</span></div>
-                    <p class="plan-desc" data-i18n="plan.free.desc">まずは試したい方へ</p>
-                    <ul class="plan-features">
-                        <li data-i18n="plan.free.f1"><span class="check">✔</span> 1日2回 AIタイトル最適化</li>
-                        <li data-i18n="plan.free.f2"><span class="check">✔</span> Quick MIPボタン配置</li>
-                        <li data-i18n="plan.free.f3"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
-                        <li data-i18n="plan.free.f4"><span class="check">✔</span> VeRO自動検出</li>
-                    </ul>
-                    <a href="https://buy.stripe.com/14k7sM8InezY5Z64gh" class="btn-plan btn-plan-outline" data-i18n="plan.free.btn">無料で使う</a>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper"><span class="feature-icon">⚡</span></div>
+                    <h3 data-i18n="feature.2.title">Turbo Mode</h3>
+                    <p data-i18n="feature.2.desc">ASINを貼り付けた瞬間から、AI最適化→MIPクリック→完了まで全自動。</p>
                 </div>
-
-                <!-- Pro -->
-                <div class="price-card popular">
-                    <div class="card-tag" data-i18n="plan.pro.tag">🔥 一番人気</div>
-                    <h3 class="plan-name" data-i18n="plan.pro.title">Pro</h3>
-                    <div class="plan-price">¥2,980<span data-i18n="plan.month"> / 月</span></div>
-                    <p class="plan-desc" data-i18n="plan.pro.desc">効率を最大化し、出品作業を「快感」に</p>
-                    <ul class="plan-features">
-                        <li data-i18n="plan.pro.f1"><span class="check">✔</span> <strong>無制限</strong> AIタイトル最適化</li>
-                        <li data-i18n="plan.pro.f2"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
-                        <li data-i18n="plan.pro.f3"><span class="check">✔</span> 最適化後 MIP自動クリック</li>
-                        <li data-i18n="plan.pro.f4"><span class="check">✔</span> OK ボタン自動クリック</li>
-                        <li data-i18n="plan.pro.f5"><span class="check">✔</span> CSV出力・一括コピー機能</li>
-                        <li data-i18n="plan.pro.f6"><span class="check">✔</span> Turbo Mode（1日5回）</li>
-                        <li data-i18n="plan.pro.f7"><span class="check">✔</span> 出品統計・時間計測</li>
-                    </ul>
-                    <a href="#" id="btnPro" class="btn-plan btn-plan-primary" data-i18n="plan.pro.btn">Proにアップグレード</a>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper"><span class="feature-icon">📊</span></div>
+                    <h3 data-i18n="feature.6.title">統計ダッシュボード</h3>
+                    <p data-i18n="feature.6.desc">出品数・作業時間・スピードをリアルタイム表示。自分の生産性を可視化。</p>
                 </div>
+            </div>
+        </section>
 
-                <!-- Premium -->
-                <div class="price-card">
-                    <h3 class="plan-name" data-i18n="plan.premium.title">Premium</h3>
-                    <div class="plan-price">¥4,980<span data-i18n="plan.month"> / 月</span></div>
-                    <p class="plan-desc" data-i18n="plan.premium.desc">究極の自動化で「時間を買う」運用へ</p>
-                    <ul class="plan-features">
-                        <li data-i18n="plan.prem.f1"><span class="check">✔</span> Proプランの全機能</li>
-                        <li data-i18n="plan.prem.f2"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
-                        <li data-i18n="plan.prem.f3"><span class="check">✔</span> <strong>無制限</strong> Turbo Mode</li>
-                        <li data-i18n="plan.prem.f4"><span class="check">✔</span> 優先サポート対応</li>
-                        <li data-i18n="plan.prem.f5"><span class="check">✔</span> ベータ機能の先行試用</li>
-                    </ul>
-                    <a href="#" id="btnPremium" class="btn-plan btn-plan-outline" data-i18n="plan.premium.btn">Premiumにアップグレード</a>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- 利用ステップ -->
-    <section id="flow" class="flow-section">
-        <h2 class="section-title" data-i18n="flow.title">ご利用開始まで3ステップ</h2>
-        <p class="section-sub" data-i18n="flow.sub">決済完了後すぐにライセンスキーが発行されます</p>
-        <div class="flow-grid">
-            <div class="flow-step">
-                <div class="step-num">1</div>
-                <h3 data-i18n="flow.1.title">プランを選んで決済</h3>
-                <p data-i18n="flow.1.desc">上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。<br><span class="feature-note" style="color: #e53e3e;">※必ずYaballeで使用しているメールアドレスで購入してください。</span></p>
-            </div>
-            <div class="flow-step">
-                <div class="step-num">2</div>
-                <h3 data-i18n="flow.2.title">ライセンスキーを受け取る</h3>
-                <p data-i18n="flow.2.desc">決済完了直後に画面にキーが表示され、登録メールにも送付されます。コピーして手元に保管してください。</p>
-            </div>
-            <div class="flow-step">
-                <div class="step-num">3</div>
-                <h3 data-i18n="flow.3.title">自動反映</h3>
-                <p data-i18n="flow.3.desc">購入後、同じアカウントでYaballeにログインするだけで、自動的にプロ機能が有効化されます。※ライセンスキーはメールでも送信されますので、念のため保管してください。</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" class="faq-section">
-        <h2 class="section-title" data-i18n="faq.title">よくある質問</h2>
-        <div class="faq-list">
-            <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.1.q">無料で試せますか？</div>
-                <div class="faq-a" data-i18n="faq.1.a">はい、Freeプランは料金なしでご利用いただけます。またProプランには初月無料のトライアル期間があります（別途ご案内）。</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.2.q">いつでもキャンセルできますか？</div>
-                <div class="faq-a" data-i18n="faq.2.a">はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.3.q">ライセンスはどうやって反映させますか？</div>
-                <div class="faq-a" data-i18n="faq.3.a">決済完了後、同じアカウントでYaballeにログインすると自動的に反映されます。手動入力の必要はありません。<br><br>※ライセンスキーはメールでも送信されますので、念のため大切に保管してください。<br><span class="feature-note" style="color: #e53e3e;">※必ずYaballeで使用しているメールアドレスで購入を完了させてください。</span></div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.4.q">Yaballeの仕様変更に対応していますか？</div>
-                <div class="faq-a" data-i18n="faq.4.a">Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能を更新対応しています。</div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-q" data-i18n="faq.5.q">動作環境は何ですか？</div>
-                <div class="faq-a" data-i18n="faq.5.a">Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 特商法 -->
-    <section id="tokusho" class="tokusho-section">
-        <div class="tokusho-container">
-            <h2 data-i18n="tokusho.title">特定商取引法に基づく表記</h2>
-            <div class="tokusho-content">
-                <table class="tokusho-table">
-                    <tr>
-                        <th data-i18n="tokusho.label.vendor">販売業者</th>
-                        <td data-i18n="tokusho.value.vendor">KURONYLAB</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.manager">運営責任者</th>
-                        <td data-i18n="tokusho.value.manager">黒木 皓基</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.location">所在地</th>
-                        <td data-i18n="tokusho.value.location">（請求に応じて遅滞なく開示します）</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.contact">お問い合わせ</th>
-                        <td>
-                            <span data-i18n="tokusho.value.contact.email">メール：</span><a href="mailto:kuronylab@gmail.com">kuronylab@gmail.com</a><br>
-                            <span data-i18n="tokusho.value.contact.line">サポートLINE：</span><a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" data-i18n="tokusho.value.contact.line.link">こちらから参加</a><span data-i18n="tokusho.value.contact.line.note">（返信：原則24時間以内）</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.price">販売価格</th>
-                        <td>
-                            <span data-i18n="tokusho.value.price.free">Freeプラン：無料</span><br>
-                            <span data-i18n="tokusho.value.price.pro">Proプラン：月額 2,980円（税込）</span><br>
-                            <span data-i18n="tokusho.value.price.premium">Premiumプラン：月額 4,980円（税込）</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.payment_method">支払い方法</th>
-                        <td data-i18n="tokusho.value.payment_method">クレジットカード（Stripe決済）<br>対応ブランド：Visa / Mastercard / American Express など</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.payment_timing">支払い時期</th>
-                        <td data-i18n="tokusho.value.payment_timing">お申し込み時に即時決済。以降、毎月同日に自動更新されます。</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.delivery_timing">サービス提供時期</th>
-                        <td data-i18n="tokusho.value.delivery_timing">決済完了後、即時にライセンスが有効化されます。</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.service_content">サービス内容</th>
-                        <td data-i18n="tokusho.value.service_content">Chrome拡張機能「ListerFlow Pro for Yaballe」の有料プランへのアクセス権（ライセンス）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.cancellation">キャンセル・解約</th>
-                        <td data-i18n="tokusho.value.cancellation">サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。</td>
-                    </tr>
-                    <tr>
-                        <th data-i18n="tokusho.label.environment">動作環境</th>
-                        <td data-i18n="tokusho.value.environment">Google Chrome（最新版）がインストールされたPC。<br>対応サイト：app.yaballe.com</td>
-                    </tr>
+        <section class="savings-section">
+            <h2 class="section-title">
+                <span class="section-tag" data-i18n="savings.tag">コスト比較</span>
+                <span data-i18n="savings.title">月1,200品出品の場合</span>
+            </h2>
+            <div class="savings-table-wrapper">
+                <table class="savings-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th data-i18n="savings.col.none">ツールなし</th>
+                            <th class="highlight-col" data-i18n="savings.col.pro">LFP Pro</th>
+                            <th class="premium-col" data-i18n="savings.col.premium">LFP Premium</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-label" data-i18n="savings.row.hours">月の作業時間</td>
+                            <td data-i18n="savings.val.hours.none">20時間</td>
+                            <td class="highlight-col"><span data-i18n="savings.val.hours.pro">5時間</span></td>
+                            <td class="premium-col"><span data-i18n="savings.val.hours.premium">4時間</span></td>
+                        </tr>
+                        <tr>
+                            <td class="row-label" data-i18n="savings.row.cost">人件費換算</td>
+                            <td data-i18n="savings.val.cost.none">30,000円</td>
+                            <td class="highlight-col"><span data-i18n="savings.val.cost.pro">7,500円</span></td>
+                            <td class="premium-col"><span data-i18n="savings.val.cost.premium">6,000円</span></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td class="row-label" data-i18n="savings.row.total">実質コスト</td>
+                            <td data-i18n="savings.val.total.none">30,000円</td>
+                            <td class="highlight-col"><span data-i18n="savings.val.total.pro">10,480円</span></td>
+                            <td class="premium-col"><span data-i18n="savings.val.total.premium">10,980円</span></td>
+                        </tr>
+                        <tr class="savings-row">
+                            <td class="row-label" data-i18n="savings.row.result">毎月の節約額</td>
+                            <td>—</td>
+                            <td class="highlight-col saving-value" data-i18n="savings.val.result.pro">🎉 19,520円</td>
+                            <td class="premium-col saving-value" data-i18n="savings.val.result.premium">🎉 19,020円</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- フッター -->
-    <footer>
-         <div class="footer-links">
-            <a href="#features" data-i18n="nav.features">機能</a>
-            <a href="#reviews" data-i18n="nav.reviews">レビュー</a>
-            <a href="#pricing" data-i18n="nav.pricing">料金プラン</a>
-            <a href="#flow" data-i18n="nav.flow">購入方法</a>
-            <a href="#faq" data-i18n="nav.faq">FAQ</a>
-            <a href="#tokusho" data-i18n="tokusho.title">特定商取引法に基づく表記</a>
-            <a href="mailto:kuronylab@gmail.com" data-i18n="footer.contact">お問い合わせ</a>
-        </div>
-        <p>© 2026 <strong>ListerFlow Pro</strong> by KURONYLAB. All rights reserved.</p>
-    </footer>
+        <section class="pricing-section" id="pricing">
+            <h2 class="section-title">
+                <span class="section-tag" data-i18n="pricing.tag">料金プラン</span>
+                <span data-i18n="pricing.title">あなたに最適なプランを選択</span>
+            </h2>
+            <div class="pricing-grid">
+                <div class="card">
+                    <div class="plan-name">Free</div>
+                    <div class="price">¥0 <span data-i18n="pricing.unit.month">/ 月</span></div>
+                    <ul class="features">
+                        <li data-i18n="plan.free.f1"><span class="check">✔</span> 1日2回 AIタイトル最適化</li>
+                        <li data-i18n="plan.free.f2"><span class="check">✔</span> Quick MIP ボタン配置</li>
+                    </ul>
+                    <a href="#" class="btn btn-secondary" data-i18n="plan.free.btn">無料で使う</a>
+                </div>
+                <div class="card popular">
+                    <div class="popular-badge" data-i18n="plan.pro.tag">🔥 一番人気</div>
+                    <div class="trial-banner" data-i18n="plan.pro.trial">✨ 1ヶ月無料トライアル</div>
+                    <div class="plan-name">Pro</div>
+                    <div class="price">¥2,980 <span data-i18n="pricing.unit.month">/ 月</span></div>
+                    <ul class="features">
+                        <li data-i18n="plan.pro.f1"><span class="check">✔</span> <strong>無制限</strong> AIタイトル最適化</li>
+                        <li data-i18n="plan.pro.f6"><span class="check">✔</span> Turbo Mode（1日5回）</li>
+                    </ul>
+                    <a href="#" id="btnPro" class="btn btn-primary" data-i18n="plan.pro.btn">無料で試してみる</a>
+                </div>
+                <div class="card">
+                    <div class="premium-badge" data-i18n="plan.premium.badge">👑 Ultimate</div>
+                    <div class="plan-name">Premium</div>
+                    <div class="price">¥4,980 <span data-i18n="pricing.unit.month">/ 月</span></div>
+                    <ul class="features">
+                        <li data-i18n="plan.prem.f1"><span class="check">✔</span> Proプランの全機能</li>
+                        <li data-i18n="plan.prem.f3"><span class="check">✔</span> <strong>無制限</strong> Turbo Mode</li>
+                    </ul>
+                    <a href="#" id="btnPremium" class="btn btn-premium" data-i18n="plan.premium.btn">Premiumを開始</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials-section" id="testimonials">
+            <h2 class="section-title">
+                <span class="section-tag" data-i18n="testimonials.tag">利用者の声</span>
+                <span data-i18n="testimonials.title">テスターの方々のレビュー</span>
+            </h2>
+            <div class="testimonials-container">
+                <div class="testimonials-row-top">
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <div class="avatar">A</div>
+                            <div class="user-info"><h4 data-i18n="review.a.user">Aさん</h4><div class="stars">★★★★★</div></div>
+                        </div>
+                        <p class="review-text" data-i18n="review.a.text">出品速度が3倍くらいでした。ASIN入力後は自動で出品が進むので非常に助かります。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq-section" id="faq">
+            <h2 class="section-title" data-i18n="faq.title">よくある質問</h2>
+            <div class="faq-grid">
+                <details class="faq-item">
+                    <summary data-i18n="faq.1.q">無料で試せますか？</summary>
+                    <p data-i18n="faq.1.a">はい。Freeプランの他、Proプランには1ヶ月の無料体験があります。</p>
+                </details>
+            </div>
+        </section>
+
+        <section id="tokusho" class="tokusho-section">
+            <div class="tokusho-container">
+                <h2 class="section-title" data-i18n="tokusho.title">特定商取引法に基づく表記</h2>
+                <div class="tokusho-inner">
+                    <table>
+                        <tr><th data-i18n="tokusho.label.vendor">販売業者</th><td data-i18n="tokusho.value.vendor">KURONYLAB</td></tr>
+                        <tr><th data-i18n="tokusho.label.manager">運営責任者</th><td data-i18n="tokusho.value.manager">黒木 皓基</td></tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer-links">
+                <a href="#features" data-i18n="nav.features">機能</a>
+                <a href="#pricing" data-i18n="nav.pricing">料金</a>
+                <a href="mailto:kuronylab@gmail.com" data-i18n="footer.contact">お問い合わせ</a>
+            </div>
+            <p>© 2026 ListerFlow Pro by KURONYLAB. All rights reserved.</p>
+        </footer>
+    </div>
 
     <script>
         const translations = {
             ja: {
-                "page.title": "ListerFlow Pro for Yaballe | 出品時間を最大80%削減するChrome拡張機能",
-                "page.desc": "YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化・完全自動化モードで、1品60秒→12秒を実現するChrome拡張機能。月額2,980円から。",
-                "nav.features": "機能",
-                "nav.reviews": "レビュー",
-                "nav.pricing": "料金",
-                "nav.flow": "購入方法",
-                "nav.faq": "よくある質問",
-                "nav.tokusho": "特商法",
-                "nav.cta": "プランを見る",
-                "review.e.text": "ChatGPTを使わずに済み、Yaballeの出品画面もほぼスクロールせず出品できるようになり、かなり時間短縮できました。今月50品出品が3店舗あるので、効果が大きいです。開発ありがとうございます。",
-                "review.e.user": "Eさん",
-                "review.d.text": "導入と出品作業を進めましたが、問題なく進められました。出品作業時間が短縮できて感動です。システムの開発と共有、本当にありがとうございます。",
-                "review.d.user": "Dさん",
-                "review.c.text": "素晴らしいツールの開発ありがとうございます。感激しました。50出品が4名あった時を思い出すと、負担がまるで別物です。本日もトラブルなく出品完了できて感動しました。",
-                "review.c.user": "Cさん",
-                "review.b.text": "体感で所要時間が<span class=\u0027review-highlight\u0027>1/3</span>くらいになりました。これまで出品に時間がかかっていたのは何だったのかと思うほど、あっさり終わりました。資格試験や年度末で本業が多忙な時期なので非常に助かります。今後も活用します。",
-                "review.b.user": "Bさん",
-                "review.a.text": "出品速度が2倍どころか<span class=\u0027review-highlight\u0027>3倍</span>くらいでした。気付いたら30品終わっている感覚です。通常<span class=\u0027review-highlight\u0027>30品で約30分</span>かかるところが、<span class=\u0027review-highlight\u0027>約10分</span>で完了しました。ASIN入力後は自動で出品が進むので、複数画面やTab切り替え、ChatGPT貼り付けなどの煩わしい作業がすべて不要になりました。繁忙期（4月・5月）の毎日60品、100品出品でも重宝しそうです。",
-                "review.a.user": "Aさん",
-                "reviews.sub": "先行テスターの方々から、劇的な効率化を実感いただいています。",
-                "reviews.title": "テスターの方々のレビュー",
-                "hero.badge": "🎁 現在 Proプラン 1ヶ月間無料体験実施中",
-                "hero.title1": "出品時間を",
-                "hero.title2": "最大80%削減",
-                "hero.title3": "する<br>Chrome拡張機能",
-                "hero.desc": "Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。",
-                "hero.btn.free": "✨ 無料で試してみる",
-                "hero.btn.features": "機能を見る",
-                "stat.1.num": "80%",
-                "stat.1.label": "出品時間の削減",
-                "stat.2.num": "12秒",
-                "stat.2.label": "1品あたりの目標時間",
-                "stat.3.num": "70〜80文字",
-                "stat.3.label": "AIが最適なタイトル長さに",
-                "stat.4.num": "1,000件",
-                "stat.4.label": "ASIN履歴保持",
-                "features.title": "なぜ ListerFlow Pro なのか",
-                "features.sub": "出品作業の「無駄」をすべてテクノロジーで解消します",
-                "feat.1.title": "AI タイトル SEO 最適化",
-                "feat.1.desc": "ChatGPT との往復はもう不要。ターゲットキーワードを逃さず、eBay 検索で有利な SEO 最適化済みのタイトル（70〜80文字）を、出品画面から離れず一瞬で生成します。",
-                "feat.2.title": "Turbo Mode（全自動）",
-                "feat.2.desc": "ASINをペーストするだけで、Get Item → 最適化 → MIP → OK まで全自動。まるごとお任せ。",
-                "feat.3.title": "ASIN履歴管理",
-                "feat.3.desc": "「どこまでやったか？」問題を完全解消。重い共有スプレッドシートと決別し、拡張機能内で管理。",
-                "feat.4.title": "VeRO自動検出",
-                "feat.4.desc": "ブランド警告や出品制限を自動で検知。知らずに出してしまうリスクを事前にブロックします。",
-                "feat.5.title": "作業統計・速度計測",
-                "feat.5.desc": "今日の出品数・作業時間・出品速度をリアルタイム表示。自分のパフォーマンスを「見える化」。",
-                "feat.6.title": "Quick MIPボタン",
-                "feat.6.desc": "画面を下までスクロールしなくても、最上部に配置されたQuick MIPボタンで視線移動を最小化。",
-                "pricing.title": "シンプルな料金プラン",
-                "pricing.sub": "Proプランには1ヶ月の無料トライアル期間あり",
-                "plan.month": " / 月",
-                "plan.free.title": "Free",
-                "plan.free.desc": "まずは試したい方へ",
-                "plan.free.btn": "無料で使う",
-                "plan.free.f1": "1日2回 AIタイトル最適化",
-                "plan.free.f2": "Quick MIPボタン配置",
-                "plan.free.f3": "ASIN履歴保持（最大1,000件）",
-                "plan.free.f4": "VeRO自動検出",
-                "plan.pro.tag": "🔥 一番人気",
-                "plan.pro.title": "Pro",
-                "plan.pro.desc": "効率を最大化し、出品作業を「快感」に",
+                "page.title": "ListerFlow Pro for Yaballe | 出品時間を最大80%削減",
+                "page.desc": "YaballeでのeBay出品作業を劇的に効率化。AIタイトル最適化で1品12秒を実現。",
+                "nav.features": "機能", "nav.pricing": "料金", "nav.reviews": "レビュー", "nav.faq": "FAQ", "nav.tokusho": "特商法", "nav.cta": "プランを見る",
+                "hero.title": "1品の出品時間を 60秒 → 12秒に。",
+                "hero.subtitle": "AIタイトル最適化 × ワンクリック自動化で、出品作業のすべてが変わる。",
+                "hero.cta.btn": "✨ 1ヶ月無料で試してみる",
+                "comparison.title": "1日50品出品の場合",
+                "pricing.title": "あなたに最適なプランを選択",
                 "plan.pro.btn": "無料で試してみる（1ヶ月間）",
-                "plan.pro.f1": "<strong>無制限</strong> AIタイトル最適化",
-                "plan.pro.f2": "ASIN履歴保持（最大1,000件）",
-                "plan.pro.f3": "最適化後 MIP自動クリック",
-                "plan.pro.f4": "OK ボタン自動クリック",
-                "plan.pro.f5": "CSV出力・一括コピー機能",
-                "plan.pro.f6": "Turbo Mode（1日5回）",
-                "plan.pro.f7": "出品統計・時間計測",
-                "plan.premium.title": "Premium",
-                "plan.premium.desc": "究極の自動化で「時間を買う」運用へ",
-                "plan.premium.btn": "Premiumプランで始める",
-                "plan.prem.f1": "Proプランの全機能",
-                "plan.prem.f2": "ASIN履歴保持（最大1,000件）",
-                "plan.prem.f3": "<strong>無制限</strong> Turbo Mode",
-                "plan.prem.f4": "優先サポート対応",
-                "plan.prem.f5": "ベータ機能の先行試用",
-                "flow.title": "ご利用開始まで3ステップ",
-                "flow.sub": "決済完了後すぐにライセンスキーが発行されます",
-                "flow.1.title": "プランを選んで決済",
-                "flow.1.desc": "上の「アップグレード」ボタンからStripeの安全な決済画面へ。クレジットカードで支払いが完了します。<br><span class=\"feature-note\" style=\"color: #e53e3e;\">※必ずYaballeで使用しているメールアドレスで購入してください。</span>",
-                "flow.2.title": "ライセンスキーを受け取る",
-                "flow.2.desc": "決済完了直後に画面にキーが表示され、登録メールにも送付されます。コピーして手元に保管してください。",
-                "flow.3.title": "自動反映",
-                "flow.3.desc": "購入後、同じアカウントでYaballeにログインするだけで、自動的にプロ機能が有効化されます。※ライセンスキーはメールでも送信されますので、念のため保管してください。",
-                "faq.title": "よくある質問",
-                "faq.1.q": "無料で試せますか？",
-                "faq.1.a": "はい、Freeプランは料金なしでご利用いただけます。またProプランには初月無料のトライアル期間があります（別途ご案内）。",
-                "faq.2.q": "いつでもキャンセルできますか？",
-                "faq.2.a": "はい、いつでもサポートLINEまたはメールよりキャンセルのご連絡をいただければ対応します。Stripeのカスタマーポータルもご案内いたします。翌月以降の請求は発生しません。",
-                "faq.3.q": "ライセンスはどうやって反映させますか？",
-                "faq.3.a": "決済完了後、同じアカウントでYaballeにログインすると自動的に反映されます。手動入力の必要はありません。<br><br>※ライセンスキーはメールでも送信されますので、念のため大切に保管してください。<br><span class=\"feature-note\" style=\"color: #e53e3e;\">※必ずYaballeで使用しているメールアドレスで購入を完了させてください。</span>",
-                "faq.4.q": "Yaballeの仕様変更に対応していますか？",
-                "faq.4.a": "Yaballeのアップデートが行われた際は、可能な限り迅速に拡張機能の更新対応しています。",
-                "faq.5.q": "動作環境は何ですか？",
-                "faq.5.a": "Google Chrome（最新版）に対応したChrome拡張機能です。対応サイトは Yaballe (app.yaballe.com) です。",
                 "tokusho.title": "特定商取引法に基づく表記",
-                "tokusho.label.vendor": "販売業者",
-                "tokusho.value.vendor": "KURONYLAB",
-                "tokusho.label.manager": "運営責任者",
-                "tokusho.value.manager": "黒木 皓基",
-                "tokusho.label.location": "所在地",
-                "tokusho.value.location": "（請求に応じて遅滞なく開示します）",
-                "tokusho.label.contact": "お問い合わせ",
-                "tokusho.value.contact.email": "メール：",
-                "tokusho.value.contact.line": "サポートLINE：",
-                "tokusho.value.contact.line.link": "こちらから参加",
-                "tokusho.value.contact.line.note": "（返信：原則24時間以内）",
-                "tokusho.label.price": "販売価格",
-                "tokusho.value.price.free": "Freeプラン：無料",
-                "tokusho.value.price.pro": "Proプラン：月額 2,980円（税込）",
-                "tokusho.value.price.premium": "Premiumプラン：月額 4,980円（税込）",
-                "tokusho.label.payment_method": "支払い方法",
-                "tokusho.value.payment_method": "クレジットカード（Stripe決済）<br>対応ブランド：Visa / Mastercard / American Express など",
-                "tokusho.label.payment_timing": "支払い時期",
-                "tokusho.value.payment_timing": "お申し込み時に即時決済。以降、毎月同日に自動更新されます。",
-                "tokusho.label.delivery_timing": "サービス提供時期",
-                "tokusho.value.delivery_timing": "決済完了後、即時にライセンスが有効化されます。",
-                "tokusho.label.service_content": "サービス内容",
-                "tokusho.value.service_content": "Chrome拡張機能「ListerFlow Pro for Yaballe」の有料プランへのアクセス権（ライセンス）をオンラインにて提供するデジタルサービスです。物理的な商品の発送はありません。",
-                "tokusho.label.cancellation": "キャンセル・解約",
-                "tokusho.value.cancellation": "サブスクリプションはいつでも解約可能です。末日までに解約のご連絡をいただいた場合、翌月以降の請求は発生しません。デジタルサービスの性質上、既払いの料金の返金は原則承っておりませんが、個別にご相談ください。",
-                "tokusho.label.environment": "動作環境",
-                "tokusho.value.environment": "Google Chrome（最新版）がインストールされたPC。<br>対応サイト：app.yaballe.com",
-                "footer.contact": "お問い合わせ"
+                "review.a.text": "出品速度が3倍くらいでした。ASIN入力後は自動で出品が進むので非常に助かります。",
+                "review.a.user": "Aさん"
             },
             en: {
-                "page.title": "ListerFlow Pro for Yaballe | Chrome Extension Reducing Listing Time by 80%",
-                "page.desc": "Drastically increase eBay listing efficiency on Yaballe. AI title optimization and full auto mode reduce listing time from 60s to 12s. Starting from 2,980 JPY/month.",
-                "nav.features": "Features",
-                "nav.reviews": "Reviews",
-                "nav.pricing": "Pricing",
-                "nav.flow": "How to Buy",
-                "nav.faq": "FAQ",
-                "nav.tokusho": "Legal",
-                "nav.cta": "View Plans",
-                "review.e.text": "Zero back-and-forth with ChatGPT and minimal scrolling. Since I manage 3 stores with 50 listings each, the impact is huge. Thanks for the development.",
-                "review.e.user": "User E ",
-                "review.d.text": "The setup and listing process went perfectly. I'm moved by how much time I saved. Thank you so much for developing and sharing this system.",
-                "review.d.user": "User D ",
-                "review.c.text": "Thank you for this amazing tool. Compared to when we had 4 people doing 50 listings, the burden is completely different. Very impressed with the smooth experience.",
-                "review.c.user": "User C ",
-                "review.b.text": "Listing time reduced to about <span class=\u0027review-highlight\u0027>1/3</span>. It was so easy that I wondered why I spent so much time before. Huge help during my busy certification exams.",
-                "review.b.user": "User B ",
-                "review.a.text": "Listing speed wasn't just doubled; it was more like <span class=\u0027review-highlight\u0027>3x</span>. I finished 30 items before I knew it. Tasks that usually took <span class=\u0027review-highlight\u0027>30 minutes</span> were done in <span class=\u0027review-highlight\u0027>10 minutes</span>. No more annoying tab switching or AI copying.",
-                "review.a.user": "User A ",
-                "reviews.sub": "Our early users are experiencing dramatic efficiency gains.",
-                "reviews.title": "Customer Reviews",
-                "nav.tokusho": "Legal",
-                "nav.faq": "FAQ",
-                "nav.flow": "How to Buy",
-                "nav.reviews": "Reviews",
-                "hero.badge": "🎁 Pro Plan 1-Month Free Trial Available",
-                "hero.title1": "Reduce listing time<br>",
-                "hero.title2": "by up to 80%",
-                "hero.title3": "",
-                "hero.desc": "Dramatically streamline your eBay listing process on Yaballe Lister with AI and automation.",
-                "hero.btn.free": "✨ Try for Free",
-                "hero.btn.features": "View Features",
-                "stat.1.num": "80%",
-                "stat.1.label": "Time Saved",
-                "stat.2.num": "12 sec",
-                "stat.2.label": "Target Time per Item",
-                "stat.3.num": "70-80 chars",
-                "stat.3.label": "AI Optimized Title Length",
-                "stat.4.num": "1,000",
-                "stat.4.label": "ASIN History Retained",
-                "features.title": "Why ListerFlow Pro?",
-                "features.sub": "Eliminate all 'waste' in listing operations with technology.",
-                "feat.1.title": "AI Title SEO Optimization",
-                "feat.1.desc": "No more back-and-forth with ChatGPT. Instantly generate SEO-optimized titles (70-80 chars) designed to rank higher in eBay search results, all without leaving your listing page.",
-                "feat.2.title": "Turbo Mode (Full Auto)",
-                "feat.2.desc": "Just paste an ASIN — Get Item → Optimize → MIP → OK, all fully automated.",
-                "feat.3.title": "ASIN History Management",
-                "feat.3.desc": "Never lose track of your progress. Manage your listing history within the extension, no more heavy shared spreadsheets.",
-                "feat.4.title": "VeRO Auto-Detection",
-                "feat.4.desc": "Automatically detect brand warnings and listing restrictions. Block risky listings before they happen.",
-                "feat.5.title": "Work Statistics & Speed Tracking",
-                "feat.5.desc": "Real-time display of today's listing count, work time, and listing speed. Visualize your performance.",
-                "feat.6.title": "Quick MIP Button",
-                "feat.6.desc": "No more scrolling down. The Quick MIP button at the top minimizes eye movement and speeds up your workflow.",
-                "pricing.title": "Simple Pricing",
-                "pricing.sub": "1-month free trial available for Pro plan",
-                "plan.month": " / month",
-                "plan.free.title": "Free",
-                "plan.free.desc": "For those who want to test it out",
-                "plan.free.btn": "Use for Free",
-                "plan.free.f1": "2 AI Title Optimizations / day",
-                "plan.free.f2": "Quick MIP Button",
-                "plan.free.f3": "ASIN History (up to 1,000)",
-                "plan.free.f4": "VeRO Auto-Detection",
-                "plan.pro.tag": "🔥 Most Popular",
-                "plan.pro.title": "Pro",
-                "plan.pro.desc": "Maximize efficiency, make listing a 'pleasure'",
+                "page.title": "ListerFlow Pro for Yaballe | Reduce listing time by 80%",
+                "page.desc": "Streamline your eBay listing process on Yaballe. 12 seconds per item with AI.",
+                "nav.features": "Features", "nav.pricing": "Pricing", "nav.reviews": "Reviews", "nav.faq": "FAQ", "nav.tokusho": "Legal", "nav.cta": "View Plans",
+                "hero.title": "Listing time from 60s to 12s.",
+                "hero.subtitle": "Change your workflow with AI Title Optimization and One-Click Automation.",
+                "hero.cta.btn": "✨ Try 1 Month Free",
+                "comparison.title": "Case: 50 listings per day",
+                "pricing.title": "Choose Your Plan",
                 "plan.pro.btn": "Start 1-Month Free Trial",
-                "plan.pro.f1": "<strong>Unlimited</strong> AI Title Optimization",
-                "plan.pro.f2": "ASIN History (up to 1,000)",
-                "plan.pro.f3": "Auto MIP Click after Optimization",
-                "plan.pro.f4": "Auto OK Button Click",
-                "plan.pro.f5": "CSV Export & Bulk Copy",
-                "plan.pro.f6": "Turbo Mode (5 times / day)",
-                "plan.pro.f7": "Listing Statistics & Time Tracking",
-                "plan.premium.title": "Premium",
-                "plan.premium.desc": "Ultimate automation to 'buy time'",
-                "plan.premium.btn": "Start Premium Plan",
-                "plan.prem.f1": "All Pro Plan Features",
-                "plan.prem.f2": "ASIN History (up to 1,000)",
-                "plan.prem.f3": "<strong>Unlimited</strong> Turbo Mode",
-                "plan.prem.f4": "Priority Support",
-                "plan.prem.f5": "Early Access to Beta Features",
-                "flow.title": "3 Steps to Get Started",
-                "flow.sub": "License key issued immediately after payment",
-                "flow.1.title": "Choose a Plan & Pay",
-                "flow.1.desc": "Click the 'Upgrade' button above to go to Stripe's secure checkout. Pay with a credit card.<br><span class=\"feature-note\" style=\"color: #e53e3e;\">*Please purchase using the same email address registered to your Yaballe account.</span>",
-                "flow.2.title": "Receive Your License Key",
-                "flow.2.desc": "Your key is displayed on screen right after payment and also sent to your registered email. Copy and save it.",
-                "flow.3.title": "Automatic Activation",
-                "flow.3.desc": "After purchasing, simply log in to Yaballe with the same account, and your Pro features will be activated automatically. *The license key is also sent via email; please keep it for your records.",
-                "faq.title": "Frequently Asked Questions",
-                "faq.1.q": "Can I try it for free?",
-                "faq.1.a": "Yes! The Free plan is completely free. The Pro plan also comes with a 1-month free trial.",
-                "faq.2.q": "Can I cancel anytime?",
-                "faq.2.a": "Yes, you can cancel anytime via support LINE or email. We'll also guide you to Stripe's customer portal. No charges will occur after cancellation.",
-                "faq.3.q": "How is the license activated?",
-                "faq.3.a": "After payment, log in to Yaballe with the same account to automatically activate your features. No manual input is required.<br><br>*The license key will also be sent via email, so please keep it as a backup.",
-                "faq.4.q": "Do you support Yaballe updates?",
-                "faq.4.a": "When Yaballe updates its platform, we update the extension as quickly as possible to maintain compatibility.",
-                "faq.5.q": "What are the system requirements?",
-                "faq.5.a": "This is a Chrome extension compatible with Google Chrome (latest version).<br>Supported site: Yaballe (app.yaballe.com).",
                 "tokusho.title": "Act on Specified Commercial Transactions",
-                "tokusho.label.vendor": "Vendor",
-                "tokusho.value.vendor": "KURONYLAB",
-                "tokusho.label.manager": "Representative",
-                "tokusho.value.manager": "Kouki Kuroki",
-                "tokusho.label.location": "Location",
-                "tokusho.value.location": "(Disclosed without delay upon request)",
-                "tokusho.label.contact": "Contact",
-                "tokusho.value.contact.email": "Email: ",
-                "tokusho.value.contact.line": "Support LINE: ",
-                "tokusho.value.contact.line.link": "Join here",
-                "tokusho.value.contact.line.note": " (Response: typically within 24 hours)",
-                "tokusho.label.price": "Selling Price",
-                "tokusho.value.price.free": "Free Plan: Free",
-                "tokusho.value.price.pro": "Pro Plan: 2,980 yen/month (Tax included)",
-                "tokusho.value.price.premium": "Premium Plan: 4,980 yen/month (Tax included)",
-                "tokusho.label.payment_method": "Payment Method",
-                "tokusho.value.payment_method": "Credit Card (Stripe Payment)<br>Supported: Visa / Mastercard / American Express, etc.",
-                "tokusho.label.payment_timing": "Payment Timing",
-                "tokusho.value.payment_timing": "Immediate payment upon application. Renews automatically on the same day each month.",
-                "tokusho.label.delivery_timing": "Service Delivery",
-                "tokusho.value.delivery_timing": "License is activated immediately after payment completion.",
-                "tokusho.label.service_content": "Service Content",
-                "tokusho.value.service_content": "Digital service providing access to paid plans for the 'ListerFlow Pro for Yaballe' Chrome extension.",
-                "tokusho.label.cancellation": "Cancellation/Refund",
-                "tokusho.value.cancellation": "Subscriptions can be cancelled anytime. Due to the nature of digital services, refunds are generally not accepted.",
-                "tokusho.label.environment": "Requirements",
-                "tokusho.value.environment": "PC with Google Chrome (latest version) installed.<br>Supported site: app.yaballe.com",
-                "footer.contact": "Contact Us"
+                "review.a.text": "Listing speed was tripled! Highly recommended for bulk sellers.",
+                "review.a.user": "User A"
             }
         };
 
         function setLanguage(lang) {
             document.querySelectorAll("[data-i18n]").forEach(el => {
                 const key = el.getAttribute("data-i18n");
-                if (translations[lang] && translations[lang].hasOwnProperty(key)) {
-                    if (el.tagName === 'INPUT' && el.type === 'placeholder') {
-                        el.placeholder = translations[lang][key];
-                    } else if (el.tagName === 'META' && (el.name === 'description' || el.getAttribute('property') === 'og:description')) {
-                        el.content = translations[lang][key];
-                    } else if (el.tagName === 'TITLE') {
-                        document.title = translations[lang][key];
-                    } else {
-                        el.innerHTML = translations[lang][key];
-                    }
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
                 }
             });
             document.documentElement.lang = lang;
             localStorage.setItem("preferred_language", lang);
         }
 
-        document.getElementById("langSwitch").addEventListener("change", (e) => {
-            setLanguage(e.target.value);
-        });
-
-        // Initialize QA toggles
-        document.querySelectorAll('.faq-q').forEach(q => {
-            q.addEventListener('click', () => {
-                q.parentElement.classList.toggle('open');
-            });
-        });
-
-        // Init language based on browser or saved pref
+        document.getElementById("langSwitch").addEventListener("change", (e) => setLanguage(e.target.value));
         const savedLang = localStorage.getItem("preferred_language") || (navigator.language.startsWith("ja") ? "ja" : "en");
         document.getElementById("langSwitch").value = savedLang;
         setLanguage(savedLang);
 
-        // 購入ボタン — Stripeの決済リンクを取得後ここを更新
         const STRIPE_PRO_LINK = 'https://buy.stripe.com/00waEYe6X2BC87f7yt63K00';
         const STRIPE_PREMIUM_LINK = 'https://buy.stripe.com/28E5kE2of3FGevDg4Z63K01';
-
-        document.getElementById('btnPro')?.addEventListener('click', e => {
-            e.preventDefault();
-            window.location.href = STRIPE_PRO_LINK;
-        });
-        document.getElementById('btnPremium')?.addEventListener('click', e => {
-            e.preventDefault();
-            window.location.href = STRIPE_PREMIUM_LINK;
-        });
+        document.getElementById('btnPro')?.addEventListener('click', e => { e.preventDefault(); window.location.href = STRIPE_PRO_LINK; });
+        document.getElementById('btnPremium')?.addEventListener('click', e => { e.preventDefault(); window.location.href = STRIPE_PREMIUM_LINK; });
     </script>
-
 </body>
-
 </html>
