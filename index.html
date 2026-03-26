@@ -400,14 +400,9 @@
             width: 52px;
             height: 52px;
             border-radius: 50%;
-            background: #e8f0fe;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 800;
-            font-family: "Outfit", sans-serif;
+            object-fit: cover;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
         }
 
         .review-meta {
@@ -820,7 +815,7 @@
         <div class="reviews-grid">
             <div class="review-card">
                 <div class="review-header">
-                    <div class="review-avatar">A</div>
+                    <img src="./assets/images/avatars/avatar1.png" class="review-avatar" alt="Avatar">
                     <div class="review-meta">
                         <div class="review-user" data-i18n="review.a.user">Aさん</div>
                         <div class="review-stars">★★★★★</div>
@@ -831,7 +826,7 @@
             
             <div class="review-card">
                 <div class="review-header">
-                    <div class="review-avatar">B</div>
+                    <img src="./assets/images/avatars/avatar2.png" class="review-avatar" alt="Avatar">
                     <div class="review-meta">
                         <div class="review-user" data-i18n="review.b.user">Bさん</div>
                         <div class="review-stars">★★★★★</div>
@@ -842,7 +837,7 @@
             
             <div class="review-card">
                 <div class="review-header">
-                    <div class="review-avatar">C</div>
+                    <img src="./assets/images/avatars/avatar3.png" class="review-avatar" alt="Avatar">
                     <div class="review-meta">
                         <div class="review-user" data-i18n="review.c.user">Cさん</div>
                         <div class="review-stars">★★★★★</div>
@@ -853,7 +848,7 @@
             
             <div class="review-card">
                 <div class="review-header">
-                    <div class="review-avatar">D</div>
+                    <img src="./assets/images/avatars/avatar4.png" class="review-avatar" alt="Avatar">
                     <div class="review-meta">
                         <div class="review-user" data-i18n="review.d.user">Dさん</div>
                         <div class="review-stars">★★★★★</div>
@@ -864,7 +859,7 @@
             
             <div class="review-card">
                 <div class="review-header">
-                    <div class="review-avatar">E</div>
+                    <img src="./assets/images/avatars/avatar5.png" class="review-avatar" alt="Avatar">
                     <div class="review-meta">
                         <div class="review-user" data-i18n="review.e.user">Eさん</div>
                         <div class="review-stars">★★★★★</div>
@@ -1073,15 +1068,15 @@
                 "nav.tokusho": "特商法",
                 "nav.cta": "プランを見る",
                 "review.e.text": "ChatGPTを使わずに済み、Yaballeの出品画面もほぼスクロールせず出品できるようになり、かなり時間短縮できました。今月50品出品が3店舗あるので、効果が大きいです。開発ありがとうございます。",
-                "review.e.user": "Eさん（プロセラー）",
+                "review.e.user": "Eさん",
                 "review.d.text": "導入と出品作業を進めましたが、問題なく進められました。出品作業時間が短縮できて感動です。システムの開発と共有、本当にありがとうございます。",
-                "review.d.user": "Dさん（コミュニティー運営者）",
+                "review.d.user": "Dさん",
                 "review.c.text": "素晴らしいツールの開発ありがとうございます。感激しました。50出品が4名あった時を思い出すと、負担がまるで別物です。本日もトラブルなく出品完了できて感動しました。",
-                "review.c.user": "Cさん（チームマネージャー）",
+                "review.c.user": "Cさん",
                 "review.b.text": "体感で所要時間が<span class=\u0027review-highlight\u0027>1/3</span>くらいになりました。これまで出品に時間がかかっていたのは何だったのかと思うほど、あっさり終わりました。資格試験や年度末で本業が多忙な時期なので非常に助かります。今後も活用します。",
-                "review.b.user": "Bさん（外注セラー）",
+                "review.b.user": "Bさん",
                 "review.a.text": "出品速度が2倍どころか<span class=\u0027review-highlight\u0027>3倍</span>くらいでした。気付いたら30品終わっている感覚です。通常<span class=\u0027review-highlight\u0027>30品で約30分</span>かかるところが、<span class=\u0027review-highlight\u0027>約10分</span>で完了しました。ASIN入力後は自動で出品が進むので、複数画面やTab切り替え、ChatGPT貼り付けなどの煩わしい作業がすべて不要になりました。繁忙期（4月・5月）の毎日60品、100品出品でも重宝しそうです。",
-                "review.a.user": "Aさん（副業セラー）",
+                "review.a.user": "Aさん",
                 "reviews.sub": "先行テスターの方々から、劇的な効率化を実感いただいています。",
                 "reviews.title": "テスターの方々のレビュー",
                 "hero.badge": "🎁 現在 Proプラン 1ヶ月間無料体験実施中",
@@ -1202,15 +1197,15 @@
                 "nav.tokusho": "Legal",
                 "nav.cta": "View Plans",
                 "review.e.text": "Zero back-and-forth with ChatGPT and minimal scrolling. Since I manage 3 stores with 50 listings each, the impact is huge. Thanks for the development.",
-                "review.e.user": "User E (Professional Seller)",
+                "review.e.user": "User E ",
                 "review.d.text": "The setup and listing process went perfectly. I'm moved by how much time I saved. Thank you so much for developing and sharing this system.",
-                "review.d.user": "User D (Community Founder)",
+                "review.d.user": "User D ",
                 "review.c.text": "Thank you for this amazing tool. Compared to when we had 4 people doing 50 listings, the burden is completely different. Very impressed with the smooth experience.",
-                "review.c.user": "User C (Team Manager)",
+                "review.c.user": "User C ",
                 "review.b.text": "Listing time reduced to about <span class=\u0027review-highlight\u0027>1/3</span>. It was so easy that I wondered why I spent so much time before. Huge help during my busy certification exams.",
-                "review.b.user": "User B (Sourcing Agent)",
+                "review.b.user": "User B ",
                 "review.a.text": "Listing speed wasn't just doubled; it was more like <span class=\u0027review-highlight\u0027>3x</span>. I finished 30 items before I knew it. Tasks that usually took <span class=\u0027review-highlight\u0027>30 minutes</span> were done in <span class=\u0027review-highlight\u0027>10 minutes</span>. No more annoying tab switching or AI copying.",
-                "review.a.user": "User A (Side Seller)",
+                "review.a.user": "User A ",
                 "reviews.sub": "Our early users are experiencing dramatic efficiency gains.",
                 "reviews.title": "Customer Reviews",
                 "nav.tokusho": "Legal",
