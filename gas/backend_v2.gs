@@ -209,6 +209,7 @@ function doPost(e) {
     if (data.action === 'apply_license') return handleApplyLicense(data);
     if (data.action === 'check_trial') return handleCheckTrial(data);
     if (data.action === 'create_portal_session') return handleCreatePortalSession(data);
+    if (data.action === 'optimize_title') return handleOptimizeTitle(data);
 
     return jsonRes({ status: 'error', message: 'Unknown action' });
   } catch (err) {
@@ -530,6 +531,71 @@ function handleCheckTrial(data) {
     }
   }
   return jsonRes({ status: 'success', plan: 'free' });
+}
+
+/**
+ * v2.0.0: AI Proxy for Title Optimization
+ * 拡張機能側からタイトルを受け取り、ライセンス認証を行った上で OpenAI API を中継する
+ */
+function handleOptimizeTitle(data) {
+  const email = (data.email || '').toLowerCase().trim();
+  const key = (data.licenseKey || '').trim();
+  const messages = data.messages;
+
+  if (!email || !key) return jsonRes({ status: 'error', message: '認証情報が不足しています' });
+  if (!messages || !Array.isArray(messages)) return jsonRes({ status: 'error', message: 'プロンプトデータが不正です' });
+
+  // 1. ライセンス認証 (Active かつ 指定した Email と紐付いているか)
+  const sheet = getSpreadsheet().getSheetByName(LICENSES_SHEET);
+  const rows = sheet.getDataRange().getValues();
+  let activePlan = null;
+
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === key && String(rows[i][5]).toLowerCase().trim() === email && rows[i][3] === 'active') {
+      activePlan = rows[i][1];
+      break;
+    }
+  }
+
+  if (!activePlan) {
+    return jsonRes({ status: 'error', message: '有効なライセンスが確認できません。プラン管理から状況を確認してください。' });
+  }
+
+  // 2. OpenAI API 呼び出し
+  try {
+    const openaiKey = PropertiesService.getScriptProperties().getProperty('OPENAI_API_KEY');
+    if (!openaiKey) throw new Error('サーバー側の OpenAI API KEY が設定されていません');
+
+    const options = {
+      method: 'post',
+      headers: {
+        'Authorization': 'Bearer ' + openaiKey,
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify({
+        model: 'gpt-4o-mini', // サーバー側でモデルを固定またはプラン別制御
+        messages: messages,
+        temperature: 0.2
+      }),
+      muteHttpExceptions: true
+    };
+
+    const response = UrlFetchApp.fetch('https://api.openai.com/v1/chat/completions', options);
+    const result = JSON.parse(response.getContentText());
+
+    if (result.error) {
+      console.error('[LFP] OpenAI Error:', result.error);
+      return jsonRes({ status: 'error', message: 'AI実行エラー: ' + result.error.message });
+    }
+
+    const content = result.choices[0].message.content;
+    console.log(`[LFP] Optimize Success: ${email} (${activePlan})`);
+
+    return jsonRes({ status: 'success', text: content });
+  } catch (err) {
+    console.error('[LFP] handleOptimizeTitle error:', err);
+    return jsonRes({ status: 'error', message: 'サーバー通信エラー: ' + err.toString() });
+  }
 }
 
 function handleApplyLicense(data) {

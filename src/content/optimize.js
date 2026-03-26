@@ -202,11 +202,14 @@ async function onOptimizeClick({ titleEl }) {
       return;
     }
 
+    /* 
+    v2.0.0: API Keyはサーバー側で管理するため、クライアント側のチェックは不要。
     if (!STORE.opt.apiKey) {
       setBadge("API key未設定");
       ensureUIBelowTitle(titleEl);
-      return; // Exit if no API key
+      return;
     }
+    */
 
     const currentTitle = normSpace(readText(titleEl));
     const blockText = extractWarningBlockText();
@@ -265,7 +268,7 @@ async function onOptimizeClick({ titleEl }) {
       });
 
       try {
-        const raw = await callOpenAI({ apiKey: STORE.opt.apiKey, model: STORE.opt.model, messages: prompt.messages });
+        const raw = await callOpenAI({ messages: prompt.messages });
         let out = normSpace((raw || "").split("\n")[0] || "");
 
         // GPT出力後もVero除去を実施（保険）
@@ -369,7 +372,7 @@ async function onOptimizeClick({ titleEl }) {
           });
 
           try {
-            const raw = await callOpenAI({ apiKey: STORE.opt.apiKey, model: STORE.opt.model, messages: retryPrompt.messages });
+            const raw = await callOpenAI({ messages: retryPrompt.messages });
             let out = normSpace((raw || "").split("\n")[0] || "");
             // Vero除去（新旧両方のmatcherで）
             const allMatchers = [...matchers, ...retryMatchers];

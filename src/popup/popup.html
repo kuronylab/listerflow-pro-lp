@@ -35,10 +35,12 @@
         <span class="menu-icon">🤖</span>
         <span class="menu-text" data-i18n="navAutomation">自動化設定</span>
       </a>
+      <!-- 
       <a href="#" class="menu-item" data-page="basic">
         <span class="menu-icon">⚙️</span>
         <span class="menu-text" data-i18n="navBasic">基本設定</span>
       </a>
+      -->
       <a href="#" class="menu-item" data-page="license">
         <span class="menu-icon">🔑</span>
         <span class="menu-text" data-i18n="navLicense">ライセンス設定</span>
@@ -244,8 +246,8 @@
       <button class="btn-primary" id="saveAutomationBtn" data-i18n="btnSave">設定を保存</button>
     </div>
 
-    <!-- 基本設定ページ -->
-    <div class="page" id="basicPage">
+    <!-- 基本設定ページ (v2.0.0: API Proxy化に伴い非表示) -->
+    <div class="page" id="basicPage" style="display: none;">
       <div class="setting-section">
         <h2 data-i18n="settingApi">OpenAI API設定</h2>
         <div class="form-group">

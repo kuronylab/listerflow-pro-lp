@@ -184,25 +184,57 @@ function stopTimer() {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg) return;
 
-  // OpenAI呼び出し
+  // OpenAI呼び出し (v2.0.0: GASプロキシ経由)
   if (msg.type === "LFP_OPENAI") {
     (async () => {
-      const opt = await loadOpt();
-      const apiKey = (opt.apiKey || "").trim();
-      const model = (opt.model || "gpt-4o-mini").trim();
-      if (!apiKey) return sendResponse({ ok: false, error: "API key未設定" });
-      const messages = Array.isArray(msg.messages) ? msg.messages : null;
-      if (!messages) return sendResponse({ ok: false, error: "messagesが不正" });
       try {
-        const out = await callResponses({ apiKey, model, messages });
-        sendResponse({ ok: true, text: out });
-      } catch (e1) {
-        try {
-          const out2 = await callChat({ apiKey, model, messages });
-          sendResponse({ ok: true, text: out2 });
-        } catch (e2) {
-          sendResponse({ ok: false, error: (e2?.message || e1?.message || "OpenAI呼び出し失敗") });
+        const optData = await chrome.storage.sync.get([KEY_OPT]);
+        const licData = await chrome.storage.local.get([KEY_LICENSE, 'lfp_current_yaballe_email']);
+        
+        const license = licData[KEY_LICENSE] || {};
+        const email = licData.lfp_current_yaballe_email || "";
+        const licenseKey = license.licenseKey || "";
+        const messages = Array.isArray(msg.messages) ? msg.messages : null;
+
+        if (!licenseKey || !email) {
+          return sendResponse({ ok: false, error: "ライセンス認証が必要です。設定画面で認証を行ってください。" });
         }
+        if (!messages) return sendResponse({ ok: false, error: "プロンプトデータが不正です" });
+
+        console.log(`[LFP-SW] AI最適化リクエスト (Proxy経由): ${email}`);
+
+        // GASプロキシへ転送
+        const payload = {
+          action: 'optimize_title',
+          email: email,
+          licenseKey: licenseKey,
+          messages: messages
+        };
+
+        // 既存の中継ロジックを再利用してGASへ送信
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+        const response = await fetch(LFP_LICENSE_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(payload),
+          redirect: "follow",
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) throw new Error(`GAS通信エラー: ${response.status}`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          sendResponse({ ok: true, text: result.text });
+        } else {
+          sendResponse({ ok: false, error: result.message || "AI実行エラー" });
+        }
+      } catch (err) {
+        console.error("[LFP-SW] LFP_OPENAI Proxy error:", err);
+        sendResponse({ ok: false, error: "通信エラー: " + err.message });
       }
     })();
     return true;
@@ -562,40 +594,9 @@ loadStats().then(async (stats) => {
   }
 });
 
-// OpenAI API呼び出し用の既存関数
-function extractResponsesText(data) {
-  if (typeof data?.output_text === "string" && data.output_text.trim()) return data.output_text;
-  const out = data?.output;
-  if (!Array.isArray(out)) return "";
-  let s = "";
-  for (const item of out) {
-    if (item?.type === "message" && item?.role === "assistant" && Array.isArray(item?.content)) {
-      for (const c of item.content) {
-        if (c?.type === "output_text" && typeof c?.text === "string") s += c.text;
-      }
-    }
-  }
-  return s;
-}
-
-async function callResponses({ apiKey, model, messages }) {
-  const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({ model, input: messages, temperature: 0.2, store: false })
-  });
-  if (!res.ok) throw new Error(`Responses APIエラー: ${res.status}`);
-  const data = await res.json();
-  return extractResponsesText(data);
-}
-
-async function callChat({ apiKey, model, messages }) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-    body: JSON.stringify({ model, temperature: 0.2, messages })
-  });
-  if (!res.ok) throw new Error(`ChatCompletions APIエラー: ${res.status}`);
-  const data = await res.json();
-  return data?.choices?.[0]?.message?.content ?? "";
-}
+// OpenAI API呼び出し用の古い関数（v2.0.0でプロキシ版に移行したため非推奨）
+/*
+function extractResponsesText(data) { ... }
+async function callResponses({ apiKey, model, messages }) { ... }
+async function callChat({ apiKey, model, messages }) { ... }
+*/

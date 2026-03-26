@@ -5,7 +5,7 @@
 
 /* ---------- OpenAI ---------- */
 
-async function callOpenAI({ apiKey, model, messages }, retryCount = 0) {
+async function callOpenAI({ messages }, retryCount = 0) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage({ type: "LFP_OPENAI", messages }, async (res) => {
       if (chrome.runtime.lastError) {

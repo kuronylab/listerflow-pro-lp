@@ -69,8 +69,8 @@ function initializeElements() {
 
   // Setting elements
   settingElements = {
-    apiKey: document.getElementById('apiKey'),
-    model: document.getElementById('model'),
+    // apiKey: document.getElementById('apiKey'), // v2.0.0: Proxy化
+    // model: document.getElementById('model'),   // v2.0.0: Proxy化
     autoGetOnPaste: document.getElementById('autoGetOnPaste'),
     autoGetOnHistory: document.getElementById('autoGetOnHistory'),
     autoMipAfterOptimize: document.getElementById('autoMipAfterOptimize'),
@@ -124,9 +124,9 @@ function setupEventListeners() {
   // Stats page buttons
   document.getElementById('resetStatsBtn')?.addEventListener('click', resetStats);
 
-  // Basic settings page buttons
-  document.getElementById('showKeyBtn')?.addEventListener('click', toggleApiKeyVisibility);
-  document.getElementById('saveBasicBtn')?.addEventListener('click', saveBasicSettings);
+  // Basic settings page buttons (v2.0.0: Hidden)
+  // document.getElementById('showKeyBtn')?.addEventListener('click', toggleApiKeyVisibility);
+  // document.getElementById('saveBasicBtn')?.addEventListener('click', saveBasicSettings);
 
   // Automation settings page buttons
   document.getElementById('saveAutomationBtn')?.addEventListener('click', saveAutomationSettings);
@@ -601,8 +601,8 @@ async function loadSettings() {
   const data = await chrome.storage.sync.get([KEY_OPT]);
   const opt = data?.[KEY_OPT] || {};
 
-  if (settingElements.apiKey) settingElements.apiKey.value = opt.apiKey || '';
-  if (settingElements.model) settingElements.model.value = opt.model || 'gpt-4o-mini';
+  // if (settingElements.apiKey) settingElements.apiKey.value = opt.apiKey || '';
+  // if (settingElements.model) settingElements.model.value = opt.model || 'gpt-4o-mini';
 
   if (settingElements.autoGetOnPaste) settingElements.autoGetOnPaste.checked = !!opt.autoGetOnPaste;
   if (settingElements.autoGetOnHistory) settingElements.autoGetOnHistory.checked = !!opt.autoGetOnHistory;
@@ -722,34 +722,10 @@ async function loadSettings() {
 
 
 
-function toggleApiKeyVisibility() {
-  const el = settingElements.apiKey;
-  if (!el) return;
-  const btn = document.getElementById('showKeyBtn');
-  if (el.type === 'password') {
-    el.type = 'text';
-    if (btn) btn.textContent = '隠す';
-  } else {
-    el.type = 'password';
-    if (btn) btn.textContent = '表示';
-  }
-}
-
-async function saveBasicSettings() {
-  const data = await chrome.storage.sync.get([KEY_OPT]);
-  const opt = data?.[KEY_OPT] || {};
-  opt.apiKey = settingElements.apiKey?.value || '';
-  opt.model = settingElements.model?.value || 'gpt-4o-mini';
-  await chrome.storage.sync.set({ [KEY_OPT]: opt });
-  alert(chrome.i18n.getMessage("msgBasicSettingsSaved"));
-
-  // ターゲットタブを更新
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs[0] && tabs[0].url.includes('yaballe.com')) {
-      chrome.tabs.reload(tabs[0].id);
-    }
-  });
-}
+/* v2.0.0: API Proxy化に伴い廃止
+function toggleApiKeyVisibility() { ... }
+async function saveBasicSettings() { ... }
+*/
 
 async function saveAutomationSettings() {
   const data = await chrome.storage.sync.get([KEY_OPT]);
