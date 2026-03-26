@@ -15,15 +15,17 @@
 
     <style>
         :root {
-            --primary: #1a73e8;
-            --primary-dark: #1557b0;
-            --accent: #f9ab00;
-            --text-main: #202124;
-            --text-sub: #5f6368;
-            --bg-light: #f8f9fa;
+            --primary: #9333ea;
+            --primary-dark: #7e22ce;
+            --secondary: #a855f7;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
             --white: #ffffff;
-            --border: #dadce0;
-            --shadow: 0 4px 6px rgba(32, 33, 36, 0.1);
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --gradient: linear-gradient(135deg, #4c1d95 0%, #7933ff 100%);
         }
 
         * {
@@ -112,22 +114,36 @@
 
         /* ===== HERO ===== */
         .hero {
-            background: linear-gradient(135deg, #0d1b4b 0%, #1a3a8f 50%, #1a73e8 100%);
-            color: #fff;
+            padding: 140px 20px 80px;
+            background: var(--gradient);
+            color: var(--white);
             text-align: center;
-            padding: 96px 24px 80px;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at 20% 50%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, rgba(100, 170, 255, 0.08) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 1;
+        .hero-banner-container {
+            margin-top: 50px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            perspective: 1000px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .hero-banner {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: rotateX(5deg);
+            transition: transform 0.5s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-banner:hover {
+            transform: rotateX(0deg) scale(1.02);
         }
 
         .hero-badge {
@@ -734,16 +750,21 @@
 
     <!-- ヒーロー -->
     <header class="hero">
-        <div class="hero-badge" data-i18n="hero.badge">🎁 現在 Proプラン 1ヶ月間無料体験実施中</div>
-        <h1>
-            <span data-i18n="hero.title1">出品時間を</span><br>
-            <span data-i18n="hero.title2">最大80%削減</span>
-            <span data-i18n="hero.title3">する<br>Chrome拡張機能</span>
-        </h1>
-        <p data-i18n="hero.desc">Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。</p>
-        <div class="hero-btns">
-            <a href="#pricing" class="btn-primary-hero" data-i18n="hero.btn.free">✨ 無料で試してみる</a>
-            <a href="#features" class="btn-ghost" data-i18n="hero.btn.features">機能を見る</a>
+        <div class="hero-content">
+            <div class="hero-badge" data-i18n="hero.badge">🎁 現在 Proプラン 1ヶ月間無料体験実施中</div>
+            <h1>
+                <span data-i18n="hero.title1">出品時間を</span><br>
+                <span data-i18n="hero.title2">最大80%削減</span>
+                <span data-i18n="hero.title3">する<br>Chrome拡張機能</span>
+            </h1>
+            <p data-i18n="hero.desc">Yaballe Listerでの出品作業を、AIと自動化で劇的に効率化。本来の「判断」と「リサーチ」に集中できるワークフロー。</p>
+            <div class="hero-btns">
+                <a href="#pricing" class="btn-primary-hero" data-i18n="hero.btn.free">✨ 無料で試してみる</a>
+                <a href="#features" class="btn-ghost" data-i18n="hero.btn.features">機能を見る</a>
+            </div>
+        </div>
+        <div class="hero-banner-container">
+            <img src="./assets/images/banner2.jpeg" alt="ListerFlow Pro Banner" class="hero-banner">
         </div>
     </header>
 
