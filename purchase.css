@@ -1758,3 +1758,24 @@ footer {
         padding: 48px 32px;
     }
 }
+
+/* Pricing Card Installation Note */
+.plan-install-note {
+    font-size: 11px;
+    color: var(--text-sub);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+    padding: 0 10px;
+}
+
+.plan-install-note a {
+    color: var(--primary);
+    text-decoration: underline;
+    font-weight: 700;
+    transition: color 0.2s ease;
+}
+
+.plan-install-note a:hover {
+    color: var(--primary-hover);
+}
