@@ -1608,3 +1608,111 @@ footer {
 .btn-current .spinner {
     border-top-color: var(--primary);
 }
+
+/* How to Start Section */
+.how-to-start {
+    padding: 100px 0;
+    background: linear-gradient(180deg, rgba(8, 5, 20, 0) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(8, 5, 20, 0) 100%);
+}
+
+.steps-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    margin-top: 50px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+}
+
+.step-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 40px 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.step-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(139, 92, 246, 0.3);
+    transform: translateY(-5px);
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+    margin: 0 auto 25px;
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+}
+
+.step-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.step-card p {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.step-link {
+    display: inline-block;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.step-link:hover {
+    color: var(--secondary);
+    transform: translateX(5px);
+}
+
+.step-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    margin-top: 100px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Steps */
+@media (max-width: 992px) {
+    .steps-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .step-arrow {
+        transform: rotate(90deg);
+        margin: 10px 0;
+        height: auto;
+    }
+    
+    .step-card {
+        width: 100%;
+        max-width: 500px;
+    }
+}
