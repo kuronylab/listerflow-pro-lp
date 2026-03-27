@@ -1609,110 +1609,152 @@ footer {
     border-top-color: var(--primary);
 }
 
-/* How to Start Section */
+/* How to Start Section - Premium Redesign */
 .how-to-start {
-    padding: 100px 0;
-    background: linear-gradient(180deg, rgba(8, 5, 20, 0) 0%, rgba(139, 92, 246, 0.05) 50%, rgba(8, 5, 20, 0) 100%);
+    padding: 120px 0;
+    position: relative;
+    z-index: 1;
 }
 
 .steps-container {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    gap: 30px;
-    margin-top: 50px;
-    max-width: 1100px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0 20px;
+    align-items: center;
+    gap: 0;
+    max-width: 1200px;
+    margin: 56px auto 0;
+    padding: 0 24px;
 }
 
 .step-card {
     flex: 1;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border-radius: 24px;
-    padding: 40px 30px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 56px 32px;
     text-align: center;
-    transition: all 0.3s ease;
-    position: relative;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 380px;
+    z-index: 2;
 }
 
 .step-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(139, 92, 246, 0.3);
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-hover);
+    background: var(--bg-card-hover);
 }
 
 .step-number {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 800;
-    color: white;
-    margin: 0 auto 25px;
-    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+    color: #ffffff;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 16px rgba(147, 51, 234, 0.2);
 }
 
 .step-card h3 {
+    font-family: 'Outfit', sans-serif;
     font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 15px;
-    color: white;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
 }
 
 .step-card p {
     font-size: 15px;
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin-bottom: 20px;
+    color: var(--text-sub);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    flex-grow: 1;
 }
 
 .step-link {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--primary);
     text-decoration: none;
-    font-weight: 600;
-    font-size: 15px;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
 .step-link:hover {
-    color: var(--secondary);
+    color: var(--primary-hover);
+}
+
+.step-link .link-arrow {
+    transition: transform 0.3s ease;
+}
+
+.step-link:hover .link-arrow {
     transform: translateX(5px);
 }
 
 .step-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50px;
-    margin-top: 100px;
-    color: rgba(255, 255, 255, 0.2);
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    position: relative;
+    opacity: 0.3;
+    margin: 0 -10px;
+    z-index: 1;
 }
 
-/* Responsive Steps */
-@media (max-width: 992px) {
+.step-arrow::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: var(--primary);
+    font-weight: 300;
+}
+
+/* Responsive Handling */
+@media (max-width: 1100px) {
+    .step-arrow {
+        width: 60px;
+    }
+}
+
+@media (max-width: 900px) {
     .steps-container {
         flex-direction: column;
-        align-items: center;
-        gap: 20px;
+        gap: 32px;
     }
-    
+
     .step-arrow {
-        transform: rotate(90deg);
-        margin: 10px 0;
-        height: auto;
+        width: 1px;
+        height: 48px;
+        background: linear-gradient(180deg, transparent, var(--primary), transparent);
+        margin: -10px 0;
     }
-    
+
+    .step-arrow::after {
+        content: '↓';
+    }
+
     .step-card {
         width: 100%;
-        max-width: 500px;
+        max-width: 480px;
+        min-height: auto;
+        padding: 48px 32px;
     }
 }
