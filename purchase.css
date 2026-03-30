@@ -64,6 +64,7 @@ body {
     filter: blur(100px);
     z-index: -1;
     animation: floatGlow 8s ease-in-out infinite;
+    will-change: transform;
 }
 
 .bg-glow-1 {
@@ -752,9 +753,9 @@ h1 {
     background: rgba(76, 29, 149, 0.04);
 }
 
-.row-label {
+.savings-table .row-label {
     font-weight: 600;
-    color: var(--text-main) !important;
+    color: var(--text-main);
 }
 
 .total-row td {
@@ -767,10 +768,10 @@ h1 {
     border-bottom: none;
 }
 
-.saving-value {
-    font-weight: 800 !important;
-    color: var(--success) !important;
-    font-size: 15px !important;
+.savings-table .saving-value {
+    font-weight: 800;
+    color: var(--success);
+    font-size: 15px;
 }
 
 .savings-note {
@@ -828,8 +829,8 @@ h1 {
 }
 
 .card.current {
-    border: 2.5px solid var(--primary) !important;
-    background: var(--bg-card-hover) !important;
+    border: 2.5px solid var(--primary);
+    background: var(--bg-card-hover);
     box-shadow: var(--shadow-glow), var(--shadow-card);
 }
 
@@ -1403,18 +1404,24 @@ footer {
 
 /* ===== Navigation Header (Glassmorphism) ===== */
 .main-nav {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 72px !important;
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid var(--border) !important;
-    z-index: 9999 !important;
-    display: flex !important;
-    align-items: center !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.95); /* Firefox fallback */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+@supports (backdrop-filter: blur(12px)) {
+    .main-nav {
+        background: rgba(255, 255, 255, 0.8);
+    }
 }
 
 .nav-container {
@@ -1500,7 +1507,7 @@ footer {
 
 /* ===== Main Content Padding ===== */
 .main-content-padding {
-    padding-top: 100px !important;
+    padding-top: 100px;
 }
 
 /* ===== Tokusho Section ===== */
@@ -1579,6 +1586,26 @@ footer {
     color: var(--primary);
 }
 
+/* ===== Skip Link (アクセシビリティ) ===== */
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 16px;
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    z-index: 10000;
+    transition: top 0.2s;
+}
+
+.skip-link:focus {
+    top: 16px;
+}
+
 /* ===== Responsive Mobile ===== */
 @media (max-width: 768px) {
     .nav-links {
@@ -1586,6 +1613,47 @@ footer {
     }
     .tokusho-inner th {
         width: 40%;
+    }
+}
+
+/* ===== Responsive Small Mobile (480px以下) ===== */
+@media (max-width: 480px) {
+    .hero-highlight {
+        font-size: 28px;
+    }
+
+    .hero-stats-inner {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .stat-divider {
+        display: none;
+    }
+
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .comparison-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .comparison-arrow {
+        transform: rotate(90deg);
+    }
+
+    .tokusho-inner th,
+    .tokusho-inner td {
+        display: block;
+        width: 100%;
+    }
+
+    .tokusho-inner th {
+        border-bottom: none;
+        padding-bottom: 4px;
     }
 }
 /* ===== Loading Spinner ===== */

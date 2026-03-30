@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="page.title">ListerFlow Pro - 出品時間を80%削減する究極の自動化ツール</title>
     <meta name="description" data-i18n="page.desc" content="eBay出品作業を60秒→12秒に短縮。AIタイトル最適化・Turbo Mode完全自動化で、毎月15時間以上の自由な時間を。">
+    <!-- OGP / SNSシェア用 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" data-i18n="page.title" content="ListerFlow Pro - 出品時間を80%削減する究極の自動化ツール">
+    <meta property="og:description" data-i18n="page.desc" content="eBay出品作業を60秒→12秒に短縮。AIタイトル最適化・Turbo Mode完全自動化で、毎月15時間以上の自由な時間を。">
+    <meta property="og:image" content="assets/images/banner2.jpeg">
+    <meta property="og:locale" content="ja_JP">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" data-i18n="page.title" content="ListerFlow Pro - 出品時間を80%削減する究極の自動化ツール">
+    <meta name="twitter:description" data-i18n="page.desc" content="eBay出品作業を60秒→12秒に短縮。AIタイトル最適化・Turbo Mode完全自動化で、毎月15時間以上の自由な時間を。">
+    <meta name="twitter:image" content="assets/images/banner2.jpeg">
     <link rel="stylesheet" href="purchase.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
@@ -13,6 +23,9 @@
 </head>
 
 <body>
+    <!-- Skip Navigation (アクセシビリティ) -->
+    <a href="#pricing" class="skip-link">料金プランへスキップ</a>
+
     <!-- Animated Background -->
     <div class="bg-gradient"></div>
     <div class="bg-glow bg-glow-1"></div>
@@ -33,7 +46,7 @@
                 <a href="#tokusho" data-i18n="nav.tokusho">特商法</a>
             </div>
             <div class="nav-right">
-                <select id="langSwitch" class="nav-lang-select">
+                <select id="langSwitch" class="nav-lang-select" aria-label="表示言語を選択">
                     <option value="ja">日本語</option>
                     <option value="en">English</option>
                 </select>
@@ -46,7 +59,7 @@
         <!-- Hero Section -->
         <header class="hero">
             <div class="hero-banner">
-                <img src="banner2.jpeg" alt="ListerFlow Pro for Yaballe" class="hero-banner-img">
+                <img src="assets/images/banner2.jpeg" alt="ListerFlow Pro for Yaballe" class="hero-banner-img" decoding="async">
             </div>
 
             <h1 data-i18n="hero.title">
@@ -188,7 +201,7 @@
             <div class="ss-comparison">
                 <div class="ss-card ss-before">
                     <div class="ss-label ss-label-before" data-i18n="ss.before.label">❌ Before（最適化前）</div>
-                    <img src="ss_before.png" alt="AIタイトル最適化前：153文字で文字数オーバー" class="ss-img">
+                    <img src="assets/images/ss_before.png" alt="AIタイトル最適化前：153文字で文字数オーバー" class="ss-img" loading="lazy" decoding="async">
                     <p class="ss-caption" data-i18n="ss.before.caption">タイトル <span class="review-highlight">153文字</span>で上限オーバー. VeRO警告も見落としがち.</p>
                 </div>
                 <div class="ss-arrow">
@@ -199,7 +212,7 @@
                 </div>
                 <div class="ss-card ss-after">
                     <div class="ss-label ss-label-after" data-i18n="ss.after.label">✅ After（最適化後）</div>
-                    <img src="ss_after.png" alt="AIタイトル最適化後：75文字で最適化完了" class="ss-img">
+                    <img src="assets/images/ss_after.png" alt="AIタイトル最適化後：75文字で最適化完了" class="ss-img" loading="lazy" decoding="async">
                     <p class="ss-caption" data-i18n="ss.after.caption">ワンクリックで <span class="review-highlight">75文字</span>に最適化。VeRO・文字数チェックも自動。</p>
                 </div>
             </div>
@@ -208,7 +221,7 @@
             <div class="ss-stats-wrapper">
                 <div class="ss-card ss-stats">
                     <div class="ss-label ss-label-stats" data-i18n="ss.stats.label">📊 統計情報 & ASIN履歴</div>
-                    <img src="ss_stats.png" alt="統計ダッシュボードとASIN履歴" class="ss-img">
+                    <img src="assets/images/ss_stats.png" alt="統計ダッシュボードとASIN履歴" class="ss-img" loading="lazy" decoding="async">
                     <p class="ss-caption" data-i18n="ss.stats.caption">出品数・作業時間・出品速度をリアルタイム表示。ASIN履歴は最大1,000件保持、CSV出力・一括コピーに対応。</p>
                 </div>
             </div>
@@ -279,7 +292,7 @@
                         <div class="step-number">1</div>
                         <h3 data-i18n="how.step1.title">拡張機能をインストール</h3>
                         <p data-i18n="how.step1.desc">まずはChromeウェブストアからListerFlow Proを追加してください。</p>
-                        <a href="https://chromewebstore.google.com/" target="_blank" class="step-link">
+                        <a href="https://chromewebstore.google.com/" target="_blank" rel="noopener noreferrer" class="step-link">
                             <span data-i18n="how.step1.btn">ストアへ行く</span>
                             <span class="link-arrow">→</span>
                         </a>
@@ -320,7 +333,7 @@
                         <li data-i18n="plan.free.feature.4"><span class="check">✔</span> Quick MIP ボタン配置</li>
                         <li data-i18n="plan.free.feature.5"><span class="check">✔</span> ASIN履歴保持（最大1,000件）</li>
                     </ul>
-                    <a href="https://chromewebstore.google.com/" class="btn btn-secondary" target="_blank" data-i18n="plan.free.btn">無料で導入する</a>
+                    <a href="https://chromewebstore.google.com/" class="btn btn-secondary" target="_blank" rel="noopener noreferrer" data-i18n="plan.free.btn">無料で導入する</a>
                 </div>
 
                 <!-- Pro Plan -->
@@ -346,7 +359,7 @@
                             </div>
                         </li>
                     </ul>
-                    <a href="https://buy.stripe.com/00waEYe6X2BC87f7yt63K00" class="btn btn-primary btn-glow" target="_blank">
+                    <a href="https://buy.stripe.com/00waEYe6X2BC87f7yt63K00" class="btn btn-primary btn-glow" target="_blank" rel="noopener noreferrer">
                         <span data-i18n="plan.pro.btn">✨ 1ヶ月無料で試してみる</span>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -355,7 +368,7 @@
                     </a>
                     <p class="plan-install-note">
                         <span data-i18n="plan.install_note.before">※まだインストールしていない方は</span>
-                        <a href="https://chromewebstore.google.com/" target="_blank" data-i18n="plan.install_note.link">こちらから先に追加</a>
+                        <a href="https://chromewebstore.google.com/" target="_blank" rel="noopener noreferrer" data-i18n="plan.install_note.link">こちらから先に追加</a>
                         <span data-i18n="plan.install_note.after">してください。</span>
                     </p>
                     <p class="trial-note" data-i18n="plan.pro.note">※ 1ヶ月間は完全無料。いつでもキャンセル可能。</p>
@@ -379,7 +392,7 @@
                         <li data-i18n="plan.premium.feature.3"><span class="check">✔</span> 優先サポート & ベータ先行試用</li>
                         <li data-i18n="plan.premium.feature.4"><span class="check">✔</span> 大規模アカウントの生産性最大化</li>
                     </ul>
-                    <a href="https://buy.stripe.com/28E5kE2of3FGevDg4Z63K01" class="btn btn-premium" target="_blank">
+                    <a href="https://buy.stripe.com/28E5kE2of3FGevDg4Z63K01" class="btn btn-premium" target="_blank" rel="noopener noreferrer">
                         <span data-i18n="plan.premium.btn">👑 Premiumプランで始める</span>
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                             <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -388,7 +401,7 @@
                     </a>
                     <p class="plan-install-note">
                         <span data-i18n="plan.install_note.before">※まだインストールしていない方は</span>
-                        <a href="https://chromewebstore.google.com/" target="_blank" data-i18n="plan.install_note.link">こちらから先に追加</a>
+                        <a href="https://chromewebstore.google.com/" target="_blank" rel="noopener noreferrer" data-i18n="plan.install_note.link">こちらから先に追加</a>
                         <span data-i18n="plan.install_note.after">してください。</span>
                     </p>
                 </div>
@@ -408,7 +421,7 @@
                     <!-- Review A (Most Impactful) -->
                     <div class="testimonial-card">
                         <div class="testimonial-header">
-                            <div class="avatar"><img src="assets/icons/person.svg" alt="User"></div>
+                            <div class="avatar"><img src="assets/icons/person.svg" alt="レビュアーのアイコン" loading="lazy"></div>
                             <div class="user-info">
                                 <h4 data-i18n="review.a.user">Aさん</h4>
                                 <div class="stars">★★★★★</div>
@@ -424,7 +437,7 @@
                     <!-- Review B -->
                     <div class="testimonial-card">
                         <div class="testimonial-header">
-                            <div class="avatar"><img src="assets/icons/person.svg" alt="User"></div>
+                            <div class="avatar"><img src="assets/icons/person.svg" alt="レビュアーのアイコン" loading="lazy"></div>
                             <div class="user-info">
                                 <h4 data-i18n="review.b.user">Bさん</h4>
                                 <div class="stars">★★★★★</div>
@@ -442,7 +455,7 @@
                     <!-- Review C -->
                     <div class="testimonial-card">
                         <div class="testimonial-header">
-                            <div class="avatar"><img src="assets/icons/person.svg" alt="User"></div>
+                            <div class="avatar"><img src="assets/icons/person.svg" alt="レビュアーのアイコン" loading="lazy"></div>
                             <div class="user-info">
                                 <h4 data-i18n="review.c.user">Cさん</h4>
                                 <div class="stars">★★★★★</div>
@@ -456,7 +469,7 @@
                     <!-- Review D -->
                     <div class="testimonial-card">
                         <div class="testimonial-header">
-                            <div class="avatar"><img src="assets/icons/person.svg" alt="User"></div>
+                            <div class="avatar"><img src="assets/icons/person.svg" alt="レビュアーのアイコン" loading="lazy"></div>
                             <div class="user-info">
                                 <h4 data-i18n="review.d.user">Dさん</h4>
                                 <div class="stars">★★★★★</div>
@@ -540,7 +553,7 @@
                             <th data-i18n="tokusho.label.contact">お問い合わせ</th>
                             <td>
                                 <span data-i18n="tokusho.value.contact.email">メール：</span><a href="mailto:kuronylab@gmail.com">kuronylab@gmail.com</a><br>
-                                <span data-i18n="tokusho.value.contact.line">サポートLINE：</span><a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" data-i18n="tokusho.value.contact.line.link">こちらから参加</a><span data-i18n="tokusho.value.contact.line.note">（返信：原則24時間以内）</span>
+                                <span data-i18n="tokusho.value.contact.line">サポートLINE：</span><a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" rel="noopener noreferrer" data-i18n="tokusho.value.contact.line.link">こちらから参加</a><span data-i18n="tokusho.value.contact.line.note">（返信：原則24時間以内）</span>
                             </td>
                         </tr>
                         <tr>
@@ -953,24 +966,50 @@
             }
         };
 
+        // HTMLを含む翻訳キー（innerHTML が必要なもの）
+        const HTML_KEYS = new Set([
+            "hero.title", "hero.subtitle", "hero.persona.text", "hero.cta.note",
+            "ss.before.caption", "ss.after.caption",
+            "savings.note",
+            "plan.free.feature.1", "plan.free.feature.2", "plan.free.feature.3",
+            "plan.free.feature.4", "plan.free.feature.5",
+            "plan.pro.feature.0", "plan.pro.feature.1", "plan.pro.feature.2",
+            "plan.pro.feature.3", "plan.pro.feature.4", "plan.pro.feature.5",
+            "plan.pro.feature.6", "plan.pro.feature.7",
+            "plan.premium.feature.1", "plan.premium.feature.2",
+            "plan.premium.feature.3", "plan.premium.feature.4",
+            "review.a.text", "review.b.text",
+            "faq.a.1", "faq.a.4", "faq.a.5",
+            "tokusho.value.payment_method", "tokusho.value.environment"
+        ]);
+
+        function safeSetStorage(key, value) {
+            try { localStorage.setItem(key, value); } catch (e) { /* private browsing 等で失敗しても無視 */ }
+        }
+
+        function safeGetStorage(key) {
+            try { return localStorage.getItem(key); } catch (e) { return null; }
+        }
+
         function setLanguage(lang) {
             if (!translations.hasOwnProperty(lang)) return;
 
             document.querySelectorAll("[data-i18n]").forEach(el => {
                 const key = el.getAttribute("data-i18n");
-                if (translations[lang].hasOwnProperty(key)) {
-                    const translation = translations[lang][key];
-                    if (el.tagName === 'META') {
-                        el.setAttribute('content', translation);
-                    } else if (el.tagName === 'TITLE') {
-                        document.title = translation;
-                    } else {
-                        el.innerHTML = translation;
-                    }
+                if (!translations[lang].hasOwnProperty(key)) return;
+                const translation = translations[lang][key];
+                if (el.tagName === 'META') {
+                    el.setAttribute('content', translation);
+                } else if (el.tagName === 'TITLE') {
+                    document.title = translation;
+                } else if (HTML_KEYS.has(key)) {
+                    el.innerHTML = translation;
+                } else {
+                    el.textContent = translation;
                 }
             });
 
-            localStorage.setItem("lfp_lang", lang);
+            safeSetStorage("lfp_lang", lang);
             document.getElementById("langSwitch").value = lang;
             document.documentElement.lang = lang;
         }
@@ -980,7 +1019,7 @@
             langSwitch.addEventListener('change', (e) => {
                 setLanguage(e.target.value);
             });
-            const savedLang = localStorage.getItem('lfp_lang') || (navigator.language.startsWith('ja') ? 'ja' : 'en');
+            const savedLang = safeGetStorage('lfp_lang') || (navigator.language.startsWith('ja') ? 'ja' : 'en');
             setLanguage(savedLang);
         }
     </script>
