@@ -27,7 +27,7 @@ async function refreshHistorySelect(force = false) {
   const maxCount = 1000;
 
   // 既存のselectを更新（件数カウント付き）
-  UI.histSel.innerHTML = `<option value="">ASIN履歴（直近1000件） ${count}/${maxCount}</option>`;
+  UI.histSel.innerHTML = `<option value="">${chrome.i18n.getMessage("uiHistoryCountPlaceholder")} ${count}/${maxCount}</option>`;
   for (const entry of hist) {
     const opt = document.createElement("option");
     opt.value = entry.asin;
@@ -50,14 +50,14 @@ async function refreshListingCountUI() {
 
     // 本日の作業時間（バックグラウンドで計算された累積秒数を使用）
     const totalMs = stats ? (stats.totalWorkTimeToday || 0) : 0;
-    let sessionWorkTime = "0時間00分00秒";
+    let sessionWorkTime = `0${chrome.i18n.getMessage("unitHr")}00${chrome.i18n.getMessage("unitMin")}00${chrome.i18n.getMessage("unitSec")}`;
 
     if (totalMs > 0) {
       const totalSec = Math.floor(totalMs / 1000);
       const hours = Math.floor(totalSec / 3600);
       const mins = Math.floor((totalSec % 3600) / 60);
       const secs = totalSec % 60;
-      sessionWorkTime = `${hours}時間${String(mins).padStart(2, '0')}分${String(secs).padStart(2, '0')}秒`;
+      sessionWorkTime = `${hours}${chrome.i18n.getMessage("unitHr")}${String(mins).padStart(2, '0')}${chrome.i18n.getMessage("unitMin")}${String(secs).padStart(2, '0')}${chrome.i18n.getMessage("unitSec")}`;
     }
 
     // ランク判定
@@ -67,27 +67,22 @@ async function refreshListingCountUI() {
 
     if (totalMs > 0) {
       const speedVal = (stats.todayListings / (totalMs / 3600000));
-      let feedback = "ゆったり";
-      let emoji = "🐢";
+      let feedback = chrome.i18n.getMessage("rankVerySlow");
 
       if (speedVal >= 120) {
-        feedback = "爆速";
-        emoji = "🚀";
+        feedback = chrome.i18n.getMessage("rankFastest");
         color = "#6f42c1";
         bgColor = "#f3e5f5";
       } else if (speedVal >= 60) {
-        feedback = "高速";
-        emoji = "🏎️";
+        feedback = chrome.i18n.getMessage("rankFast");
         color = "#007bff";
         bgColor = "#e7f3ff";
       } else if (speedVal >= 30) {
-        feedback = "着実";
-        emoji = "💪";
+        feedback = chrome.i18n.getMessage("rankNormal");
         color = "#28a745";
         bgColor = "#e8f5e9";
       } else if (speedVal >= 10) {
-        feedback = "のんびり";
-        emoji = "🚲";
+        feedback = chrome.i18n.getMessage("rankSlow");
         color = "#ffc107";
         bgColor = "#fffde7";
       }
@@ -97,7 +92,7 @@ async function refreshListingCountUI() {
       const hasTrophy = speedVal > 0 && speedVal >= (maxSpeed - 2);
       const trophyStr = hasTrophy ? " 🏆" : "";
 
-      rankContent = `${feedback} ${emoji}${trophyStr}`;
+      rankContent = `${feedback}${trophyStr}`;
     }
 
     const showPanel = STORE.opt.showWorkTimePanel !== false;
@@ -114,13 +109,13 @@ async function refreshListingCountUI() {
     let cancelLabel = ''; // (○/○解約予定) を追加
     if (cancelAt) {
       const cd = new Date(cancelAt);
-      cancelLabel = ` (${cd.getMonth() + 1}/${cd.getDate()}解約予定)`;
+      cancelLabel = ` ${chrome.i18n.getMessage("uiPlanCancelScheduled", [`${cd.getMonth() + 1}/${cd.getDate()}`])}`;
     }
 
     if (currentPlan === 'pro' && STORE.license.isProTrial) {
       // Pro プランだがトライアル期間中
       const daysLeft = STORE.license.proTrialDaysLeft ?? 30;
-      planBadgeText = `Pro (Trial) 残り${daysLeft}日${cancelLabel}`;
+      planBadgeText = `${chrome.i18n.getMessage("uiPlanProTrial")} ${chrome.i18n.getMessage("uiPlanDaysLeft", [String(daysLeft)])}${cancelLabel}`;
       planBadgeBg = "#198754";
       if (cancelAt) planBadgeBg = '#6b7280'; // 解約予定は落ち着いたグレーに
     } else if (currentPlan === 'pro') {
@@ -131,7 +126,7 @@ async function refreshListingCountUI() {
       planBadgeBg = "#d63384";
     } else if (currentPlan === 'pro-trial' || (currentPlan === 'free' && STORE.license.isProTrial)) {
       const daysLeft = STORE.license.proTrialDaysLeft ?? 30;
-      planBadgeText = `Pro (Trial) 残り${daysLeft}日${cancelLabel}`;
+      planBadgeText = `${chrome.i18n.getMessage("uiPlanProTrial")} ${chrome.i18n.getMessage("uiPlanDaysLeft", [String(daysLeft)])}${cancelLabel}`;
       planBadgeBg = "#198754";
       planBadgeDisplay = 'inline-block';
     } else if (currentPlan !== 'free') {
@@ -146,11 +141,11 @@ async function refreshListingCountUI() {
     // 初回構築
     if (!UI.listingCountLabel.querySelector('.lfp-count-val')) {
       UI.listingCountLabel.innerHTML = `
-      <span class="lfp-count-val" style="font-weight: bold; color: #111;">出品完了: ${stats.todayListings || 0}件</span>
-      <span class="lfp-time-val" style="margin-left: 15px; color: #111; font-weight: bold; display: ${panelDisplay};">本日の作業時間: ${sessionWorkTime}</span>
+      <span class="lfp-count-val" style="font-weight: bold; color: #111;">${chrome.i18n.getMessage("uiCompleted")}: ${stats.todayListings || 0}${chrome.i18n.getMessage("uiUnitItems")}</span>
+      <span class="lfp-time-val" style="margin-left: 15px; color: #111; font-weight: bold; display: ${panelDisplay};">${chrome.i18n.getMessage("uiTodayWorkTime")}: ${sessionWorkTime}</span>
       <span id="lfp-pause-resume-btn-placeholder" style="margin-left: 4px; display: ${flexDisplay}; align-items: center;"></span>
       <span class="lfp-rank-badge" style="margin-left: 10px; display: ${rankDisplay}; color: ${color}; background-color: ${bgColor}; border: 1px solid ${color}44; padding: 1px 10px; border-radius: 12px; font-size: 0.85em;">${rankContent}</span>
-      <span class="lfp-plan-badge-inline" title="プラン詳細・変更はこちら" style="margin-left: 8px; display: ${planBadgeDisplay}; padding: 2px 6px; border-radius: 9px; color: #fff; background-color: ${planBadgeBg}; font-size: 11px; font-weight: bold; cursor: pointer;">${planBadgeText}</span>
+      <span class="lfp-plan-badge-inline" title="${chrome.i18n.getMessage("linkCustomerPortal")}" style="margin-left: 8px; display: ${planBadgeDisplay}; padding: 2px 6px; border-radius: 9px; color: #fff; background-color: ${planBadgeBg}; font-size: 11px; font-weight: bold; cursor: pointer;">${planBadgeText}</span>
       <span class="lfp-trial-val" style="display: none; margin-left: 12px; font-weight: bold; font-size: 11px; padding: 2px 6px; border: 1px solid transparent; border-radius: 4px;"></span>
       <span class="lfp-admin-val" style="display: none; margin-left: 8px; font-weight: bold; font-size: 11px; padding: 2px 6px; border: 1px solid transparent; border-radius: 4px;"></span>
     `;
@@ -176,12 +171,12 @@ async function refreshListingCountUI() {
       const planSpan = UI.listingCountLabel.querySelector('.lfp-plan-badge-inline');
 
       if (countSpan) {
-        countSpan.textContent = `出品完了: ${stats.todayListings || 0}件`;
+        countSpan.textContent = `${chrome.i18n.getMessage("uiCompleted")}: ${stats.todayListings || 0}${chrome.i18n.getMessage("uiUnitItems")}`;
         countSpan.style.color = "#111";
         countSpan.style.fontWeight = "bold";
       }
       if (timeSpan) {
-        timeSpan.textContent = `本日の作業時間: ${sessionWorkTime}`;
+        timeSpan.textContent = `${chrome.i18n.getMessage("uiTodayWorkTime")}: ${sessionWorkTime}`;
         timeSpan.style.color = "#111";
         timeSpan.style.fontWeight = "bold";
         timeSpan.style.display = panelDisplay;
@@ -192,7 +187,7 @@ async function refreshListingCountUI() {
         planSpan.style.backgroundColor = planBadgeBg;
         planSpan.style.display = planBadgeDisplay;
         planSpan.style.cursor = "pointer";
-        planSpan.title = "プラン詳細・変更はこちら";
+        planSpan.title = chrome.i18n.getMessage("linkCustomerPortal");
       }
 
       // ボタンのコンテナも制御
@@ -226,10 +221,10 @@ async function refreshListingCountUI() {
           trialSpan.style.display = "inline-block";
           const count = STORE.license.usageCount || 0;
           const limit = STORE.license.dailyLimit || 2;
-          trialSpan.textContent = `本日の使用状況: ${count} / ${limit}`;
+          trialSpan.textContent = chrome.i18n.getMessage("msgDailyUsage", [String(count), String(limit)]);
 
           if (count >= limit) {
-            trialSpan.textContent = "試用終了（アップグレードはこちら）";
+            trialSpan.textContent = chrome.i18n.getMessage("msgTrialExpired");
             trialSpan.style.color = "#fff";
             trialSpan.style.background = "#d32f2f";
             trialSpan.style.borderColor = "#d32f2f";
@@ -261,7 +256,7 @@ async function refreshListingCountUI() {
           adminSpan = document.createElement('span');
           adminSpan.className = 'lfp-admin-val';
           adminSpan.style.cssText = 'display: inline-block; margin-left: 8px; font-weight: bold; font-size: 11px; padding: 2px 8px; border: 1px solid #28a745; border-radius: 4px; color: #28a745; background: #e8f5e9; cursor: default; white-space: nowrap; vertical-align: middle;';
-          adminSpan.textContent = '管理者モード：無制限';
+          adminSpan.textContent = chrome.i18n.getMessage("uiAdminMode");
           if (csvBtnEl.nextSibling) {
             adminBar.insertBefore(adminSpan, csvBtnEl.nextSibling);
           } else {
@@ -402,7 +397,7 @@ function refreshCustomDropdown(hist) {
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'lfp-dropdown-delete-btn';
     deleteBtn.textContent = '×';
-    deleteBtn.title = 'この履歴を削除';
+    deleteBtn.title = chrome.i18n.getMessage("uiDeleteHistoryItem");
     deleteBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
 
@@ -432,7 +427,7 @@ function refreshCustomDropdown(hist) {
       // selectの件数表示も更新（ドロップダウンは再構築しない）
       const currentCount = document.querySelectorAll('.lfp-dropdown-item-wrapper').length - 1;
       if (UI.histSel) {
-        UI.histSel.innerHTML = `<option value="">ASIN履歴（直近1000件） ${currentCount}/1000</option>`;
+        UI.histSel.innerHTML = `<option value="">${chrome.i18n.getMessage("uiHistoryCountPlaceholder")} ${currentCount}/1000</option>`;
       }
     });
 
