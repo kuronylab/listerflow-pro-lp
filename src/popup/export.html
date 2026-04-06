@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>スプレッドシート用コピー画面 - ListerFlow Pro</title>
+  <title data-i18n="exportPageTitle">Spreadsheet Export - ListerFlow Pro</title>
   <link rel="stylesheet" href="export.css">
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1 class="title">スプレッドシート用コピー画面</h1>
+      <h1 class="title" data-i18n="exportTitle">Spreadsheet Export</h1>
       <div class="actions">
-        <button id="copyTwoColumnsBtn" class="btn-copy">
+        <button id="copyTwoColumnsBtn" class="btn-copy" data-i18n="exportCopyTwoColumns">
           <span class="icon">📋</span> 日付の2列をコピー
         </button>
-        <button id="downloadCsvBtn" class="btn-csv">
+        <button id="downloadCsvBtn" class="btn-csv" data-i18n="exportDownloadCsv">
           <span class="icon">📥</span> CSVダウンロード
         </button>
       </div>
@@ -24,10 +24,10 @@
       <table id="historyTable">
         <thead>
           <tr>
-            <th>ASINコード</th>
-            <th>結果</th>
-            <th>出品日</th>
-            <th>エラーにより出品不可</th>
+            <th data-i18n="csvHeaderAsin">ASINコード</th>
+            <th data-i18n="csvHeaderResult">結果</th>
+            <th data-i18n="csvHeaderListedDate">出品日</th>
+            <th data-i18n="csvHeaderErrorDate">エラーにより出品不可</th>
           </tr>
         </thead>
         <tbody id="historyTableBody">

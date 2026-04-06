@@ -73,7 +73,7 @@ function ensureUIBelowTitle(titleEl) {
 
   const status = document.createElement("div");
   status.className = "lfp-status";
-  status.textContent = `${chrome.i18n.getMessage("uiCharacters")}：計算中... / ${chrome.i18n.getMessage("uiVero")}：- / ${chrome.i18n.getMessage("uiListing")}：-`;
+  status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: ${chrome.i18n.getMessage("uiCalculating")} / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
 
   row.appendChild(btn);
   row.appendChild(status);
@@ -140,7 +140,7 @@ function setBusy(isBusy) {
 
 function setStatusLine(len, veroCount, shipText, highlight) {
   if (!UI.status) return;
-  UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}：${len} / ${chrome.i18n.getMessage("uiVero")}：${veroCount} / ${chrome.i18n.getMessage("uiListing")}：${shipText}`;
+  UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: ${len} / ${chrome.i18n.getMessage("uiVero")}: ${veroCount} / ${chrome.i18n.getMessage("uiListing")}: ${shipText}`;
   // Store flag for Turbo mode detection (avoids text parsing across locales)
   STORE.optimizeState.needsOptimize = (highlight === true);
   if (UI.btnOpt && STORE.opt.highlightOptimize) {
@@ -173,7 +173,7 @@ function resetUIState() {
     if (UI.spin) UI.spin.style.display = "none";
   }
   if (UI.status) {
-    UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}：- / ${chrome.i18n.getMessage("uiVero")}：- / ${chrome.i18n.getMessage("uiListing")}：-`;
+    UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: - / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
   }
   // 点滅防止: highlightOptimizeがONの場合はクラスを維持
   if (UI.btnOpt && !STORE.opt.highlightOptimize) {
@@ -282,9 +282,9 @@ function unlockUI(titleEl) {
   const len = (title || "").length;
   if (UI.status) {
     if (len > 0) {
-      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}：${len} / ${chrome.i18n.getMessage("uiVero")}：- / ${chrome.i18n.getMessage("uiListing")}：-`;
+      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: ${len} / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
     } else {
-      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}：- / ${chrome.i18n.getMessage("uiVero")}：- / ${chrome.i18n.getMessage("uiListing")}：-`;
+      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: - / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
     }
   }
 

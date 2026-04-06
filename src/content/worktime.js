@@ -471,9 +471,9 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
     console.warn("[LFP] Failed to render popup (context might be invalidated):", err);
     popup.innerHTML = `
         <div style="padding: 20px; text-align: center; color: #d32f2f;">
-          <h3 style="margin-top:0;">⚠️ エラー</h3>
-          <p style="font-size:12px; line-height:1.4;">拡張機能の情報が読み取れませんでした。<br>ページを一度<b>再読み込み</b>してください。</p>
-          <button class="btn-primary" onclick="location.reload()" style="margin-top:10px;">リロードする</button>
+          <h3 style="margin-top:0;">⚠️ ${chrome.i18n.getMessage("msgHistoryClearErrorTitle")}</h3>
+          <p style="font-size:12px; line-height:1.4;">${chrome.i18n.getMessage("msgStatsReadError")}</p>
+          <button class="btn-primary" onclick="location.reload()" style="margin-top:10px;">${chrome.i18n.getMessage("btnReload")}</button>
         </div>
       `;
   }

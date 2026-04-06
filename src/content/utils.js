@@ -364,7 +364,7 @@ function resetAllFlags() {
       if (UI.spin) UI.spin.style.display = "none";
     }
     if (UI.status) {
-      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}：- / ${chrome.i18n.getMessage("uiVero")}：- / ${chrome.i18n.getMessage("uiListing")}：-`;
+      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: - / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
     }
     if (UI.quickMipBtn) UI.quickMipBtn._wasEnabled = false;
   }

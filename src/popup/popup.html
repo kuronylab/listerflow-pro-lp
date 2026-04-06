@@ -61,92 +61,92 @@
     <!-- 統計情報ページ -->
     <div class="page active" id="statsPage">
       <div class="stats-section">
-        <h2>📊 出品統計</h2>
+        <h2 data-i18n="uiStatsHeader">📊 出品統計</h2>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-label">本日の出品</div>
-            <div class="stat-value" id="todayListings">0件</div>
+            <div class="stat-label" data-i18n="uiTodayListings">本日の出品</div>
+            <div class="stat-value" id="todayListings">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">今週の出品</div>
-            <div class="stat-value" id="weekListings">0件</div>
+            <div class="stat-label" data-i18n="uiWeekListings">今週の出品</div>
+            <div class="stat-value" id="weekListings">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">累計出品</div>
-            <div class="stat-value" id="totalListings">0件</div>
+            <div class="stat-label" data-i18n="uiTotalListings">累計出品</div>
+            <div class="stat-value" id="totalListings">0</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">最後の出品</div>
+            <div class="stat-label" data-i18n="uiLastListing">最後の出品</div>
             <div class="stat-value" id="lastListing">-</div>
           </div>
         </div>
       </div>
 
       <div class="stats-section">
-        <h2>🚀 作業効率</h2>
+        <h2 data-i18n="uiWorkingEfficiency">🚀 作業効率</h2>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-label">本日の作業時間</div>
+            <div class="stat-label" data-i18n="uiTodayWorkTime">本日の作業時間</div>
             <div class="stat-value" id="todayWorkingHours">0時間00分00秒</div>
           </div>
           <div class="stat-item">
-            <div class="stat-label">出品速度</div>
+            <div class="stat-label" data-i18n="uiListingSpeed">出品速度</div>
             <div class="stat-value" id="listingSpeed">
-              <span>0.0品/時</span>
-              <span class="rank-badge rank-very-slow">ゆったり🐢</span>
+              <span>0.0</span>
+              <span class="rank-badge rank-very-slow" data-i18n="rankVerySlow">ゆったり🐢</span>
             </div>
           </div>
         </div>
       </div>
 
       <div class="stats-section">
-        <h2>📋 ASIN履歴 <span id="errorRateLabel"
+        <h2><span data-i18n="uiAsinHistoryTitle">📋 ASIN履歴</span> <span id="errorRateLabel"
             style="font-size: 12px; font-weight: bold; margin-left: 12px; padding: 2px 8px; border-radius: 12px; display: inline-block; vertical-align: middle; color: rgb(253, 126, 20); background-color: rgb(255, 243, 224);">エラー率:
             0% ✨</span></h2>
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-label">出品完了件数</div>
-            <div class="stat-value" id="completedListingsCount">0件</div>
+            <div class="stat-label" data-i18n="uiCompletedCount">出品完了件数</div>
+            <div class="stat-value" id="completedListingsCount">0</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">⚠️ Protected</div>
-            <div class="stat-value" id="protectedCount">0件</div>
+            <div class="stat-value" id="protectedCount">0</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">🛡️ Brand Warnings</div>
-            <div class="stat-value" id="brandCount">0件</div>
+            <div class="stat-value" id="brandCount">0</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">📭 No listings</div>
-            <div class="stat-value" id="noListingsCount">0件</div>
+            <div class="stat-value" id="noListingsCount">0</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">🔍 No Item</div>
-            <div class="stat-value" id="noItemCount">0件</div>
+            <div class="stat-value" id="noItemCount">0</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">🔄 Already Listed</div>
-            <div class="stat-value" id="alreadyListedCount">0件</div>
+            <div class="stat-value" id="alreadyListedCount">0</div>
           </div>
         </div>
       </div>
 
-      <button class="btn-secondary" id="resetStatsBtn">統計をリセット</button>
+      <button class="btn-secondary" id="resetStatsBtn" data-i18n="uiResetStats">統計をリセット</button>
     </div>
 
     <!-- ASIN履歴管理ページ -->
     <div class="page" id="historyPage">
       <div class="setting-section">
-        <h2>ASIN履歴</h2>
+        <h2 data-i18n="uiAsinHistoryPlain">ASIN履歴</h2>
         <div class="history-stats">
-          <div>履歴件数: <span id="historyCountDetail">-</span></div>
+          <div><span data-i18n="uiHistoryCount">履歴件数:</span> <span id="historyCountDetail">-</span></div>
         </div>
         <div class="history-list" id="historyList">
-          <div class="loading">読み込み中...</div>
+          <div class="loading" data-i18n="msgLoading">読み込み中...</div>
         </div>
         <div class="history-actions">
-          <button class="btn-primary" id="exportSpreadsheetBtn">スプレッドシート用に出力</button>
-          <button class="btn-danger" id="clearHistoryBtn">履歴をすべて削除</button>
+          <button class="btn-primary" id="exportSpreadsheetBtn" data-i18n="btnExportSpreadsheet">スプレッドシート用に出力</button>
+          <button class="btn-danger" id="clearHistoryBtn" data-i18n="btnClearHistory">履歴をすべて削除</button>
         </div>
       </div>
     </div>
@@ -290,21 +290,21 @@
           <button class="btn-primary" id="activateLicenseBtn" data-i18n="btnAuth">認証</button>
           <button class="btn-secondary" id="deactivateLicenseBtn" style="display: none;" data-i18n="btnDeauth">認証を解除</button>
           <!-- 管理者モード用 -->
-          <button class="btn-primary" id="forceFreeBtn"
+          <button class="btn-primary" id="forceFreeBtn" data-i18n="adminSwitchFree"
             style="display: none; margin-top: 10px; background: #6c757d; border-color: #6c757d;">Freeに切り替え</button>
           <button class="btn-danger" id="resetTrialBtn"
-            style="display: none; margin-top: 5px; background: #6c757d;">試用回数をリセット</button>
-          <button class="btn-primary" id="startTrialBtn"
+            style="display: none; margin-top: 5px; background: #6c757d;" data-i18n="adminResetTrial">試用回数をリセット</button>
+          <button class="btn-primary" id="startTrialBtn" data-i18n="adminStartTrial"
             style="display: none; margin-top: 5px; background: #198754;">Proトライアルを開始</button>
-          <button class="btn-danger" id="expireTrialBtn"
+          <button class="btn-danger" id="expireTrialBtn" data-i18n="adminExpireTrial"
             style="display: none; margin-top: 5px; background: #dc3545;">Proトライアルを終了</button>
-          <button class="btn-primary" id="forceProBtn"
+          <button class="btn-primary" id="forceProBtn" data-i18n="adminSwitchPro"
             style="display: none; margin-top: 5px; background: #0d6efd;">Proに切り替え</button>
-          <button class="btn-primary" id="forceProTrialBtn"
+          <button class="btn-primary" id="forceProTrialBtn" data-i18n="adminSwitchProTrial"
             style="display: none; margin-top: 5px; background: #198754;">Pro (Trial)に切り替え</button>
-          <button class="btn-primary" id="forcePremiumBtn"
+          <button class="btn-primary" id="forcePremiumBtn" data-i18n="adminSwitchPremium"
             style="display: none; margin-top: 5px; background: #d63384;">Premiumに切り替え</button>
-          <button class="btn-secondary" id="disableAdminBtn" style="display: none; margin-top: 5px;">管理者モードを終了</button>
+          <button class="btn-secondary" id="disableAdminBtn" style="display: none; margin-top: 5px;" data-i18n="adminDisable">管理者モードを終了</button>
         </div>
 
         <div class="license-support">
@@ -320,16 +320,16 @@
         <h2>ListerFlow Pro for Yaballe</h2>
         <div class="version-info">
           <div class="version-item">
-            <span class="version-label">バージョン:</span>
+            <span class="version-label" data-i18n="versionLabel">バージョン:</span>
             <span class="version-value" id="versionNumber">1.1.0</span>
           </div>
           <div class="version-item">
-            <span class="version-label">リリース日:</span>
+            <span class="version-label" data-i18n="releaseDateLabel">リリース日:</span>
             <span class="version-value" id="releaseDate">2026/02/12</span>
           </div>
         </div>
         <div class="version-desc">
-          <p>Yaballe Listerで、タイトル最適化とMIP出品フローを高速化する拡張機能です。</p>
+          <p data-i18n="versionDescription">Yaballe Listerで、タイトル最適化とMIP出品フローを高速化する拡張機能です。</p>
           <p style="margin-top: 20px; color: #666; font-size: 12px;">© 2026 KURONYLAB</p>
         </div>
       </div>
@@ -338,45 +338,45 @@
     <!-- 各種リンクページ -->
     <div class="page" id="linksPage">
       <div class="setting-section">
-        <h2>🚀 Yaballeで出品を開始</h2>
-        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+        <h2 data-i18n="linksYaballeTitle">🚀 Yaballeで出品を開始</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;" data-i18n="linksYaballeDesc">
           ワンクリックでYaballeの出品画面を開きます。
         </p>
-        <a href="https://app.yaballe.com/#/add-items" target="_blank" class="link-item">
+        <a href="https://app.yaballe.com/#/add-items" target="_blank" class="link-item" data-i18n="linksYaballeButton">
           Yaballeサイトを開く
         </a>
       </div>
 
       <div class="setting-section">
-        <h2>📺 導入・使い方の解説動画</h2>
-        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+        <h2 data-i18n="linksVideoTitle">📺 導入・使い方の解説動画</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;" data-i18n="linksVideoDesc">
           1.準備編 → 2.導入編 → 3.基本操作編 の順にご視聴ください。
         </p>
         <a href="https://youtube.com/playlist?list=PLwA7258oAk1-7cj4-7MQqRUQ-Nci7CZLN&si=O_RHyqVdhf1SP81O"
-          target="_blank" class="link-item">
+          target="_blank" class="link-item" data-i18n="linksVideoButton">
           YouTubeプレイリストを開く
         </a>
       </div>
 
       <div class="setting-section">
-        <h2>📩 サポート用グループLINE</h2>
-        <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+        <h2 data-i18n="linksLineTitle">📩 サポート用グループLINE</h2>
+        <p style="font-size: 12px; color: #666; margin-bottom: 8px;" data-i18n="linksLineDesc">
           質問・共有・アップデート案内はこちら。必ずご参加ください。
         </p>
-        <a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" class="link-item">
+        <a href="https://line.me/ti/g/dFVUneYZKS" target="_blank" class="link-item" data-i18n="linksLineButton">
           LINEグループに参加する
         </a>
       </div>
 
       <div class="setting-section">
-        <h2>📥 最新版のダウンロード</h2>
-        <a href="https://github.com/kuronylab/listerflow-pro-for-yaballe/releases" target="_blank" class="link-item">
+        <h2 data-i18n="linksDownloadTitle">📥 最新版のダウンロード</h2>
+        <a href="https://github.com/kuronylab/listerflow-pro-for-yaballe/releases" target="_blank" class="link-item" data-i18n="linksDownloadButton">
           GitHub リリースページ
         </a>
       </div>
 
       <div class="setting-section">
-        <h2>💬 お問い合わせ</h2>
+        <h2 data-i18n="linksContactTitle">💬 お問い合わせ</h2>
         <a href="mailto:kuronylab@gmail.com" class="link-item">
           kuronylab@gmail.com
         </a>
