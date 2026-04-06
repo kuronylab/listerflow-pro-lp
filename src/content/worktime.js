@@ -10,6 +10,13 @@
 // workTimeUpdateInterval は store.js で宣言済み
 let statsPopupUpdateInterval = null;
 
+function stopStatsPopupUpdateTimer() {
+  if (statsPopupUpdateInterval) {
+    clearInterval(statsPopupUpdateInterval);
+    statsPopupUpdateInterval = null;
+  }
+}
+
 /**
  * 統計情報の読み込み（バックグラウンドから取得）
  */
@@ -260,10 +267,7 @@ async function toggleStatsPopup() {
 
   if (popup && popup.classList.contains('show')) {
     popup.classList.remove('show');
-    if (statsPopupUpdateInterval) {
-      clearInterval(statsPopupUpdateInterval);
-      statsPopupUpdateInterval = null;
-    }
+    stopStatsPopupUpdateTimer();
     return;
   }
 
@@ -287,13 +291,17 @@ async function toggleStatsPopup() {
   await renderStatsOnlyPopup(popup);
 
   // 動的更新タイマー開始
-  if (statsPopupUpdateInterval) clearInterval(statsPopupUpdateInterval);
+  stopStatsPopupUpdateTimer();
   statsPopupUpdateInterval = setInterval(async () => {
+    if (!isExtensionContextValid()) {
+      stopStatsPopupUpdateTimer();
+      popup.classList.remove('show');
+      return;
+    }
     if (popup.classList.contains('show')) {
       await renderStatsOnlyPopup(popup, true); // true = 部分更新
     } else {
-      clearInterval(statsPopupUpdateInterval);
-      statsPopupUpdateInterval = null;
+      stopStatsPopupUpdateTimer();
     }
   }, 1000);
 }
@@ -305,10 +313,20 @@ async function toggleStatsPopup() {
  */
 async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
   try {
-    if (!isExtensionContextValid()) throw new Error("Context invalidated");
+    if (!isExtensionContextValid()) {
+      stopStatsPopupUpdateTimer();
+      popup?.classList.remove('show');
+      return;
+    }
 
     const stats = await loadStatistics(); // メッセージ送信を関数化
-    if (!stats) return;
+    if (!stats) {
+      if (!isExtensionContextValid()) {
+        stopStatsPopupUpdateTimer();
+        popup?.classList.remove('show');
+      }
+      return;
+    }
 
     // 時間フォーマット
     const totalMs = stats.totalWorkTimeToday || 0;
@@ -468,7 +486,13 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
       }
     };
   } catch (err) {
-    console.warn("[LFP] Failed to render popup (context might be invalidated):", err);
+    if (!isExtensionContextValid() || isContextInvalidatedError(err)) {
+      stopStatsPopupUpdateTimer();
+      popup?.classList.remove('show');
+      return;
+    }
+
+    console.warn("[LFP] Failed to render popup:", err);
     popup.innerHTML = `
         <div style="padding: 20px; text-align: center; color: #d32f2f;">
           <h3 style="margin-top:0;">⚠️ ${chrome.i18n.getMessage("msgHistoryClearErrorTitle")}</h3>
