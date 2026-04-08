@@ -175,3 +175,77 @@ graph LR
 | ポータル URL | `test_` 付き | 本番用 |
 
 > **注意**: GAS のスクリプトプロパティを切り替えるだけで OK。コード変更は不要。
+
+---
+
+## 8. 多言語対応 (i18n) — 翻訳キー用語集
+
+### 開発ルール
+**コンテントスクリプト内 UI 文字列はすべて `chrome.i18n.getMessage("キー")` を使用すること。**  
+ハードコードされた日本語を直接コードに書くことは禁止。翻訳ファイルは `_locales/ja/messages.json` および `_locales/en/messages.json` に集約する。
+
+> **Turbo Mode の状態判定**は `UI.status.textContent` のテキストパースではなく、`STORE.optimizeState.needsOptimize` / `STORE.optimizeState.isListable` フラグで行うこと。`setStatusLine()` が `highlight` 引数から `needsOptimize` フラグを自動セットする。
+
+### 2026-04-06 追加キー一覧
+
+| キー | JA | EN |
+| :--- | :--- | :--- |
+| `uiOptimize` | 最適化 | Optimize |
+| `uiOptimizing` | 最適化中 | Optimizing... |
+| `uiReOptimize` | 再実行 | Re-optimize |
+| `uiCharacters` | 文字数 | Chars |
+| `uiVero` | Vero | Vero |
+| `uiListing` | 出品 | List |
+| `uiReset` | ×リセット | ×Reset |
+| `uiCopy` | 📋コピー | 📋Copy |
+| `uiCsv` | 📊CSV | 📊CSV |
+| `uiStats` | 📈統計情報 | 📈Stats |
+| `uiStatsDetailed` | 統計情報を表示 | View Statistics |
+| `uiStatsTitle` | 統計情報 | Statistics |
+| `uiStatsHeader` | 📊 出品統計 | 📊 Listing Stats |
+| `uiWorkingEfficiency` | 🚀 作業効率 | 🚀 Efficiency |
+| `uiTodayListings` | 本日の出品 | Today's Listings |
+| `uiWeekListings` | 今週の出品 | Weekly Listings |
+| `uiTotalListings` | 累計出品 | Total Listings |
+| `uiLastListing` | 最後の出品 | Last Listing |
+| `uiTodayWorkTime` | 本日の作業時間 | Today's Work Time |
+| `uiListingSpeed` | 出品速度 | Listing Speed |
+| `uiAsinHistoryTitle` | 📋 ASIN履歴 | 📋 ASIN History |
+| `uiHistoryCountPlaceholder` | ASIN履歴（直近1000件） | ASIN History (Recent 1000) |
+| `uiErrorRate` | エラー率 | Error Rate |
+| `uiResetStats` | 統計をリセット | Reset Stats |
+| `uiCompleted` | 出品完了 | Completed |
+| `uiUnitItems` | 件 | items |
+| `uiUnitItemsSuffix` | 品/時 | items/hr |
+| `uiConfirmResetStats` | 統計情報をリセットしますか？ | Reset all statistics? |
+| `uiResetStatsTitle` | 統計リセット | Reset Stats |
+| `msgNoHistoryToCopy` | コピーする履歴がありません | No history to copy |
+| `msgNoHistoryToExport` | 出力する履歴がありません | No history to export |
+| `uiAdminMode` | 管理者モード：無制限 | Admin: Unlimited |
+| `uiPlanProTrial` | Pro (Trial) | Pro (Trial) |
+| `uiPlanDaysLeft` | 残り$1日 | $1 days left |
+| `uiPlanCancelScheduled` | ($1解約予定) | (Cancels on $1) |
+| `msgExtensionUpdated` | 拡張機能が更新されました。ページをリロードして再度お試しください。 | The extension was updated. Please reload the page and try again. |
+| `msgTurboLimitReached` | 本日のTurbo Mode試用制限（5回）に達しました... | Daily Turbo Mode trial limit (5 uses) reached... |
+| `msgTurboLimitTitle` | Premium限定機能 | Premium Feature |
+| `msgConfirmClearHistory` | ASIN履歴をすべて削除しますか？ | Delete all ASIN history? |
+| `msgConfirmClearHistoryTitle` | ASIN履歴リセット | Clear ASIN History |
+| `msgHistoryCleared` | ASIN履歴をリセットしました | ASIN history has been cleared. |
+| `msgHistoryClearedTitle` | 完了 | Done |
+| `msgHistoryClearError` | リセット中にエラーが発生しました。 | An error occurred while clearing history. |
+| `msgHistoryClearErrorTitle` | エラー | Error |
+| `csvHeaderAsin` | ASINコード | ASIN |
+| `csvHeaderResult` | 結果 | Result |
+| `csvHeaderListedDate` | 出品日 | Listed Date |
+| `csvHeaderErrorDate` | エラーにより出品不可 | Error Date |
+| `msgDailyUsage` | 本日の使用状況: $1 / $2 | Today's usage: $1 / $2 |
+| `msgTrialExpired` | 試用終了（アップグレードはこちら） | Trial ended — Upgrade here |
+| `uiDeleteHistoryItem` | この履歴を削除 | Delete this entry |
+| `uiConfirmDefault` | 確認 | Confirm |
+| `uiAlertDefault` | お知らせ | Notice |
+| `uiCancel` | キャンセル | Cancel |
+| `uiPauseResume` | クリックで再開/一時停止 | Click to pause/resume |
+| `uiResume` | クリックで再開 | Click to resume |
+| `uiPause` | クリックで一時停止 | Click to pause |
+| `uiCopyDone` | ✅完了 | ✅Done |
+| `uiCopyFail` | ❌ コピー失敗 | ❌Failed |

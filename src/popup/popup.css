@@ -229,13 +229,19 @@ body {
 
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 1px 6px;
   border-radius: 9px;
   font-size: 10px;
   font-weight: 700;
   margin-left: 4px;
   vertical-align: middle;
+  min-width: 28px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .badge-free {
@@ -250,11 +256,55 @@ body {
 }
 
 .plan-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 4px 12px;
   border-radius: 9px;
   font-size: 12px;
   font-weight: 700;
+  min-width: 42px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.plan-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.plan-value.plan-pro,
+.plan-value.plan-premium,
+.plan-value.plan-free,
+.plan-value.plan-trial,
+.plan-value.plan-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  padding: 3px 10px;
+  border-radius: 9px;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.plan-value.plan-free {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.plan-value.plan-premium {
+  background: #d63384;
+  color: #fff;
+}
+
+.plan-value.plan-admin {
+  background: #343a40;
+  color: #fff;
 }
 
 

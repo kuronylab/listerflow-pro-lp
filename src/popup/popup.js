@@ -25,7 +25,7 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const msg = chrome.i18n.getMessage(el.getAttribute('data-i18n'));
     if (msg) {
-      if (el.tagName === 'INPUT' && el.type === 'placeholder') {
+      if (el.tagName === 'INPUT') {
         el.placeholder = msg;
       } else {
         el.textContent = msg;
@@ -756,10 +756,10 @@ function toggleLicenseKeyVisibility() {
   const btn = document.getElementById('showLicenseBtn');
   if (el.type === 'password') {
     el.type = 'text';
-    if (btn) btn.textContent = '隠す';
+    if (btn) btn.textContent = chrome.i18n.getMessage("btnHide");
   } else {
     el.type = 'password';
-    if (btn) btn.textContent = '表示';
+    if (btn) btn.textContent = chrome.i18n.getMessage("btnShow");
   }
 }
 
@@ -782,7 +782,7 @@ async function activateLicense() {
   let btn = document.getElementById('activateLicenseBtn');
   let originalText = btn.textContent;
   btn.disabled = true;
-  btn.textContent = '認証中...';
+  btn.textContent = chrome.i18n.getMessage("msgAuthenticating");
 
   // --- ローカルテストキーのインターセプト処理 ---
   const lowerKey = key.toLowerCase();
@@ -818,7 +818,7 @@ async function activateLicense() {
       await chrome.storage.sync.set({ ["lfp_options_v1"]: options });
     }
 
-    alert(`【テストモード】\nプラン: ${plan.toUpperCase()} をローカルで適用しました。`);
+    alert(chrome.i18n.getMessage("msgTestModeApplied", [plan.toUpperCase()]));
 
     chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -847,7 +847,7 @@ async function activateLicense() {
     });
 
     if (!response || !response.ok) {
-      throw new Error(response?.error || 'サーバーとの通信に失敗しました');
+      throw new Error(response?.error || chrome.i18n.getMessage("msgAuthNetworkError"));
     }
 
     const result = response.data;
@@ -962,7 +962,7 @@ async function deactivateLicense() {
 
 async function forcePlan(plan) {
   const displayPlanName = plan === 'free' ? 'FREE' : plan.toUpperCase();
-  if (!confirm(`プラン変更: ${displayPlanName} に切り替えますか？`)) return;
+  if (!confirm(chrome.i18n.getMessage("msgAdminSwitchPlanConfirm", [displayPlanName]))) return;
 
   const data = await chrome.storage.local.get([KEY_LICENSE]);
   const license = data?.[KEY_LICENSE] || {};
@@ -989,7 +989,7 @@ async function forcePlan(plan) {
     ]);
   }
 
-  alert(`${displayPlanName} プランに変更しました。`);
+  alert(chrome.i18n.getMessage("msgAdminSwitchPlanDone", [displayPlanName]));
   chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -1003,7 +1003,7 @@ async function forcePlan(plan) {
 }
 
 async function handleResetTrial() {
-  if (!confirm('試用回数を 0 にリセットしますか？')) return;
+  if (!confirm(chrome.i18n.getMessage("msgAdminResetTrialConfirm"))) return;
 
   // ストレージキーの両方を更新して確実に同期させる
   await chrome.storage.local.set({
@@ -1019,7 +1019,7 @@ async function handleResetTrial() {
 
   await chrome.storage.local.set({ [KEY_LICENSE]: license });
 
-  alert('試用回数をリセットしました。');
+  alert(chrome.i18n.getMessage("msgAdminResetTrialDone"));
   chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
 
   // アクティブなタブを更新
@@ -1033,14 +1033,14 @@ async function handleResetTrial() {
 }
 
 async function handleExpireTrial() {
-  if (!confirm('Proトライアル期間を強制的に終了させますか？（テスト用）')) return;
+  if (!confirm(chrome.i18n.getMessage("msgAdminExpireTrialConfirm"))) return;
 
   const fakeDate = new Date();
   fakeDate.setDate(fakeDate.getDate() - 100);
   const oldDateStr = fakeDate.toISOString().split('T')[0];
 
   await chrome.storage.local.set({ 'lfp_pro_trial_start_date': oldDateStr });
-  alert('トライアル期間を終了させました。');
+  alert(chrome.i18n.getMessage("msgAdminExpireTrialDone"));
   chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -1054,7 +1054,7 @@ async function handleExpireTrial() {
 }
 
 async function handleStartTrial() {
-  if (!confirm('Proトライアル期間を新しく開始（またはリセット）しますか？（テスト用）')) return;
+  if (!confirm(chrome.i18n.getMessage("msgAdminStartTrialConfirm"))) return;
 
   const today = new Date().toISOString().split('T')[0];
   await chrome.storage.local.set({ 'lfp_pro_trial_start_date': today });
@@ -1070,7 +1070,7 @@ async function handleStartTrial() {
   await chrome.storage.local.set({ [KEY_LICENSE]: license });
   await chrome.storage.local.set({ 'lfp_license_plan': 'free' });
 
-  alert('Proトライアル期間を開始しました。');
+  alert(chrome.i18n.getMessage("msgAdminStartTrialDone"));
   chrome.runtime.sendMessage({ type: "LFP_SYNC_REQUEST" });
 
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -1085,7 +1085,7 @@ async function handleStartTrial() {
 
 async function enableAdminMode() {
   await chrome.storage.local.set({ 'lfp_admin_mode': true });
-  alert('管理者モードが有効になりました（全機能を一時開放）');
+  alert(chrome.i18n.getMessage("msgAdminEnabled"));
 
   // UIを再描画してボタンを表示させる
   loadAndDisplayStats();
@@ -1103,7 +1103,7 @@ async function enableAdminMode() {
 
 async function disableAdminMode() {
   await chrome.storage.local.set({ 'lfp_admin_mode': false });
-  alert('管理者モードを終了しました');
+  alert(chrome.i18n.getMessage("msgAdminDisabled"));
 
   // UIを再描画してボタンを隠す
   loadAndDisplayStats();
@@ -1200,10 +1200,10 @@ async function updateTurboTrialCounter(opt) {
   const isTrial = await checkProTrialStatus();
   if (plan === 'pro' || plan === 'pro-trial' || (plan === 'free' && isTrial)) {
     const count = (email && license.turboTrialCounts) ? (license.turboTrialCounts[email] || 0) : (license.turboTrialCount || 0);
-    counterLabel.textContent = `(試用中: ${count}/5)`;
+    counterLabel.textContent = chrome.i18n.getMessage("msgTurboTrialCount", [String(count), "5"]);
     if (count >= 5) {
       counterLabel.style.color = '#dc3545'; // 赤色
-      counterLabel.textContent = `(試用制限: 5/5)`;
+      counterLabel.textContent = chrome.i18n.getMessage("msgTurboTrialLimit", ["5", "5"]);
     } else {
       counterLabel.style.color = '#e67700'; // オレンジ
     }
@@ -1223,11 +1223,11 @@ async function loadHistoryList() {
   const listEl = document.getElementById('historyList');
   const countEl = document.getElementById('historyCountDetail');
 
-  if (countEl) countEl.textContent = `${history.length}件`;
+  if (countEl) countEl.textContent = `${history.length}${chrome.i18n.getMessage("unitItems")}`;
   if (!listEl) return;
 
   if (history.length === 0) {
-    listEl.innerHTML = '<div class="no-data">履歴がありません</div>';
+    listEl.innerHTML = `<div class="no-data">${chrome.i18n.getMessage("msgNoHistory")}</div>`;
     return;
   }
 
@@ -1236,7 +1236,7 @@ async function loadHistoryList() {
     const card = document.createElement('div');
     card.className = 'history-card';
 
-    let status = '出品完了';
+    let status = chrome.i18n.getMessage("uiCompleted");
     let isError = false;
     if (item.flags?.protected) { status = 'Protected'; isError = true; }
     else if (item.flags?.brand) { status = 'Brand Warning'; isError = true; }
@@ -1251,7 +1251,7 @@ async function loadHistoryList() {
           <span class="history-asin">${item.asin}</span>
           <span class="history-status ${statusClass}">${status}</span>
         </div>
-        <button class="history-delete" data-asin="${item.asin}" title="この履歴を削除">×</button>
+        <button class="history-delete" data-asin="${item.asin}" title="${chrome.i18n.getMessage("uiDeleteHistoryItem")}">×</button>
       `;
 
     card.querySelector('.history-delete').addEventListener('click', async () => {
@@ -1297,4 +1297,3 @@ async function clearHistory() {
     loadHistoryList();
   });
 }
-

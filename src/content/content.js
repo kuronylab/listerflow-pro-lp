@@ -62,7 +62,7 @@ function ensureUIBelowTitle(titleEl) {
 
   const label = document.createElement("span");
   label.className = "lfp-btn-label";
-  label.textContent = "最適化";
+  label.textContent = chrome.i18n.getMessage("uiOptimize");
 
   const spin = document.createElement("span");
   spin.className = "lfp-spin";
@@ -73,7 +73,7 @@ function ensureUIBelowTitle(titleEl) {
 
   const status = document.createElement("div");
   status.className = "lfp-status";
-  status.textContent = "文字数：計算中... / Vero：- / 出品：-";
+  status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: ${chrome.i18n.getMessage("uiCalculating")} / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
 
   row.appendChild(btn);
   row.appendChild(status);
@@ -102,7 +102,7 @@ function setBusy(isBusy) {
 
   // 出品中（MIP後）は、たとえbusy指示が来ても「最適化中」には変えない
   if (isBusy && STORE.turboExecuted.mip) {
-    if (UI.btnLabel) UI.btnLabel.textContent = "最適化";
+    if (UI.btnLabel) UI.btnLabel.textContent = chrome.i18n.getMessage("uiOptimize");
     if (UI.spin) UI.spin.style.display = "none";
     UI.btnOpt.disabled = true;
     return;
@@ -112,12 +112,12 @@ function setBusy(isBusy) {
 
   // 最適化中の表示
   if (isBusy) {
-    if (UI.btnLabel) UI.btnLabel.textContent = "最適化中";
+    if (UI.btnLabel) UI.btnLabel.textContent = chrome.i18n.getMessage("uiOptimizing");
     if (UI.spin) UI.spin.style.display = "inline-block";
   } else {
     // 最適化完了時の表示：needsRetryに応じて「最適化」または「再実行」
     // ロック中（MIP後）は強制的に「最適化」表記にする
-    const label = STORE.turboExecuted.mip ? "最適化" : (STORE.optimizeState.needsRetry ? "再実行" : "最適化");
+    const label = STORE.turboExecuted.mip ? chrome.i18n.getMessage("uiOptimize") : (STORE.optimizeState.needsRetry ? chrome.i18n.getMessage("uiReOptimize") : chrome.i18n.getMessage("uiOptimize"));
     if (UI.btnLabel) UI.btnLabel.textContent = label;
     if (UI.spin) UI.spin.style.display = "none";
   }
@@ -140,7 +140,9 @@ function setBusy(isBusy) {
 
 function setStatusLine(len, veroCount, shipText, highlight) {
   if (!UI.status) return;
-  UI.status.textContent = `文字数：${len} / Vero：${veroCount} / 出品：${shipText}`;
+  UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: ${len} / ${chrome.i18n.getMessage("uiVero")}: ${veroCount} / ${chrome.i18n.getMessage("uiListing")}: ${shipText}`;
+  // Store flag for Turbo mode detection (avoids text parsing across locales)
+  STORE.optimizeState.needsOptimize = (highlight === true);
   if (UI.btnOpt && STORE.opt.highlightOptimize) {
     // 修正: 最適化完了後も常に.highlightクラスを保持
     // highlightOptimizeがONの場合、常に.highlightクラスを付与
@@ -167,11 +169,11 @@ function resetUIState() {
   setBadge("");
   if (UI.btnOpt) {
     UI.btnOpt.disabled = false;
-    if (UI.btnLabel) UI.btnLabel.textContent = "最適化";
+    if (UI.btnLabel) UI.btnLabel.textContent = chrome.i18n.getMessage("uiOptimize");
     if (UI.spin) UI.spin.style.display = "none";
   }
   if (UI.status) {
-    UI.status.textContent = "文字数：- / Vero：- / 出品：-";
+    UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: - / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
   }
   // 点滅防止: highlightOptimizeがONの場合はクラスを維持
   if (UI.btnOpt && !STORE.opt.highlightOptimize) {
@@ -280,9 +282,9 @@ function unlockUI(titleEl) {
   const len = (title || "").length;
   if (UI.status) {
     if (len > 0) {
-      UI.status.textContent = `文字数：${len} / Vero：計算中... / 出品：計算中...`;
+      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: ${len} / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
     } else {
-      UI.status.textContent = `文字数：- / Vero：- / 出品：-`;
+      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: - / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
     }
   }
 
@@ -364,11 +366,9 @@ async function handleTurboListing(titleEl, btnGet) {
     });
     return;
   }
-  const statusText = UI.status?.textContent || "";
-
   // 1. 最適化が必要な場合（最大3回まで自動リトライ）
-  // ★ 「出品：OK（最適化後）」= まだ最適化されていない → 最適化ボタンを押す
-  if (statusText.includes("出品：OK（最適化後）")) {
+  // needsOptimize=true = タイトルが最適化前の状態 → 最適化ボタンを押す
+  if (STORE.optimizeState.needsOptimize) {
     const titleVal = normSpace(readText(titleEl));
     // タイトルが空（取得中や完了後など）の場合は最適化を自動実行しない
     if (!titleVal) return;
@@ -380,8 +380,8 @@ async function handleTurboListing(titleEl, btnGet) {
     }
   }
   // 2. 最適化完了後 or 最適化不要で出品可能な場合（MIP自動クリック）
-  // ★ 「出品：OK」（「（最適化後）」なし）= 最適化済み → MIPボタンを押す
-  else if (statusText.includes("出品：OK") && !statusText.includes("（最適化後）")) {
+  // isListable=true & needsOptimize=false = 最適化済みで出品可能 → MIPボタンを押す
+  else if (STORE.optimizeState.isListable && !STORE.optimizeState.needsOptimize) {
     if (UI.quickMipBtn && !UI.quickMipBtn.disabled && !STORE.turboExecuted.mip) {
       // 最適化実行中（API待ち）ならスキップ（連打防止）
       if (STORE.state.optimizeRunning) return;
@@ -487,7 +487,7 @@ async function showTurboLimitAlert() {
   // フラグをクリアしてから表示（二重表示防止）
   await chrome.storage.local.remove([alertKey, 'lfp_turbo_pending_alert']);
   
-  await showLfpAlert("本日のTurbo Mode試用制限（5回）に達しました。\n自動MIP機能（Turbo Mode）は自動でOFFになりました。\n\nPremiumプランにアップグレードすると無制限に利用可能です。", "Premium限定機能");
+  await showLfpAlert(chrome.i18n.getMessage("msgTurboLimitReached"), chrome.i18n.getMessage("msgTurboLimitTitle"));
   
   // 表示が終わったらメモリフラグを完全リセット
   resetAllFlags();
@@ -536,26 +536,26 @@ async function init() {
 
       const sel = document.createElement("select");
       sel.id = "lfp-hist";
-      sel.innerHTML = `<option value="">ASIN履歴（直近100件）</option>`;
+      sel.innerHTML = `<option value="">${chrome.i18n.getMessage("uiHistoryCountPlaceholder")}</option>`;
       bar.appendChild(sel);
 
       // リセットボタンを追加
       const resetBtn = document.createElement("button");
       resetBtn.className = "lfp-reset-btn";
-      resetBtn.textContent = "×リセット";
-      resetBtn.title = "ASIN履歴をすべて削除";
+      resetBtn.textContent = chrome.i18n.getMessage("uiReset");
+      resetBtn.title = chrome.i18n.getMessage("msgConfirmClearHistoryTitle");
       resetBtn.addEventListener("click", async () => {
-        const confirmed = await showLfpConfirm("ASIN履歴をすべて削除しますか？", "ASIN履歴リセット");
+        const confirmed = await showLfpConfirm(chrome.i18n.getMessage("msgConfirmClearHistory"), chrome.i18n.getMessage("msgConfirmClearHistoryTitle"));
         if (confirmed) {
           try {
             await resetHistory();
             // ページ内表示を更新（履歴のみ）
             await refreshHistorySelect(true);
             await refreshListingCountUI();
-            await showLfpAlert("ASIN履歴をリセットしました", "完了");
+            await showLfpAlert(chrome.i18n.getMessage("msgHistoryCleared"), chrome.i18n.getMessage("msgHistoryClearedTitle"));
           } catch (err) {
             console.error('リセットエラー:', err);
-            await showLfpAlert("リセット中にエラーが発生しました。", "エラー");
+            await showLfpAlert(chrome.i18n.getMessage("msgHistoryClearError"), chrome.i18n.getMessage("msgHistoryClearErrorTitle"));
           }
         }
       });
@@ -565,8 +565,8 @@ async function init() {
       const copyBtn = document.createElement("button");
       copyBtn.id = "lfp-copy-btn-id";
       copyBtn.className = "lfp-copy-btn";
-      copyBtn.textContent = "📋コピー";
-      copyBtn.title = "ASIN履歴をクリップボードにコピー";
+      copyBtn.textContent = chrome.i18n.getMessage("uiCopy");
+      copyBtn.title = chrome.i18n.getMessage("uiCopy");
       copyBtn.style.display = STORE.opt.showCopyCsvButtons ? "inline-block" : "none";
       bar.appendChild(copyBtn);
 
@@ -574,8 +574,8 @@ async function init() {
       const csvBtn = document.createElement("button");
       csvBtn.id = "lfp-csv-btn-id";
       csvBtn.className = "lfp-csv-btn";
-      csvBtn.textContent = "📊CSV";
-      csvBtn.title = "ASIN履歴をCSVでダウンロード";
+      csvBtn.textContent = chrome.i18n.getMessage("uiCsv");
+      csvBtn.title = chrome.i18n.getMessage("uiCsv");
       csvBtn.style.display = STORE.opt.showCopyCsvButtons ? "inline-block" : "none";
       bar.appendChild(csvBtn);
 
@@ -583,8 +583,8 @@ async function init() {
       const statsBtn = document.createElement("button");
       statsBtn.id = "lfp-open-stats-btn";
       statsBtn.className = "lfp-stats-btn";
-      statsBtn.textContent = "📈統計情報";
-      statsBtn.title = "統計情報を表示";
+      statsBtn.textContent = chrome.i18n.getMessage("uiStats");
+      statsBtn.title = chrome.i18n.getMessage("uiStatsDetailed");
       statsBtn.style.cssText = "background:#fff; border-color:rgba(0,0,0,.1); cursor:pointer; transition:background 0.2s;";
       statsBtn.addEventListener("mouseover", () => statsBtn.style.background = "#f0f0f0");
       statsBtn.addEventListener("mouseout", () => statsBtn.style.background = "#fff");
@@ -605,7 +605,7 @@ async function init() {
       countLabel.style.display = "inline-flex";
       countLabel.style.alignItems = "center";
       countLabel.style.height = "32px";
-      countLabel.textContent = "出品完了: -件";
+      countLabel.textContent = `${chrome.i18n.getMessage("uiCompleted")}: -${chrome.i18n.getMessage("uiUnitItems")}`;
       countLabel.style.display = STORE.opt.showStatistics ? "inline-flex" : "none";
       bar.appendChild(countLabel);
       UI.listingCountLabel = countLabel;
@@ -625,7 +625,7 @@ async function init() {
       copyBtn.addEventListener("click", async () => {
         const hist = await loadHistory();
         if (hist.length === 0) {
-          showLfpAlert("コピーする履歴がありません");
+          showLfpAlert(chrome.i18n.getMessage("msgNoHistoryToCopy"));
           return;
         }
 
@@ -671,14 +671,14 @@ async function init() {
 
         // クリップボードにコピー（フォーカス喪失時のフォールバック付き）
         copyToClipboard(finalCopyText).then(() => {
-          copyBtn.textContent = "✅完了";
+          copyBtn.textContent = chrome.i18n.getMessage("uiCopyDone");
           setTimeout(() => {
-            copyBtn.textContent = "📋コピー";
+            copyBtn.textContent = chrome.i18n.getMessage("uiCopy");
           }, 2000);
         }).catch(() => {
-          copyBtn.textContent = "❌ コピー失敗";
+          copyBtn.textContent = chrome.i18n.getMessage("uiCopyFail");
           setTimeout(() => {
-            copyBtn.textContent = "📋コピー";
+            copyBtn.textContent = chrome.i18n.getMessage("uiCopy");
           }, 2000);
         });
       });
@@ -687,12 +687,12 @@ async function init() {
       csvBtn.addEventListener("click", async () => {
         const hist = await loadHistory();
         if (hist.length === 0) {
-          showLfpAlert("出力する履歴がありません");
+          showLfpAlert(chrome.i18n.getMessage("msgNoHistoryToExport"));
           return;
         }
 
         let csvContent = "\uFEFF"; // BOM for Excel
-        csvContent += "ASINコード,結果,出品日,エラーにより出品不可\r\n";
+        csvContent += `"${chrome.i18n.getMessage("csvHeaderAsin")}","${chrome.i18n.getMessage("csvHeaderResult")}","${chrome.i18n.getMessage("csvHeaderListedDate")}","${chrome.i18n.getMessage("csvHeaderErrorDate")}"\r\n`;
 
         // 履歴を反転（古い順）させてから出力
         [...hist].reverse().forEach(item => {
@@ -700,7 +700,7 @@ async function init() {
           const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
 
           // 結果カラムを追加
-          let result = '出品完了';
+          let result = chrome.i18n.getMessage("uiCompleted");
           if (item.flags?.no_listings) result = 'No listings';
           else if (item.flags?.no_item) result = 'No item';
           else if (item.flags?.protected) result = 'Protected';
@@ -722,7 +722,7 @@ async function init() {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", `LFP_ASIN履歴_${new Date().toLocaleDateString()}.csv`);
+        link.setAttribute("download", `LFP_ASIN_History_${new Date().toLocaleDateString()}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

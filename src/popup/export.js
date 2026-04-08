@@ -1,9 +1,26 @@
 const KEY_HIST = "lfp_asin_history_v1";
 
 document.addEventListener('DOMContentLoaded', async () => {
+  applyI18n();
   await loadAndRenderHistory();
   setupEventListeners();
 });
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const msg = chrome.i18n.getMessage(el.getAttribute('data-i18n'));
+    if (!msg) return;
+    if (el.tagName === 'TITLE') {
+      document.title = msg;
+    } else if (el.id === 'copyTwoColumnsBtn') {
+      el.innerHTML = `<span class="icon">📋</span> ${msg}`;
+    } else if (el.id === 'downloadCsvBtn') {
+      el.innerHTML = `<span class="icon">📥</span> ${msg}`;
+    } else {
+      el.textContent = msg;
+    }
+  });
+}
 
 async function loadAndRenderHistory() {
   const tableBody = document.getElementById('historyTableBody');
@@ -14,7 +31,7 @@ async function loadAndRenderHistory() {
     const history = Array.isArray(data?.[KEY_HIST]) ? data[KEY_HIST] : [];
 
     if (history.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="4">履歴がありません</td></tr>';
+      tableBody.innerHTML = `<tr><td colspan="4">${chrome.i18n.getMessage("msgNoHistory")}</td></tr>`;
       return;
     }
 
@@ -27,7 +44,7 @@ async function loadAndRenderHistory() {
       const date = item.timestamp ? new Date(item.timestamp) : new Date();
       const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
 
-      let resultText = '出品完了';
+      let resultText = chrome.i18n.getMessage("uiCompleted");
       let resultClass = 'status-success';
       let dateCol1 = dateStr;
       let dateCol2 = '';
@@ -43,7 +60,7 @@ async function loadAndRenderHistory() {
         if (item.flags.no_listings) flags.push('No listings');
         if (item.flags.no_item) flags.push('No item');
 
-        resultText = flags.length > 0 ? flags.join(', ') : 'エラー';
+        resultText = flags.length > 0 ? flags.join(', ') : chrome.i18n.getMessage("msgHistoryClearErrorTitle");
         resultClass = 'status-error';
         dateCol1 = ''; // 正常列は空
         dateCol2 = dateStr; // エラー列に日付
@@ -59,7 +76,7 @@ async function loadAndRenderHistory() {
     });
   } catch (err) {
     console.error('Failed to load history:', err);
-    tableBody.innerHTML = '<tr><td colspan="4">データの読み込みに失敗しました</td></tr>';
+    tableBody.innerHTML = `<tr><td colspan="4">${chrome.i18n.getMessage("msgHistoryLoadError")}</td></tr>`;
   }
 }
 
@@ -89,7 +106,7 @@ async function copyTwoColumns() {
   });
 
   if (!copyText) {
-    alert('コピーするデータがありません');
+    alert(chrome.i18n.getMessage("msgNoHistoryToCopy"));
     return;
   }
 
@@ -97,18 +114,18 @@ async function copyTwoColumns() {
     await navigator.clipboard.writeText(copyText);
     const btn = document.getElementById('copyTwoColumnsBtn');
     const originalContent = btn.innerHTML;
-    btn.innerHTML = '<span class="icon">✅</span> コピー完了！';
+    btn.innerHTML = `<span class="icon">✅</span> ${chrome.i18n.getMessage("exportCopyDone")}`;
     setTimeout(() => { btn.innerHTML = originalContent; }, 2000);
   } catch (err) {
     console.error('Clipboard copy failed:', err);
-    alert('コピーに失敗しました。ブラウザの権限設定を確認してください。');
+    alert(chrome.i18n.getMessage("exportCopyFailed"));
   }
 }
 
 function downloadCsv() {
   const rows = document.querySelectorAll('#historyTable tr');
   if (rows.length <= 1) {
-    alert('ダウンロードするデータがありません');
+    alert(chrome.i18n.getMessage("msgNoHistoryToExport"));
     return;
   }
 
@@ -124,7 +141,7 @@ function downloadCsv() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `LFP_ASIN履歴_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
+  link.setAttribute("download", `LFP_ASIN_History_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`);
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }

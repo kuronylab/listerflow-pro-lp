@@ -10,6 +10,13 @@
 // workTimeUpdateInterval は store.js で宣言済み
 let statsPopupUpdateInterval = null;
 
+function stopStatsPopupUpdateTimer() {
+  if (statsPopupUpdateInterval) {
+    clearInterval(statsPopupUpdateInterval);
+    statsPopupUpdateInterval = null;
+  }
+}
+
 /**
  * 統計情報の読み込み（バックグラウンドから取得）
  */
@@ -157,7 +164,7 @@ async function createPauseResumeButton() {
   btn.className = 'lfp-pause-resume-btn';
   btn.id = 'lfp-pause-resume-btn';
   btn.type = 'button';
-  btn.title = 'クリックで再開/一時停止';
+  btn.title = chrome.i18n.getMessage("uiPauseResume");
 
   // 初期状態を取得
   const stats = await loadStatistics();
@@ -192,12 +199,12 @@ function updatePauseResumeButtonUI(btn, isPaused) {
     // 一時停止中 → ▶️ボタン（再開待機）
     btn.innerHTML = '▶️';
     btn.style.backgroundColor = 'transparent';
-    btn.title = 'クリックで再開';
+    btn.title = chrome.i18n.getMessage("uiResume");
   } else {
     // 作業中 → ⏸️ボタン（一時停止可能）
     btn.innerHTML = '⏸️';
     btn.style.backgroundColor = 'transparent';
-    btn.title = 'クリックで一時停止';
+    btn.title = chrome.i18n.getMessage("uiPause");
   }
 }
 
@@ -252,7 +259,7 @@ setInterval(() => {
 
 async function toggleStatsPopup() {
   if (!isExtensionContextValid()) {
-    alert("拡張機能が更新されました。ページをリロードして再度お試しください。");
+    alert(chrome.i18n.getMessage("msgExtensionUpdated"));
     return;
   }
 
@@ -260,10 +267,7 @@ async function toggleStatsPopup() {
 
   if (popup && popup.classList.contains('show')) {
     popup.classList.remove('show');
-    if (statsPopupUpdateInterval) {
-      clearInterval(statsPopupUpdateInterval);
-      statsPopupUpdateInterval = null;
-    }
+    stopStatsPopupUpdateTimer();
     return;
   }
 
@@ -287,13 +291,17 @@ async function toggleStatsPopup() {
   await renderStatsOnlyPopup(popup);
 
   // 動的更新タイマー開始
-  if (statsPopupUpdateInterval) clearInterval(statsPopupUpdateInterval);
+  stopStatsPopupUpdateTimer();
   statsPopupUpdateInterval = setInterval(async () => {
+    if (!isExtensionContextValid()) {
+      stopStatsPopupUpdateTimer();
+      popup.classList.remove('show');
+      return;
+    }
     if (popup.classList.contains('show')) {
       await renderStatsOnlyPopup(popup, true); // true = 部分更新
     } else {
-      clearInterval(statsPopupUpdateInterval);
-      statsPopupUpdateInterval = null;
+      stopStatsPopupUpdateTimer();
     }
   }, 1000);
 }
@@ -305,10 +313,20 @@ async function toggleStatsPopup() {
  */
 async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
   try {
-    if (!isExtensionContextValid()) throw new Error("Context invalidated");
+    if (!isExtensionContextValid()) {
+      stopStatsPopupUpdateTimer();
+      popup?.classList.remove('show');
+      return;
+    }
 
     const stats = await loadStatistics(); // メッセージ送信を関数化
-    if (!stats) return;
+    if (!stats) {
+      if (!isExtensionContextValid()) {
+        stopStatsPopupUpdateTimer();
+        popup?.classList.remove('show');
+      }
+      return;
+    }
 
     // 時間フォーマット
     const totalMs = stats.totalWorkTimeToday || 0;
@@ -316,7 +334,7 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
     const hoursPart = Math.floor(totalSec / 3600);
     const minsPart = Math.floor((totalSec % 3600) / 60);
     const secsPart = totalSec % 60;
-    const timeStr = `${hoursPart}時間${String(minsPart).padStart(2, '0')}分${String(secsPart).padStart(2, '0')}秒`;
+    const timeStr = `${hoursPart}${chrome.i18n.getMessage("unitHr")}${String(minsPart).padStart(2, '0')}${chrome.i18n.getMessage("unitMin")}${String(secsPart).padStart(2, '0')}${chrome.i18n.getMessage("unitSec")}`;
 
     // popup.js と同じ計算ロジック（toFixed(2)を挟まない）
     const count = stats.todayListings || 0;
@@ -324,12 +342,12 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
     const speedVal = hoursVal > 0 ? (count / hoursVal) : 0;
     const speed = speedVal.toFixed(1);
 
-    let feedback = "ゆったり 🐢";
+    let feedback = chrome.i18n.getMessage("rankVerySlow");
     let rankClass = "rank-very-slow";
-    if (speedVal >= 120) { feedback = "爆速 🚀"; rankClass = "rank-fastest"; }
-    else if (speedVal >= 60) { feedback = "高速 🏎️"; rankClass = "rank-fast"; }
-    else if (speedVal >= 30) { feedback = "着実 💪"; rankClass = "rank-normal"; }
-    else if (speedVal >= 10) { feedback = "のんびり 🚲"; rankClass = "rank-slow"; }
+    if (speedVal >= 120) { feedback = chrome.i18n.getMessage("rankFastest"); rankClass = "rank-fastest"; }
+    else if (speedVal >= 60) { feedback = chrome.i18n.getMessage("rankFast"); rankClass = "rank-fast"; }
+    else if (speedVal >= 30) { feedback = chrome.i18n.getMessage("rankNormal"); rankClass = "rank-normal"; }
+    else if (speedVal >= 10) { feedback = chrome.i18n.getMessage("rankSlow"); rankClass = "rank-slow"; }
 
     // トロフィー判定 (popup.js と同期)
     const maxSpeed = stats.todayMaxSpeed || 0;
@@ -344,7 +362,7 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
       const rankEl = popup.querySelector('#lfp-stat-rank');
 
       if (timeEl) timeEl.textContent = timeStr;
-      if (speedEl) speedEl.textContent = `${speed}品/時`;
+      if (speedEl) speedEl.textContent = `${speed}${chrome.i18n.getMessage("unitSpeed")}`;
       if (rankEl) {
         rankEl.textContent = feedback;
         rankEl.className = `rank-badge ${rankClass}`;
@@ -377,7 +395,7 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
     let cancelLabel = '';
     if (cancelAt) {
       const cd = new Date(cancelAt);
-      cancelLabel = ` (${cd.getMonth() + 1}/${cd.getDate()}解約予定)`;
+      cancelLabel = ` ${chrome.i18n.getMessage("uiPlanCancelScheduled", [`${cd.getMonth() + 1}/${cd.getDate()}`])}`;
     }
 
     let planBadgeText = "Free";
@@ -388,7 +406,7 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
       planBadgeBg = "#d63384";
     } else if (currentPlan === 'pro' && STORE.license.isProTrial) {
       const daysLeft = STORE.license.proTrialDaysLeft ?? 30;
-      planBadgeText = `Pro (Trial) 残り${daysLeft}日${cancelLabel}`;
+      planBadgeText = `${chrome.i18n.getMessage("uiPlanProTrial")} ${chrome.i18n.getMessage("uiPlanDaysLeft", [String(daysLeft)])}${cancelLabel}`;
       planBadgeBg = "#198754";
       if (cancelAt) planBadgeBg = '#6b7280';
     } else if (currentPlan === 'pro') {
@@ -396,7 +414,7 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
       planBadgeBg = "#1a73e8";
     } else if (STORE.license.isProTrial) {
       const daysLeft = STORE.license.proTrialDaysLeft ?? 30;
-      planBadgeText = `Pro (Trial) 残り${daysLeft}日${cancelLabel}`;
+      planBadgeText = `${chrome.i18n.getMessage("uiPlanProTrial")} ${chrome.i18n.getMessage("uiPlanDaysLeft", [String(daysLeft)])}${cancelLabel}`;
       planBadgeBg = "#198754";
     }
 
@@ -409,36 +427,36 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
 
     popup.innerHTML = `
     <div class="header">
-      <h1 class="title">統計情報</h1>
+      <h1 class="title">${chrome.i18n.getMessage("uiStatsTitle")}</h1>
       <span class="plan-badge" style="background-color: ${planBadgeBg};">${planBadgeText}</span>
     </div>
     <div class="content">
       <div class="stats-section">
-        <h2>📊 出品統計</h2>
+        <h2>${chrome.i18n.getMessage("uiStatsHeader")}</h2>
         <div class="stats-grid">
-          <div class="stat-item"><div class="stat-label">本日の出品</div><div class="stat-value">${stats.todayListings || 0}件</div></div>
-          <div class="stat-item"><div class="stat-label">今週の出品</div><div class="stat-value">${stats.weekListings || 0}件</div></div>
-          <div class="stat-item"><div class="stat-label">累計出品</div><div class="stat-value">${stats.totalListings || 0}件</div></div>
-          <div class="stat-item"><div class="stat-label">最後の出品</div><div class="stat-value">${lastTimeStr}</div></div>
+          <div class="stat-item"><div class="stat-label">${chrome.i18n.getMessage("uiTodayListings")}</div><div class="stat-value">${stats.todayListings || 0}${chrome.i18n.getMessage("uiUnitItems")}</div></div>
+          <div class="stat-item"><div class="stat-label">${chrome.i18n.getMessage("uiWeekListings")}</div><div class="stat-value">${stats.weekListings || 0}${chrome.i18n.getMessage("uiUnitItems")}</div></div>
+          <div class="stat-item"><div class="stat-label">${chrome.i18n.getMessage("uiTotalListings")}</div><div class="stat-value">${stats.totalListings || 0}${chrome.i18n.getMessage("uiUnitItems")}</div></div>
+          <div class="stat-item"><div class="stat-label">${chrome.i18n.getMessage("uiLastListing")}</div><div class="stat-value">${lastTimeStr}</div></div>
         </div>
       </div>
       <div class="stats-section">
-        <h2>🚀 作業効率</h2>
+        <h2>${chrome.i18n.getMessage("uiWorkingEfficiency")}</h2>
         <div class="stats-grid">
-          <div class="stat-item"><div class="stat-label">本日の作業時間</div><div class="stat-value" id="lfp-stat-worktime">${timeStr}</div></div>
+          <div class="stat-item"><div class="stat-label">${chrome.i18n.getMessage("uiTodayWorkTime")}</div><div class="stat-value" id="lfp-stat-worktime">${timeStr}</div></div>
           <div class="stat-item">
-            <div class="stat-label">出品速度</div>
+            <div class="stat-label">${chrome.i18n.getMessage("uiListingSpeed")}</div>
             <div class="stat-value">
-              <span id="lfp-stat-speed">${speed}品/時</span>
+              <span id="lfp-stat-speed">${speed}${chrome.i18n.getMessage("unitSpeed")}</span>
               <span id="lfp-stat-rank" class="rank-badge ${rankClass}">${feedback}</span>
             </div>
           </div>
         </div>
       </div>
       <div class="stats-section" style="margin-top: 2px;">
-        <h2>📋 ASIN履歴 <span id="errorRateBadge">エラー率: ${errorRate}% ${errorEmoji}</span></h2>
+        <h2>${chrome.i18n.getMessage("uiAsinHistoryTitle")} <span id="errorRateBadge">${chrome.i18n.getMessage("uiErrorRate")}: ${errorRate}% ${errorEmoji}</span></h2>
         <div class="stats-grid tri">
-          <div class="stat-item"><div class="stat-label">出品完了</div><div class="stat-value">${completedCount}</div></div>
+          <div class="stat-item"><div class="stat-label">${chrome.i18n.getMessage("uiCompleted")}</div><div class="stat-value">${completedCount}</div></div>
           <div class="stat-item"><div class="stat-label">⚠️Prot.</div><div class="stat-value">${protectedCount}</div></div>
           <div class="stat-item"><div class="stat-label">🛡️Brand</div><div class="stat-value">${brandCount}</div></div>
           <div class="stat-item"><div class="stat-label">📭NoList</div><div class="stat-value">${noListingsCount}</div></div>
@@ -447,17 +465,17 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
         </div>
       </div>
       <div style="padding: 5px 0 5px 0; text-align: center;">
-        <button class="btn-secondary" id="lfp-popup-reset-stats">統計をリセット</button>
+        <button class="btn-secondary" id="lfp-popup-reset-stats">${chrome.i18n.getMessage("uiResetStats")}</button>
       </div>
     </div>
   `;
 
     popup.querySelector('#lfp-popup-reset-stats').onclick = async () => {
       if (!isExtensionContextValid()) {
-        alert("拡張機能が更新されました。ページをリロードしてください。");
+        alert(chrome.i18n.getMessage("msgExtensionUpdated"));
         return;
       }
-      const confirmed = await showLfpConfirm('統計情報をリセットしますか？', '統計リセット');
+      const confirmed = await showLfpConfirm(chrome.i18n.getMessage("uiConfirmResetStats"), chrome.i18n.getMessage("uiResetStatsTitle"));
       if (confirmed) {
         chrome.runtime.sendMessage({ type: 'RESET_STATS' }, async (response) => {
           if (response && response.ok) {
@@ -468,12 +486,18 @@ async function renderStatsOnlyPopup(popup, isPartialUpdate = false) {
       }
     };
   } catch (err) {
-    console.warn("[LFP] Failed to render popup (context might be invalidated):", err);
+    if (!isExtensionContextValid() || isContextInvalidatedError(err)) {
+      stopStatsPopupUpdateTimer();
+      popup?.classList.remove('show');
+      return;
+    }
+
+    console.warn("[LFP] Failed to render popup:", err);
     popup.innerHTML = `
         <div style="padding: 20px; text-align: center; color: #d32f2f;">
-          <h3 style="margin-top:0;">⚠️ エラー</h3>
-          <p style="font-size:12px; line-height:1.4;">拡張機能の情報が読み取れませんでした。<br>ページを一度<b>再読み込み</b>してください。</p>
-          <button class="btn-primary" onclick="location.reload()" style="margin-top:10px;">リロードする</button>
+          <h3 style="margin-top:0;">⚠️ ${chrome.i18n.getMessage("msgHistoryClearErrorTitle")}</h3>
+          <p style="font-size:12px; line-height:1.4;">${chrome.i18n.getMessage("msgStatsReadError")}</p>
+          <button class="btn-primary" onclick="location.reload()" style="margin-top:10px;">${chrome.i18n.getMessage("btnReload")}</button>
         </div>
       `;
   }

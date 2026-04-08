@@ -123,7 +123,7 @@ function getYaballeCurrentEmail() {
  * @param {string} [title] - モーダルのタイトル（省略時は"確認"）
  * @returns {Promise<boolean>} ユーザーの選択結果
  */
-function showLfpConfirm(message, title = '確認') {
+function showLfpConfirm(message, title = chrome.i18n.getMessage("uiConfirmDefault")) {
   return new Promise((resolve) => {
     // 既存のオーバーレイがあれば削除
     const existing = document.querySelector('.lfp-confirm-overlay');
@@ -157,7 +157,7 @@ function showLfpConfirm(message, title = '確認') {
 
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'lfp-confirm-btn cancel';
-    cancelBtn.textContent = 'キャンセル';
+    cancelBtn.textContent = chrome.i18n.getMessage("uiCancel");
 
     const okBtn = document.createElement('button');
     okBtn.className = 'lfp-confirm-btn ok';
@@ -206,7 +206,7 @@ function showLfpConfirm(message, title = '確認') {
  * @param {string} [title] - モーダルのタイトル（省略時は"お知らせ"）
  * @returns {Promise<void>} OKボタンが押されたら解決
  */
-function showLfpAlert(message, title = 'お知らせ') {
+function showLfpAlert(message, title = chrome.i18n.getMessage("uiAlertDefault")) {
   return new Promise((resolve) => {
     // 既存のオーバーレイがあれば削除
     const existing = document.querySelector('.lfp-confirm-overlay');
@@ -360,11 +360,11 @@ function resetAllFlags() {
     if (typeof setBadge === 'function') setBadge("");
     if (UI.btnOpt) {
       UI.btnOpt.disabled = false;
-      if (UI.btnLabel) UI.btnLabel.textContent = "最適化";
+      if (UI.btnLabel) UI.btnLabel.textContent = chrome.i18n.getMessage("uiOptimize");
       if (UI.spin) UI.spin.style.display = "none";
     }
     if (UI.status) {
-      UI.status.textContent = "文字数：- / Vero：- / 出品：-";
+      UI.status.textContent = `${chrome.i18n.getMessage("uiCharacters")}: - / ${chrome.i18n.getMessage("uiVero")}: - / ${chrome.i18n.getMessage("uiListing")}: -`;
     }
     if (UI.quickMipBtn) UI.quickMipBtn._wasEnabled = false;
   }
